@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#7C4DFF"/>
+      <stop offset="1" stop-color="#5B2EE5"/>
+    </linearGradient>
+    <linearGradient id="shield" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FFFFFF"/>
+      <stop offset="1" stop-color="#EDE7FF"/>
+    </linearGradient>
+  </defs>
+  <!-- rounded-square badge -->
+  <rect x="8" y="8" width="240" height="240" rx="56" fill="url(#bg)"/>
+  <!-- subtle inner card strokes (echoes the mock's 'vault card' motif) -->
+  <rect x="34" y="52" width="188" height="152" rx="20" fill="none" stroke="#FFFFFF" stroke-opacity="0.28" stroke-width="8"/>
+  <rect x="52" y="34" width="152" height="16" rx="8" fill="#FFFFFF" fill-opacity="0.28"/>
+  <!-- shield -->
+  <path d="M128 66 L184 88 V140 C184 174 158 196 128 206 C98 196 72 174 72 140 V88 Z"
+        fill="url(#shield)" stroke="#4A22C4" stroke-opacity="0.25" stroke-width="6"/>
+  <!-- check -->
+  <path d="M103 138 L121 156 L156 114" fill="none" stroke="#E53935" stroke-width="14"
+        stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
