@@ -51,7 +51,7 @@ export const Statics = () => {
             />
 
             {/* Seamless Fluid Grid Layout */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-8">
 
                 {statsData.map((item) => (
 
@@ -60,7 +60,7 @@ export const Statics = () => {
                         className={`group flex flex-col sm:flex-row items-center sm:items-start gap-4 p-5 rounded-2xl transition-all duration-500 hover:-translate-y-1 animate__animated animate__fadeInUp ${item.delay}`}
                     >
                         {/* Soft Circle Icon Wrapper with Animate.css hover pulse */}
-                        <div className={`p-4 rounded-full flex items-center justify-center shrink-0 transition-transform duration-300 group-hover:scale-110 ${item.bgClass}`}>
+                        <div className={`w-[50px] h-[50px] p-4 rounded-full flex items-center justify-center shrink-0 transition-transform duration-300 group-hover:scale-110 ${item.bgClass}`}>
                             <i className={`${item.iconClass} text-2xl`}></i>
                         </div>
 

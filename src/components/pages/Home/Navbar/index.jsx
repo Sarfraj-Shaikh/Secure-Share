@@ -216,7 +216,7 @@ export const Navbar = () => {
                             />
 
                             <span className="text-base font-semibold text-black">
-                                {import.meta.env.VITE_SITE_NAME || "Website"}
+                                {import.meta.env.VITE_SITE_NAME || "..."}
                             </span>
 
                         </a>
