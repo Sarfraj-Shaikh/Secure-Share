@@ -1,6 +1,48 @@
+import React, { useEffect } from 'react';
 import SlotCounter from 'react-slot-counter';
 
 export const Statics = () => {
+
+    useEffect(() => {
+        // 1. Check & Auto-Inject AOS CSS CDN if missing
+        if (!document.getElementById('aos-css')) {
+            const link = document.createElement('link');
+            link.id = 'aos-css';
+            link.rel = 'stylesheet';
+            link.href = 'https://unpkg.com/aos@2.3.1/dist/aos.css';
+            document.head.appendChild(link);
+        }
+
+        // 2. Initialize AOS with a slight delay to ensure DOM is ready
+        const initAOS = () => {
+            if (window.AOS) {
+                window.AOS.init({
+                    duration: 800,
+                    easing: 'ease-out-cubic',
+                    once: false, // Scroll up/down dono par trigger karne ke liye
+                    mirror: true,
+                    offset: 100,
+                    disable: false // Ensure mobile devices par block na ho
+                });
+                window.AOS.refreshHard(); // Hard refresh to recalculate positions
+            }
+        };
+
+        // Agar AOS JS load nahi hui hai toh dynamic load karke init karo
+        if (!window.AOS && !document.getElementById('aos-js')) {
+            const script = document.createElement('script');
+            script.id = 'aos-js';
+            script.src = 'https://unpkg.com/aos@2.3.1/dist/aos.js';
+            script.onload = () => initAOS();
+            document.body.appendChild(script);
+        } else {
+            // Short timeout so React completes component mounting
+            const timer = setTimeout(() => {
+                initAOS();
+            }, 100);
+            return () => clearTimeout(timer);
+        }
+    }, []);
 
     const statsData = [
         {
@@ -10,7 +52,7 @@ export const Statics = () => {
             count: 1000,
             suffix: '+',
             label: 'Files Uploaded',
-            delay: 'animate__delay-0s'
+            aosDelay: '0'
         },
         {
             id: 2,
@@ -19,7 +61,7 @@ export const Statics = () => {
             count: 500,
             suffix: '+',
             label: 'Files Shared',
-            delay: 'animate__delay-1s'
+            aosDelay: '150'
         },
         {
             id: 3,
@@ -28,7 +70,7 @@ export const Statics = () => {
             count: 99,
             suffix: '%',
             label: 'Secure Downloads',
-            delay: 'animate__delay-2s'
+            aosDelay: '300'
         },
         {
             id: 4,
@@ -37,50 +79,45 @@ export const Statics = () => {
             count: 24,
             suffix: '/7*',
             label: 'Access From Anywhere',
-            delay: 'animate__delay-3s'
+            aosDelay: '450'
         },
     ];
 
     return (
-
         <section className="relative py-10 sm:px-6 mx-auto overflow-hidden px-[5%] md:px-[10%]">
 
-            {/* Background Glow Effect */}
-            <div
-                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3/4 h-3/4 bg-gradient-to-r from-indigo-100 via-emerald-100 to-amber-100 blur-3xl opacity-60 -z-10 rounded-full pointer-events-none animate__animated animate__pulse animate__infinite animate__slower"
-            />
-
             {/* Seamless Fluid Grid Layout */}
-            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
 
                 {statsData.map((item) => (
-
                     <div
                         key={item.id}
-                        className={`group flex flex-col sm:flex-row items-center sm:items-start gap-4 p-5 rounded-2xl transition-all duration-500 hover:-translate-y-1 animate__animated animate__fadeInUp ${item.delay}`}
+                        data-aos="fade-up"
+                        data-aos-delay={item.aosDelay}
+                        data-aos-duration="700"
+                        data-aos-easing="ease-out-cubic"
+                        className="group relative bg-slate-50 border border-slate-200/80 rounded-2xl p-6 transition-[transform,background-color,box-shadow,border-color] duration-300 ease-out will-change-transform hover:bg-white hover:shadow-xl hover:border-slate-300 hover:-translate-y-1"
                     >
-                        {/* Soft Circle Icon Wrapper with Animate.css hover pulse */}
-                        <div className={`w-[50px] h-[50px] p-4 rounded-full flex items-center justify-center shrink-0 transition-transform duration-300 group-hover:scale-110 ${item.bgClass}`}>
-                            <i className={`${item.iconClass} text-2xl`}></i>
-                        </div>
-
-                        {/* Value & Label */}
-                        <div className="flex flex-col text-center sm:text-left">
-
-                            <div className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight flex items-center justify-center sm:justify-start">
-
-                                <SlotCounter value={item.count} />
-
-                                <span className="text-indigo-600 ml-0.5">{item.suffix}</span>
+                        <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4">
+                            {/* Icon Wrapper */}
+                            <div className={`w-14 h-14 rounded-xl flex items-center justify-center shrink-0 transition-transform duration-300 group-hover:scale-105 ${item.bgClass}`}>
+                                <i className={`${item.iconClass} text-2xl`}></i>
                             </div>
 
-                            <p className="text-sm font-medium text-slate-500 mt-1">{item.label}</p>
-
+                            {/* Value & Label */}
+                            <div className="flex flex-col text-center sm:text-left">
+                                <div className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight flex items-center justify-center sm:justify-start">
+                                    <SlotCounter value={item.count} />
+                                    <span className="text-indigo-600 ml-0.5">{item.suffix}</span>
+                                </div>
+                                <p className="text-xs font-semibold text-slate-500 mt-1 uppercase tracking-wider">
+                                    {item.label}
+                                </p>
+                            </div>
                         </div>
-
                     </div>
-
                 ))}
+
             </div>
 
         </section>

@@ -193,7 +193,7 @@ export const Navbar = () => {
 
             {/* MOBILE SIDEBAR DRAWER */}
             <aside
-                className={`fixed top-0 right-0 z-50 flex h-full w-[290px] sm:w-[320px] flex-col justify-between bg-white p-6  transition-transform duration-300 ease-in-out md:hidden ${isMobileMenuOpen ? "translate-x-0" : "translate-x-full"
+                className={`fixed top-0 right-0 z-50 flex h-full w-[85%] sm:w-[320px] flex-col justify-between bg-white p-6  transition-transform duration-300 ease-in-out md:hidden ${isMobileMenuOpen ? "translate-x-0" : "translate-x-full"
                     }`}
             >
 
@@ -241,10 +241,10 @@ export const Navbar = () => {
                                 key={index}
                                 href={item.href}
                                 onClick={() => setIsMobileMenuOpen(false)}
-                                className="group flex items-center gap-3.5 rounded-xl px-3.5 py-2.5 text-sm transition-all duration-200 hover:translate-x-1 hover:bg-blue-50 hover:text-blue-600 active:scale-[0.98]"
+                                className="group flex items-center gap-3.5 rounded-xl py-2.5 text-sm transition-all duration-200 hover:translate-x-1 hover:bg-blue-50 hover:text-blue-600 active:scale-[0.98]"
                             >
 
-                                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gray-100 text-gray-500 transition-colors duration-200 group-hover:bg-blue-600 group-hover:text-white">
+                                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gray-100 text-gray-500 transition-colors duration-200 group-hover:bg-blue-600 group-hover:text-white">
 
                                     <i className={`${item.icon} text-base`}></i>
 
