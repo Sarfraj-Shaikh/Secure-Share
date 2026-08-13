@@ -1,4 +1,5 @@
 import { Navbar } from "./Navbar"
+import { Faqs } from "./subComponents/Faqs";
 import { Features } from "./subComponents/Features";
 import { Hero } from "./subComponents/Hero"
 import { HowItsWorks } from "./subComponents/HowItsWorks";
@@ -20,6 +21,7 @@ export const Home = () => {
             <Security />
             <Testimonials />
             <Pricing />
+            <Faqs />
         </>
     )
 }

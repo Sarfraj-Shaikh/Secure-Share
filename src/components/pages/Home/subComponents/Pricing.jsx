@@ -62,7 +62,7 @@ export const Pricing = () => {
 
         <section
             id="pricing"
-            className="bg-gradient-to-b from-slate-50 via-slate-100/50 to-white py-16 md:py-24 px-4 sm:px-6 lg:px-8"
+            className="bg-gradient-to-b from-slate-50 via-slate-100/50 to-white py-16 md:py-24 px-[5%] md:px-[10%]"
         >
             <div className="max-w-7xl mx-auto">
 
@@ -204,7 +204,7 @@ export const Pricing = () => {
                             </div>
                         </div>
                     ))}
-                    
+
                 </div>
 
             </div>
