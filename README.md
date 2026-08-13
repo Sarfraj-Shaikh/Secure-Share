@@ -91,4 +91,14 @@ Day 2 work update for **13-08-2026**.
 #### Why Choose Us Section Development
 
 - Created the **Why Choose Us Section** page inside the **Home/Subcomponents** folder.
-- Added 6 Features Cards and implemented AOS animations
+- Added 6 Features Cards and implemented AOS animations.
+- Made the Why Choose Us Section fully responsive across different devices.
+- Implemented smooth animations for an enhanced user experience.
+
+#### How Its Works Section Development
+
+- Created the **How Its Works Section** page inside the **Home/Subcomponents** folder.
+- Added 4 steps cards guides and implemented AOS animations with smooth hover animation.
+- Implemented dynamically colors on each cards for better user experience.
+- Made the How Its Works section fully responsive across different devices.
+

@@ -69,13 +69,18 @@ export const WhyChooseUs = () => {
 
     return (
         <>
-            <section className="w-full flex-col items-center mx-auto px-[5%] md:px-[10%] py-10">
+            <section 
+            id='why-choose-us'
+            className="w-full flex-col items-center mx-auto px-[5%] md:px-[10%] py-10"
+            >
+
                 <div className="mx-auto flex w-full flex-col items-center">
+
                     <div className="rounded-full border border-slate-200 bg-slate-50 px-4 py-1.5 text-sm text-slate-800">
                         Core Features
                     </div>
 
-                    <h1 className="mt-7 text-center text-5xl font-semibold text-slate-900">
+                    <h1 className="mt-7 text-center text-4xl md:text-5xl font-semibold text-slate-900">
                         {`Why Choose ${import.meta.env.VITE_SITE_NAME}?`}
                     </h1>
 
@@ -139,8 +144,11 @@ export const WhyChooseUs = () => {
 
                             </div>
                         ))}
+
                     </div>
+
                 </div>
+
             </section>
         </>
     )

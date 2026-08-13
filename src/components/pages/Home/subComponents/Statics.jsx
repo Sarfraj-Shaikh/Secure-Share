@@ -42,7 +42,7 @@ export const Statics = () => {
             }, 100);
             return () => clearTimeout(timer);
         }
-        
+
     }, []);
 
     const statsData = [
@@ -97,25 +97,46 @@ export const Statics = () => {
                         data-aos-delay={item.aosDelay}
                         data-aos-duration="700"
                         data-aos-easing="ease-out-cubic"
-                        className="group relative bg-slate-50 border border-slate-200/80 rounded-2xl p-6 transition-[transform,background-color,box-shadow,border-color] duration-300 ease-out will-change-transform hover:bg-white hover:shadow-xl hover:border-slate-300 hover:-translate-y-1"
+                        className="group"
                     >
-                        <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4">
-                            {/* Icon Wrapper */}
-                            <div className={`w-14 h-14 rounded-xl flex items-center justify-center shrink-0 transition-transform duration-300 group-hover:scale-105 ${item.bgClass}`}>
-                                <i className={`${item.iconClass} text-2xl`}></i>
+
+                        <div
+                            className="relative bg-slate-50 border border-slate-200/80 rounded-2xl p-6 transition-all duration-300 ease-out hover:bg-white hover:shadow-xl hover:border-slate-300 hover:-translate-y-1 will-change-transform"
+                        >
+
+                            <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4">
+
+                                {/* Icon Wrapper */}
+                                <div
+                                    className={`w-14 h-14 rounded-xl flex items-center justify-center shrink-0 transition-transform duration-300 group-hover:scale-105 ${item.bgClass}`}
+                                >
+                                    <i className={`${item.iconClass} text-2xl`}></i>
+                                </div>
+
+                                {/* Value & Label */}
+                                <div className="flex flex-col text-center sm:text-left">
+
+                                    <div
+                                        className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight flex items-center justify-center sm:justify-start"
+                                    >
+
+                                        <SlotCounter value={item.count} />
+                                        <span className="text-indigo-600 ml-0.5">{item.suffix}</span>
+
+                                    </div>
+
+                                    <p
+                                        className="text-xs font-semibold text-slate-500 mt-1 capitalize tracking-wider"
+                                    >
+                                        {item.label}
+                                    </p>
+
+                                </div>
+
                             </div>
 
-                            {/* Value & Label */}
-                            <div className="flex flex-col text-center sm:text-left">
-                                <div className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight flex items-center justify-center sm:justify-start">
-                                    <SlotCounter value={item.count} />
-                                    <span className="text-indigo-600 ml-0.5">{item.suffix}</span>
-                                </div>
-                                <p className="text-xs font-semibold text-slate-500 mt-1 uppercase tracking-wider">
-                                    {item.label}
-                                </p>
-                            </div>
                         </div>
+
                     </div>
                 ))}
 
