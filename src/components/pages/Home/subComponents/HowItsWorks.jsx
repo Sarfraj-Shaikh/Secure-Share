@@ -94,7 +94,10 @@ export const HowItsWorks = () => {
     return (
         <>
 
-            <div className="mx-auto flex w-full flex-col items-center">
+            <div 
+            id='how-it-works'
+            className="mx-auto flex w-full flex-col items-center py-10"
+            >
 
                 <h1 className="text-4xl md:text-5xl font-semibold text-center mx-auto pt-10">
                     {`How ${import.meta.env.VITE_SITE_NAME} Works?`}
