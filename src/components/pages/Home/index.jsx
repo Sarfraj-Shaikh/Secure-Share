@@ -2,6 +2,7 @@ import { Navbar } from "./Navbar"
 import { Features } from "./subComponents/Features";
 import { Hero } from "./subComponents/Hero"
 import { HowItsWorks } from "./subComponents/HowItsWorks";
+import { Pricing } from "./subComponents/Pricing";
 import { Security } from "./subComponents/Security";
 import { Statics } from './subComponents/Statics'; // ✅ Correct
 import { Testimonials } from "./subComponents/Testimonials";
@@ -18,6 +19,7 @@ export const Home = () => {
             <Features />
             <Security />
             <Testimonials />
+            <Pricing />
         </>
     )
 }

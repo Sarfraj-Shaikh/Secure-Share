@@ -116,3 +116,17 @@ Day 2 work update for **13-08-2026**.
 - Implemented smooth animations for an enhanced user experience.
 - Made the Security section fully responsive across different devices.
 
+#### Testimonials Section Development
+
+- Created the **Testimonials Section** page inside the **Home/Subcomponents** folder.
+- Added 6 securities list and implemented AOS animations.
+- Implemented smooth animations for an enhanced user experience.
+- Made the Testimonials section fully responsive across different devices.
+
+#### Pricing Section Development
+
+- Created the **Pricing Section** page inside the **Home/Subcomponents** folder.
+- Added 6 securities list and implemented AOS animations.
+- Implemented smooth animations for an enhanced user experience.
+- Made the Pricing section fully responsive across different devices.
+
