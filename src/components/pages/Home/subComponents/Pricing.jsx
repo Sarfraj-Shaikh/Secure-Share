@@ -106,7 +106,7 @@ export const Pricing = () => {
 
                                 <div className="absolute -top-4 left-1/2 -translate-x-1/2">
 
-                                    <span className="bg-gradient-to-r from-indigo-500 to-purple-500 text-white text-xs font-bold uppercase tracking-wider px-4 py-1.5 rounded-full shadow-md">
+                                    <span className="bg-gradient-to-r from-indigo-500 to-purple-500 text-white text-xs font-bold uppercase tracking-wider px-4 py-1.5 rounded-full shadow-md animate-pulse">
                                         {plan.badge}
                                     </span>
 
@@ -204,8 +204,9 @@ export const Pricing = () => {
                             </div>
                         </div>
                     ))}
+                    
                 </div>
-                
+
             </div>
         </section>
     );
