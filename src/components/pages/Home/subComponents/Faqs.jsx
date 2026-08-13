@@ -72,7 +72,11 @@ export const Faqs = () => {
 
     return (
         <>
-            <section className='w-full flex flex-col items-center justify-center py-20 px-[5%] md:px-[10%]'>
+
+            <section 
+            id="faqs"
+            className='w-full flex flex-col items-center justify-center py-20 px-[5%] md:px-[10%]'
+            >
 
                 <div className='w-full'>
 
@@ -123,7 +127,9 @@ export const Faqs = () => {
                         ))}
                     </div>
                 </div>
+
             </section>
+            
         </>
     )
 }

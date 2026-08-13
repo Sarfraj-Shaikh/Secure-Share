@@ -130,3 +130,17 @@ Day 2 work update for **13-08-2026**.
 - Implemented smooth animations for an enhanced user experience.
 - Made the Pricing section fully responsive across different devices.
 
+#### Faqs Section Development
+
+- Created the **Faqs Section** page inside the **Home/Subcomponents** folder.
+- Added 8 qutions list and implemented AOS animations.
+- Implemented smooth animations for an enhanced user experience.
+- Made the Faqs section fully responsive across different devices.
+
+#### Call To Action (CTA) Section Development
+
+- Created the **Call To Action (CTA) Section** page inside the **Home/Subcomponents** folder.
+- Added 6 securities list and implemented AOS animations.
+- Implemented smooth animations for an enhanced user experience.
+- Made the Call To Action (CTA) section fully responsive across different devices.
+
