@@ -1,4 +1,5 @@
 import { Navbar } from "./Navbar"
+import { CtaSection } from "./subComponents/CtaSection";
 import { Faqs } from "./subComponents/Faqs";
 import { Features } from "./subComponents/Features";
 import { Hero } from "./subComponents/Hero"
@@ -22,6 +23,7 @@ export const Home = () => {
             <Testimonials />
             <Pricing />
             <Faqs />
+            <CtaSection />
         </>
     )
 }
