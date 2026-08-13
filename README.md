@@ -102,3 +102,17 @@ Day 2 work update for **13-08-2026**.
 - Implemented dynamically colors on each cards for better user experience.
 - Made the How Its Works section fully responsive across different devices.
 
+#### Our Features Section Development
+
+- Created the **Our Features Section** page inside the **Home/Subcomponents** folder.
+- Added 5 cards list and implemented AOS animations with smooth experience.
+- Implemented smooth animations for an enhanced user experience.
+- Made the Our Features section fully responsive across different devices.
+
+#### Security Section Development
+
+- Created the **Security Section** page inside the **Home/Subcomponents** folder.
+- Added 5 securities list and implemented AOS animations.
+- Implemented smooth animations for an enhanced user experience.
+- Made the Security section fully responsive across different devices.
+
