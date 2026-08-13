@@ -1,6 +1,7 @@
 import { Navbar } from "./Navbar"
 import { Hero } from "./subComponents/Hero"
 import { Statics } from './subComponents/Statics'; // ✅ Correct
+import { WhyChooseUs } from "./subComponents/WhyChooseUs";
 
 export const Home = () => {
     return (
@@ -8,6 +9,7 @@ export const Home = () => {
             <Navbar />
             <Hero />
             <Statics />
+            <WhyChooseUs />
         </>
     )
 }

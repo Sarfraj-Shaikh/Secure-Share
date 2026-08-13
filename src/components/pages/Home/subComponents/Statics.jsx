@@ -19,12 +19,12 @@ export const Statics = () => {
                 window.AOS.init({
                     duration: 800,
                     easing: 'ease-out-cubic',
-                    once: false, // Scroll up/down dono par trigger karne ke liye
+                    once: false,
                     mirror: true,
                     offset: 100,
-                    disable: false // Ensure mobile devices par block na ho
+                    disable: false
                 });
-                window.AOS.refreshHard(); // Hard refresh to recalculate positions
+                window.AOS.refreshHard();
             }
         };
 
@@ -42,6 +42,7 @@ export const Statics = () => {
             }, 100);
             return () => clearTimeout(timer);
         }
+        
     }, []);
 
     const statsData = [

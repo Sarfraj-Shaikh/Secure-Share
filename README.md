@@ -87,3 +87,8 @@ Day 2 work update for **13-08-2026**.
 #### Landing Page
 
 - Updated the **README.md** page.
+
+#### Why Choose Us Section Development
+
+- Created the **Why Choose Us Section** page inside the **Home/Subcomponents** folder.
+- Added 6 Features Cards and implemented AOS animations
