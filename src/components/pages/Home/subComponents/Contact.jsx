@@ -111,9 +111,9 @@ export const Contact = () => {
                             Whether it’s support, feedback, or inquiries — feel free to contact us anytime.
                         </p>
 
-                        <div class="flex flex-col space-y-5 py-5">
+                        <div className="flex flex-col space-y-5 py-5">
 
-                            <div class="flex items-center gap-2">
+                            <div className="flex items-center gap-2">
 
                                 <div className="size-9 rounded-full bg-zinc-100 flex items-center justify-center shrink-0">
                                     <i className="ri-mail-line text-zinc-600"></i>
@@ -121,35 +121,35 @@ export const Contact = () => {
 
                                 <span
                                     onClick={() => (window.location.href = "mailto:contact@example.com")}
-                                    class="text-sm text-zinc-600 cursor-pointer transition-colors duration-300 ease-in-out hover:text-black"
+                                    className="text-sm text-zinc-600 cursor-pointer transition-colors duration-300 ease-in-out hover:text-black"
                                 >
                                     contact@example.com
                                 </span>
                             </div>
 
-                            <div class="flex items-center gap-2">
+                            <div className="flex items-center gap-2">
 
-                                <div class="size-9 rounded-full bg-zinc-100 flex items-center justify-center shrink-0">
+                                <div className="size-9 rounded-full bg-zinc-100 flex items-center justify-center shrink-0">
                                     <i className="ri-phone-line text-zinc-600"></i>
                                 </div>
 
                                 <span
                                     onClick={() => (window.location.href = "tel:+911234567890")}
-                                    class="text-sm text-zinc-600 cursor-pointer transition-colors duration-300 ease-in-out hover:text-black"
+                                    className="text-sm text-zinc-600 cursor-pointer transition-colors duration-300 ease-in-out hover:text-black"
                                 >
                                     +91 1234-5678-90
                                 </span>
                             </div>
 
-                            <div class="flex items-center gap-2">
+                            <div className="flex items-center gap-2">
 
-                                <div class="size-9 rounded-full bg-zinc-100 flex items-center justify-center shrink-0">
+                                <div className="size-9 rounded-full bg-zinc-100 flex items-center justify-center shrink-0">
                                     <i className="ri-map-pin-2-line text-zinc-600"></i>
                                 </div>
 
                                 <span
                                     onClick={() => (window.location.href = "tel:+911234567890")}
-                                    class="text-sm text-zinc-600"
+                                    className="text-sm text-zinc-600"
                                 >
                                     Mumbai, Maharashtra, India
                                 </span>

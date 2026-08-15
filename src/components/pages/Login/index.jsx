@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { message } from 'antd';
+import SEO from '../SEO';
 
 export const Login = () => {
     const navigate = useNavigate();
@@ -60,118 +61,127 @@ export const Login = () => {
 
             message.error(err.message);
             console.log(err);
-            
+
         }
     };
 
     return (
-        <main className="min-h-[100dvh] flex items-center justify-center bg-white sm:bg-slate-50 p-0 sm:p-4">
 
-            <div className="w-full min-h-[100dvh] sm:min-h-0 sm:max-w-md bg-white p-5 sm:p-8 rounded-none sm:rounded-2xl shadow-none sm:shadow-xl sm:shadow-slate-200/60 border-0 sm:border sm:border-slate-100 flex flex-col justify-center">
+        <>
+            <SEO
+                title={`Signin | ${import.meta.env.VITE_SITE_NAME}`}
+                canonical={`${import.meta.env.VITE_WEB_URL}/register`}
+            />
 
-                {/* Logo Section */}
-                <div className="flex justify-center">
-                    <Link to="/" className="inline-block transition-transform duration-300 hover:scale-105">
-                        <img
-                            src="/assets/upload.png"
-                            alt={import.meta.env.VITE_SITE_NAME || 'Logo'}
-                            className="w-14 h-14 object-contain"
-                        />
-                    </Link>
-                </div>
+            <main className="min-h-[100dvh] flex items-center justify-center bg-white sm:bg-slate-50 p-0 sm:p-4">
 
-                {/* Header */}
-                <div className="mt-6 text-center">
-                    <h2 className="text-3xl font-bold tracking-tight text-slate-900">
-                        Welcome Back!
-                    </h2>
-                    <p className="mt-2 text-sm text-slate-500">
-                        Enter your credentials below to sign in to your account.
-                    </p>
-                </div>
+                <div className="w-full min-h-[100dvh] sm:min-h-0 sm:max-w-md bg-white p-5 sm:p-8 rounded-none sm:rounded-2xl shadow-none sm:shadow-xl sm:shadow-slate-200/60 border-0 sm:border sm:border-slate-100 flex flex-col justify-center">
 
-                {/* Form */}
-                <form onSubmit={handleSubmit} className="mt-8 space-y-5">
-
-                    {/* Email ID */}
-                    <div>
-                        <label className="block text-sm font-medium text-slate-700">Email ID</label>
-                        <div className="relative mt-1.5 rounded-lg">
-                            <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
-                                <i className="ri-mail-line text-lg"></i>
-                            </div>
-                            <input
-                                type="email"
-                                name="email"
-                                value={formData.email}
-                                onChange={handleChange}
-                                placeholder="you@example.com"
-                                className="w-full pl-10 pr-4 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-lg text-slate-900 placeholder-slate-400 focus:outline-none focus:border-blue-600 focus:bg-white focus:ring-indigo-500/10 transition duration-200"
+                    {/* Logo Section */}
+                    <div className="flex justify-center">
+                        <Link to="/" className="inline-block transition-transform duration-300 hover:scale-105">
+                            <img
+                                src="/assets/upload.png"
+                                alt={import.meta.env.VITE_SITE_NAME || 'Logo'}
+                                className="w-14 h-14 object-contain"
                             />
-                        </div>
-                    </div>
-
-                    {/* Password */}
-                    <div>
-                        <div className="flex items-center justify-between">
-                            <label className="block text-sm font-medium text-slate-700">Password</label>
-
-                            {/* Forgot Password Link */}
-                            <Link
-                                to="/forgot-password"
-                                className="text-xs font-medium text-blue-600 hover:text-blue-700 hover:underline transition-colors duration-200"
-                            >
-                                Forgot Password?
-                            </Link>
-                        </div>
-
-                        <div className="relative mt-1.5 rounded-lg">
-                            <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
-                                <i className="ri-lock-line text-lg"></i>
-                            </div>
-
-                            <input
-                                type={showPassword ? 'text' : 'password'}
-                                name="password"
-                                value={formData.password}
-                                onChange={handleChange}
-                                placeholder="••••••••"
-                                className="w-full pl-10 pr-10 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-lg text-slate-900 placeholder-slate-400 focus:outline-none focus:border-blue-600 focus:bg-white focus:ring-indigo-500/10 transition duration-200"
-                            />
-
-                            <button
-                                type="button"
-                                onClick={() => setShowPassword(!showPassword)}
-                                className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600 focus:outline-none transition-colors duration-200"
-                            >
-                                <i className={showPassword ? "ri-eye-off-line text-lg" : "ri-eye-line text-lg"}></i>
-                            </button>
-                        </div>
-                    </div>
-
-                    {/* Submit Button */}
-                    <button
-                        type="submit"
-                        className="w-full mt-2 py-3 px-4 text-sm font-semibold rounded-lg text-white bg-blue-600 hover:bg-blue-700 active:scale-[0.99] focus:outline-none focus:ring-indigo-500/20 shadow-md shadow-indigo-600/20 transition-all duration-200 cursor-pointer"
-                    >
-                        Continue
-                    </button>
-
-                    {/* Footer Link */}
-                    <p className="text-center text-sm text-slate-600 pt-4">
-                        Don't have an account?{' '}
-                        <Link
-                            to="/register"
-                            className="font-medium text-blue-600 hover:text-blue-700 hover:underline transition-colors duration-200"
-                        >
-                            Sign Up
                         </Link>
-                    </p>
+                    </div>
 
-                </form>
+                    {/* Header */}
+                    <div className="mt-6 text-center">
+                        <h2 className="text-3xl font-bold tracking-tight text-slate-900">
+                            Welcome Back!
+                        </h2>
+                        <p className="mt-2 text-sm text-slate-500">
+                            Enter your credentials below to sign in to your account.
+                        </p>
+                    </div>
 
-            </div>
-            
-        </main>
+                    {/* Form */}
+                    <form onSubmit={handleSubmit} className="mt-8 space-y-5">
+
+                        {/* Email ID */}
+                        <div>
+                            <label className="block text-sm font-medium text-slate-700">Email ID</label>
+                            <div className="relative mt-1.5 rounded-lg">
+                                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                                    <i className="ri-mail-line text-lg"></i>
+                                </div>
+                                <input
+                                    type="email"
+                                    name="email"
+                                    value={formData.email}
+                                    onChange={handleChange}
+                                    placeholder="you@example.com"
+                                    className="w-full pl-10 pr-4 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-lg text-slate-900 placeholder-slate-400 focus:outline-none focus:border-blue-600 focus:bg-white focus:ring-indigo-500/10 transition duration-200"
+                                />
+                            </div>
+                        </div>
+
+                        {/* Password */}
+                        <div>
+                            <div className="flex items-center justify-between">
+                                <label className="block text-sm font-medium text-slate-700">Password</label>
+
+                                {/* Forgot Password Link */}
+                                <Link
+                                    to="/forgot-password"
+                                    className="text-xs font-medium text-blue-600 hover:text-blue-700 hover:underline transition-colors duration-200"
+                                >
+                                    Forgot Password?
+                                </Link>
+                            </div>
+
+                            <div className="relative mt-1.5 rounded-lg">
+                                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                                    <i className="ri-lock-line text-lg"></i>
+                                </div>
+
+                                <input
+                                    type={showPassword ? 'text' : 'password'}
+                                    name="password"
+                                    value={formData.password}
+                                    onChange={handleChange}
+                                    placeholder="••••••••"
+                                    className="w-full pl-10 pr-10 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-lg text-slate-900 placeholder-slate-400 focus:outline-none focus:border-blue-600 focus:bg-white focus:ring-indigo-500/10 transition duration-200"
+                                />
+
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600 focus:outline-none transition-colors duration-200"
+                                >
+                                    <i className={showPassword ? "ri-eye-off-line text-lg" : "ri-eye-line text-lg"}></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Submit Button */}
+                        <button
+                            type="submit"
+                            className="w-full mt-2 py-3 px-4 text-sm font-semibold rounded-lg text-white bg-blue-600 hover:bg-blue-700 active:scale-[0.99] focus:outline-none focus:ring-indigo-500/20 shadow-md shadow-indigo-600/20 transition-all duration-200 cursor-pointer"
+                        >
+                            Continue
+                        </button>
+
+                        {/* Footer Link */}
+                        <p className="text-center text-sm text-slate-600 pt-4">
+                            Don't have an account?{' '}
+                            <Link
+                                to="/register"
+                                className="font-medium text-blue-600 hover:text-blue-700 hover:underline transition-colors duration-200"
+                            >
+                                Sign Up
+                            </Link>
+                        </p>
+
+                    </form>
+
+                </div>
+
+            </main>
+
+        </>
     );
 };
