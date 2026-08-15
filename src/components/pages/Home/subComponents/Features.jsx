@@ -80,7 +80,7 @@ export const Features = () => {
 
                 {/* Features Grid */}
                 <div
-                    className="w-full mx-auto mt-10 relative grid grid-cols-1 md:grid-cols-3 border-x border-slate-100 md:divide-x divide-y md:divide-y-0 divide-slate-100 px-[5%] md:px-[10%] gap-3"
+                    className="w-full mx-auto mt-10 relative grid grid-cols-1 md:grid-cols-3 border-slate-300 px-[1%] md:px-[10%] gap-3"
                 >
 
                     {
@@ -92,16 +92,16 @@ export const Features = () => {
                                 data-aos-delay={item.aosDelay}
                                 data-aos-duration="700"
                                 data-aos-easing="ease-out-cubic"
-                                className="flex flex-col items-start px-6 py-8 hover:bg-slate-50 transition-colors"
+                                className="flex flex-col items-start px-6 py-8 hover:bg-slate-200 transition-colors bg-slate-100 rounded-lg"
                             >
 
                                 <div
-                                    className="size-13 flex items-center justify-center border border-slate-200 rounded-lg mb-11"
+                                    className="size-13 flex items-center justify-center border border-slate-200 rounded-lg mb-11 bg-white"
                                 >
                                     <i className={item.icon}></i>
                                 </div>
 
-                                <h3 className="text-base font-medium text-slate-800">
+                                <h3 className="text-base font-semibold text-slate-800">
                                     {item.title}
                                 </h3>
 

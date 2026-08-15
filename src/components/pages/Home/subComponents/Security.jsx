@@ -64,7 +64,7 @@ export const Security = () => {
 
             <section
                 id="security"
-                className="py-16 px-[5%] md:px-[10%] bg-[#FAFCFF]"
+                className="py-16 px-[1%] md:px-[10%] bg-[#FAFCFF]"
             >
 
                 <div className="mx-auto">

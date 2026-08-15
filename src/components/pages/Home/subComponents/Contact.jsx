@@ -87,7 +87,7 @@ export const Contact = () => {
 
                     {/*  Left Side  */}
                     <div
-                        data-aos="fade-right"
+                        data-aos="fade-up"
                         data-aos-delay="50"
                         data-aos-duration="700"
                         data-aos-easing="ease-out-cubic"
@@ -161,7 +161,7 @@ export const Contact = () => {
 
                     {/*  Right Side  */}
                     <div
-                        data-aos="fade-left"
+                        data-aos="fade-up"
                         data-aos-delay="50"
                         data-aos-duration="700"
                         data-aos-easing="ease-out-cubic"

@@ -110,7 +110,7 @@ export const Testimonials = () => {
 
                 {/* Features Grid */}
                 <div
-                    className="w-full mx-auto mt-10 relative grid grid-cols-1 md:grid-cols-3 border-slate-100 md:divide-x divide-y md:divide-y-0 divide-slate-100 px-[5%] md:px-[10%] gap-5"
+                    className="w-full mx-auto mt-10 relative grid grid-cols-1 md:grid-cols-3 border-slate-100 md:divide-x divide-y md:divide-y-0 divide-slate-100 px-[1%] md:px-[10%] gap-5"
                 >
 
                     {

@@ -105,7 +105,7 @@ export const WhyChooseUs = () => {
 
                                 <i className={`${feature.icon} flex size-10 items-center justify-center rounded-lg border border-slate-200`}></i>
 
-                                <h2 className="mt-6 text-sm font-medium text-slate-800">
+                                <h2 className="mt-6 text-sm font-semibold text-slate-800">
                                     {feature.title}
                                 </h2>
 
