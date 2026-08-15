@@ -1,3 +1,4 @@
+import { Footer } from "./Footer";
 import { Navbar } from "./Navbar"
 import { About } from "./subComponents/About";
 import { Contact } from "./subComponents/Contact";
@@ -28,6 +29,7 @@ export const Home = () => {
             <CtaSection />
             <Contact />
             <About />
+            <Footer />
         </>
     )
 }

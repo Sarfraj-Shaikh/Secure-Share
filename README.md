@@ -162,3 +162,10 @@ Day 3 work update for **15-08-2026**.
 - Implemented proper client-side validation for all required fields.
 - Implemented validation errors using `Ant Design (AntD)` Toast notifications.
 - Handle all possible exceptions using `try...catch` blocks to ensure the application does not crash.
+
+#### Footer Section Development
+
+- Created the **Footer Section** page inside the **Home** folder.
+- Added Quick Links, Legal Pages, Contact Information, Copyright, Developer Credit, Developer Social Links Lists.
+- Made the Footer Section fully responsive across different devices.
+- Implemented smooth hover animations for an enhanced user experience.
