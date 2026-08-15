@@ -3,6 +3,7 @@ import { Home } from './components/pages/Home';
 import { Register } from './components/pages/Register';
 import { Login } from './components/pages/Login';
 import { VerifyAccount } from './components/pages/VerifyAccount';
+import { ForgotPassword } from './components/pages/ForgotPassword';
 
 function App() {
 
@@ -15,6 +16,7 @@ function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
         <Route path="/verify" element={<VerifyAccount />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
 
       </Routes>
 
