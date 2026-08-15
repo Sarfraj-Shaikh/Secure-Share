@@ -64,7 +64,7 @@ export const Security = () => {
 
             <section
                 id="security"
-                className="py-16 px-[1%] md:px-[10%] bg-[#FAFCFF]"
+                className="py-16 px-10 md:px-[10%] bg-[#FAFCFF]"
             >
 
                 <div className="mx-auto">
@@ -81,7 +81,7 @@ export const Security = () => {
 
                     </div>
 
-                    <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="w-full max-w-7xl mx-auto sm:px-4 lg:px-6">
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 

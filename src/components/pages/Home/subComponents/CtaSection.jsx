@@ -23,7 +23,7 @@ export const CtaSection = () => {
 
     return (
         <>
-            <div className="w-full px-[5%] md:px-[10%] pb-20 rounded-2xl">
+            <div className="w-full px-[1%] md:px-[10%] pb-20 rounded-2xl">
 
                 <div
                     className="max-md:text-center mx-2 md:mx-auto flex flex-col md:flex-row items-center justify-between text-left bg-gradient-to-b from-[#4C0083] to-[#180047] rounded-2xl text-white p-10 break-words"
@@ -55,7 +55,7 @@ export const CtaSection = () => {
 
                     <button
                         onClick={() => { window.location.href = `${window.location}register` }}
-                        data-aos="fade-left"
+                        data-aos="fade-up"
                         data-aos-delay="50"
                         data-aos-duration="700"
                         data-aos-easing="ease-out-cubic"
