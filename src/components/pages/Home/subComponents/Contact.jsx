@@ -29,33 +29,50 @@ export const Contact = () => {
 
     const handleInput = (event) => {
 
-        setForm((prev) => ({
-            ...prev,
-            [event.target.name]: event.target.value,
-        }));
+        try {
 
+            setForm((prev) => ({
+                ...prev,
+                [event.target.name]: event.target.value,
+            }));
+
+        } catch (err) {
+
+            message.error(err.message);
+            console.log(err);
+
+        }
     };
 
     const submitForm = () => {
 
-        if (!form.subject || form.subject.trim() === "") {
-            return message.error("Subject Is Required");
+        try {
+
+            if (!form.subject || form.subject.trim() === "") {
+                return message.error("Subject Is Required");
+            }
+
+            if (!form.message || form.message.trim() === "") {
+                return message.error("Message Is Required");
+            }
+
+            const recipient = "contact@example.com";
+            const subject = encodeURIComponent(form.subject);
+            const userMessage = encodeURIComponent(form.message);
+
+            window.location.href = `mailto:${recipient}?subject=${subject}&body=${userMessage}`
+
+            setForm({
+                subject: "",
+                message: ""
+            });
+
+        } catch (err) {
+
+            message.error(err.message);
+            console.log(err);
+
         }
-
-        if (!form.message || form.message.trim() === "") {
-            return message.error("Message Is Required");
-        }
-
-        const recipient = "contact@example.com";
-        const subject = encodeURIComponent(form.subject);
-        const userMessage = encodeURIComponent(form.message);
-
-        window.location.href = `mailto:${recipient}?subject=${subject}&body=${userMessage}`
-
-        setForm({
-            subject: "",
-            message: ""
-        })
 
     }
 
