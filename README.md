@@ -180,7 +180,7 @@ Day 3 work update for **15-08-2026**.
 
 #### Search Engine Optimization (SEO)
 
-- Implemented SEO on `Home` `Register` `Login` `Verify Account` `Reset Password` Pages.
+- Implemented SEO on `Home` `Register` `Login` `Verify Account` `Reset Password` `404 - Not Found` `Under Maintenance` Pages.
 - Created the **SEO** page inside the **Components/Pages** folder.
 
 #### 404 Page Not Found Development
