@@ -189,3 +189,10 @@ Day 3 work update for **15-08-2026**.
 - Added 404 error message details and implemented animations.
 - Made the 404 Page Not Found fully responsive across different devices.
 - Implemented smooth hover animations for an enhanced user experience.
+
+#### Under Maintenance Development
+
+- Created the **Under Maintenance** page inside the **Components/Pages** folder.
+- Added message details and implemented animations.
+- Made the Under Maintenance fully responsive across different devices.
+- Implemented smooth hover animations for an enhanced user experience.
