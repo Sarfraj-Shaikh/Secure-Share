@@ -49,6 +49,7 @@ export const Hero = () => {
 
                     {/* Primary Button */}
                     <button
+                        onClick={() => {window.location.href = `${window.location}register`}}
                         className="w-full sm:w-[180px] bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-medium px-6 py-3 rounded-lg text-sm shadow-md hover:shadow-blue-500/25 transition-all duration-300 ease-out transform hover:-translate-y-0.5 active:translate-y-0 cursor-pointer"
                     >
                         Get Started
@@ -56,6 +57,7 @@ export const Hero = () => {
 
                     {/* Secondary Button */}
                     <button
+                        onClick={() => {window.location.href = `#pricing`}}
                         className="w-full sm:w-[180px] border border-zinc-300 hover:border-zinc-400 bg-white hover:bg-zinc-50 active:bg-zinc-100 text-zinc-800 font-medium px-6 py-3 rounded-lg text-sm transition-all duration-300 ease-out transform hover:-translate-y-0.5 active:translate-y-0 cursor-pointer shadow-2xs"
                     >
                         View Pricing

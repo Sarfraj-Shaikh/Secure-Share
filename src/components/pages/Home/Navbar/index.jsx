@@ -158,14 +158,14 @@ export const Navbar = () => {
                 <div className="flex items-center gap-4 text-sm font-medium">
 
                     <a
-                        href="#login"
+                        href="/login"
                         className="hidden text-[#677283] transition-colors duration-200 hover:text-black sm:block"
                     >
                         Login
                     </a>
 
                     <a
-                        href="#get-started"
+                        href="/register"
                         className="rounded-lg bg-[#4052F6] px-4 py-2 text-white transition-all duration-200 hover:-translate-y-[1px] hover:bg-[#3345e8] hover:shadow-md active:translate-y-0"
                     >
                         Get Started
@@ -262,7 +262,7 @@ export const Navbar = () => {
                 <div className="flex flex-col gap-3 border-t border-gray-100 pt-4">
 
                     <a
-                        href="#login"
+                        href="/login"
                         onClick={() => setIsMobileMenuOpen(false)}
                         className="w-full rounded-xl border border-gray-200 py-2.5 text-center font-medium text-gray-700 transition-all duration-200 hover:bg-gray-50 hover:text-black active:scale-[0.98]"
                     >
@@ -270,7 +270,7 @@ export const Navbar = () => {
                     </a>
 
                     <a
-                        href="#get-started"
+                        href="/register"
                         onClick={() => setIsMobileMenuOpen(false)}
                         className="w-full rounded-xl bg-[#4052F6] py-2.5 text-center font-medium text-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:bg-[#3345e8] hover:shadow-md active:translate-y-0"
                     >

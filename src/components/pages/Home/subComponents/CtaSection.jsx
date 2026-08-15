@@ -54,6 +54,7 @@ export const CtaSection = () => {
                     </div>
 
                     <button
+                        onClick={() => { window.location.href = `${window.location}register` }}
                         data-aos="fade-left"
                         data-aos-delay="50"
                         data-aos-duration="700"
@@ -64,6 +65,7 @@ export const CtaSection = () => {
                     </button>
 
                 </div>
+                
             </div>
         </>
     );
