@@ -144,3 +144,21 @@ Day 2 work update for **13-08-2026**.
 - Implemented smooth animations for an enhanced user experience.
 - Made the Call To Action (CTA) section fully responsive across different devices.
 
+---
+
+Day 3 work update for **15-08-2026**.
+### Day 3: 15-08-2026
+
+#### Landing Page
+
+- Updated the **README.md** page.
+
+#### Contact Us Section Development
+
+- Created the **Contact Us Section** page inside the **Home/Subcomponents** folder.
+- Added business contact details and implemented AOS animations.
+- Made the Contact Us Section fully responsive across different devices.
+- Implemented smooth animations for an enhanced user experience.
+- Implemented proper client-side validation for all required fields.
+- Implemented validation errors using `Ant Design (AntD)` Toast notifications.
+- Handle all possible exceptions using `try...catch` blocks to ensure the application does not crash.

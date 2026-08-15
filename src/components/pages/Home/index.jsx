@@ -1,4 +1,5 @@
 import { Navbar } from "./Navbar"
+import { Contact } from "./subComponents/Contact";
 import { CtaSection } from "./subComponents/CtaSection";
 import { Faqs } from "./subComponents/Faqs";
 import { Features } from "./subComponents/Features";
@@ -24,6 +25,7 @@ export const Home = () => {
             <Pricing />
             <Faqs />
             <CtaSection />
+            <Contact />
         </>
     )
 }
