@@ -64,12 +64,12 @@ export const Security = () => {
 
             <section
                 id="security"
-                className="py-16 px-10 md:px-[10%] bg-[#FAFCFF]"
+                className="py-16 px-2 md:px-[10%] bg-[#FAFCFF]"
             >
 
                 <div className="mx-auto">
 
-                    <div className="text-center mb-9">
+                    <div className="text-center mb-9 px-5">
 
                         <h1 className="text-4xl md:text-5xl font-semibold text-zinc-900 mt-6">
                             Security Comes First
