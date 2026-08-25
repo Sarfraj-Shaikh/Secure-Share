@@ -14,7 +14,7 @@ export const Navbar = () => {
 
     const menuItems = [
         { name: "Dashboard", path: "/user/dashboard", icon: "ri-dashboard-3-line", },
-        { name: "My Profile", path: "/user/profile", icon: "ri-user-3-line", },
+        { name: "My Files", path: "/user/my-files", icon: "ri-user-3-line", },
         { name: "Shared Files", path: "/user/shared-files", icon: "ri-folder-shared-line", },
         { name: "Favourite", path: "/user/favourite", icon: "ri-star-line", },
         { name: "Upgrade", path: "/user/upgrade", icon: "ri-vip-crown-line", },
@@ -261,13 +261,16 @@ export const Navbar = () => {
                             <NavLink
                                 key={item.path}
                                 to={item.path}
+                                onClick={() => setSidebarOpen(false)}
+                                // Fix 1: Sidebar band (collapsed) hone par title/tooltip dikhao
                                 title={!sidebarOpen ? item.name : undefined}
-                                className={({ isActive }) => `group relative flex h-[50px] cursor-pointer items-center rounded-xl transition-all duration-200 
-                            ${sidebarOpen ? "gap-3 px-3" : "justify-center px-0"} 
-                            ${isActive
-                                        ? ` bg-[#2563EB] text-white shadow-lg shadow-blue-900/20 `
-                                        : ` text-slate-400 hover:bg-white/[0.06] hover:text-white hover:translate-x-1 `
-                                    } `}
+                                className={({ isActive }) =>
+                                    `group relative flex h-[50px] cursor-pointer items-center rounded-xl transition-all duration-200 ${sidebarOpen ? "gap-3 px-3" : "justify-center px-0"
+                                    } ${isActive
+                                        ? "bg-[#2563EB] text-white shadow-lg shadow-blue-900/20"
+                                        : "text-slate-400 hover:bg-white/[0.06] hover:text-white hover:translate-x-1"
+                                    }`
+                                }
                             >
 
                                 {({ isActive }) => (

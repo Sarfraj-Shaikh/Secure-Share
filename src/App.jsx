@@ -33,7 +33,7 @@ function App() {
               <Route path="/verify" element={<VerifyAccount />} />
               <Route path="/forgot-password" element={<ForgotPassword />} />
 
-              <Route path="/user/dashboard" element={<UserDashboard />} />
+              <Route path="/user/*" element={<UserDashboard />} />
 
 
             </Routes>

@@ -220,3 +220,137 @@ Day 4 work update for **25-08-2026**.
 - On clicking the profile icon, display a Profile Pop-up containing: Profile Image, Full Name, Email Address, User Role, Last Login Date.
 - Added Profile Pop-up Actions: My Profile, Logout.
 - Implemented Sidebar Navigation Menu: Dashboard, My Profile, Shared Files, Favourite, Upgrade, Wallet, History, Logout.
+
+#### User Dashboard Design & Functionality Development
+
+The design and implementation of the **User Dashboard** have been successfully completed. The dashboard is now fully functional, modern, responsive, and seamlessly connected to dynamic backend APIs.
+
+---
+
+## 🚀 Key Features Implemented
+
+### 📊 Dynamic Dashboard Cards
+
+* **File Categories Integrated:** Created interactive summary cards for 7 distinct file categories:
+* 🖼️ **Total Images**
+* 🎥 **Total Videos**
+* 🎵 **Total Audio Files**
+* 📄 **Total Documents**
+* 📕 **Total PDF Files**
+* 📦 **Total ZIP Files**
+* 📁 **Total Other Files**
+
+
+* **Dynamic Data & Icons:** Configured tailored SVG icons for each file type and hooked up total counts via API.
+* **Interactive Navigation:** Clicking any category card instantly redirects the user to the filtered file listing view.
+
+---
+
+### 🕒 Activity Modules
+
+#### 1. Recent Uploads Section
+
+* Displays a live table of the **last 10 uploaded files**.
+* Features detailed columns for: *File Name, File Type Icon, Upload Date & Time,* and *File Size*.
+* Included a **"View All"** primary action button linking directly to the full upload history log.
+
+#### 2. Recent Shared Files Section
+
+* Highlights the **last 10 shared files**.
+* Tracks key details: *File Name, Shared With (Recipient), Shared Date & Time,* and *Share Status* (e.g., Active, Expired, Revoked).
+* Added a **"View All"** button for quick redirection to complete sharing archives.
+
+---
+
+### 💾 Storage & Usage Analytics
+
+Visual progress meters with live percentage updates have been integrated for:
+
+* **Storage Usage:** Displays used storage vs. total limit (e.g., `12 GB / 20 GB (60%)`) with color-coded warning thresholds.
+* **Folder Usage:** Visualizes current folder count against maximum folder capacity.
+* **Shared Limit Usage:** Tracks active shares against allowed account limits.
+
+---
+
+### 📈 Comprehensive Statistics Panel
+
+Structured individual metric cards paired with meaningful iconography for real-time tracking of:
+
+| Category | Metrics Included |
+| --- | --- |
+| **Files & Sharing** | Total Uploaded Files, Total Shared Files, Total Favourite Files |
+| **Transactions** | Total Transactions, Total Transaction Amount ($/₹) |
+| **Rewards & Wallet** | Total Coins Earned, Total Coins Spent |
+
+---
+
+## 🎨 UI & UX Enhancements
+
+* **Responsive Design:** Fully optimized grid system ensuring smooth performance across Desktop, Tablet, and Mobile screens.
+* **Loading & Empty States:** Added Skeleton Loaders for initial data fetching and clean, contextual Empty State UI illustrations when no records exist.
+* **Animations:** Applied fluid micro-interactions and smooth transition animations for progress bars, metric counters, and hover states.
+* **Design System Consistency:** Enforced uniform spacing, typography scales, and a modern dark/light-compatible color palette throughout.
+
+#### My Files Dashboard & File Management System Development
+
+The **My Files Dashboard & File Management System** — including the full file/folder lifecycle, sharing rules, cascading deletions, and destination file transfers—has been successfully designed, built, and fully integrated with backend dynamic APIs.
+
+---
+
+## 🚀 Implemented Modules & Features
+
+### 📁 1. Dashboard & Folder Management
+
+* **Control Bar:** Integrated dynamic search, dynamic sorting (**Latest** / **Oldest**), and trigger actions for folder creation and file uploads.
+* **Folder Cards & Actions:**
+* Displays Folder Name, Color Theme, Custom Icon, Creation Date, and Last Updated Date.
+* Three-dot (`⋮`) Action Menu: **Rename**, **Favourite / Unfavourite**, and **Delete**.
+
+
+* **Folder Deletion Safety Guard:** Triggering a delete action opens a modal explicitly warning that *all nested files will be permanently purged*. Includes loading indicators during execution and full UI cascade updates.
+* **Custom Color Themes:** Supports `Default`, `Blue`, `Rose`, `Green`, `Purple`, and `Pink` tags upon folder creation.
+
+---
+
+### 📄 2. Advanced File Upload & Handling
+
+* **File Validation:** Implemented strict file size constraints (5 MB – 10 MB per file).
+* **Auto-Parsing:** Automatically extracts and populates the **File Name** and **File Extension** into separate fields upon file selection.
+* **Folder Picker Modal:** Includes an integrated folder-selection popup featuring dedicated search bar, pagination, **Latest/Oldest** sorting, and custom loading/empty states.
+
+---
+
+### 📂 3. Folder Details & File Explorer View
+
+* **Granular Metadata:** Displays File Name, Type/Extension, Size, Upload Date, Last Updated Date, Total Downloads, Share Count, Expiry Status, and Password Protection indicators.
+* **Validation Rules:**
+* **Duplicate Prevention:** Enforces name uniqueness during renaming within the scope, surfacing contextual error prompts if duplicates occur.
+* **Secure Share Flow:** Validates recipient emails (prevents self-sharing and restricts access to platform-registered users), supports optional expiration dates via standard date-pickers, and manages custom access passwords.
+
+
+
+---
+
+### 🔁 4. File Relocation (Move File Workflow)
+
+* Reused the shared **Folder Selector Component** across the upload and transfer flows.
+* **Context Display:** Header previews File Name, File Type, File Size, and **Current Folder**.
+* **Selection Safeguards:** Automatically disables or excludes the current source folder as a valid destination choice.
+
+---
+
+### ⭐ 5. Universal System States & UI Resilience
+
+Across all views, modals, and file/folder listings:
+
+* **Favourite State:** Dynamic toggle option (`Favourite` ↔ `Unfavourite`) with instant client-side optimistic UI updates and backend persistence.
+* **Standardized UI States:** Built and wired robust UI views for **Loading** (skeletons), **No Data Available** (empty list graphics), **Not Found** (search miss feedback), and **Pagination controls**.
+
+---
+
+## 🛠️ Summary of Action Menus
+
+| Scope | Menu Actions Included |
+| --- | --- |
+| **Folders** | `Rename`, `Favourite / Unfavourite`, `Delete` (with Cascade Confirmation) |
+| **Files** | `Rename`, `Move File`, `Share`, `Favourite / Unfavourite`, `Delete` |
