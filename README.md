@@ -196,3 +196,27 @@ Day 3 work update for **15-08-2026**.
 - Added message details and implemented animations.
 - Made the Under Maintenance fully responsive across different devices.
 - Implemented smooth hover animations for an enhanced user experience.
+
+---
+
+Day 4 work update for **25-08-2026**.
+### Day 4: 25-08-2026
+
+#### Landing Page
+
+- Updated the **README.md** page.
+- Fixed **Pricing Plan CTA Redirect** Issue.
+
+#### User Dashboard Development
+
+- Created the **User Dashboard** page inside the **Pages** folder.
+- Created the **Navbar** folder inside the **Pages/UserDashboard** folder.
+
+#### UD Navbar Development
+
+- Added Left Section & Right Section in navbar.
+- fully responsive across different devices.
+- Implemented smooth hover animations for an enhanced user experience.
+- On clicking the profile icon, display a Profile Pop-up containing: Profile Image, Full Name, Email Address, User Role, Last Login Date.
+- Added Profile Pop-up Actions: My Profile, Logout.
+- Implemented Sidebar Navigation Menu: Dashboard, My Profile, Shared Files, Favourite, Upgrade, Wallet, History, Logout.

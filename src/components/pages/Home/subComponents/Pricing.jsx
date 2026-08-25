@@ -1,6 +1,9 @@
 import React, { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 export const Pricing = () => {
+
+    const navigate = useNavigate();
 
     useEffect(() => {
 
@@ -191,6 +194,7 @@ export const Pricing = () => {
                                 <div className="mt-auto pt-4">
 
                                     <button
+                                        onClick={() => { navigate("/register") }}
                                         className={`w-full py-3 px-6 rounded-xl text-sm font-semibold transition-all duration-200 shadow-sm cursor-pointer active:scale-[0.98] ${plan.highlighted
                                             ? 'bg-indigo-600 text-white hover:bg-indigo-500 hover:shadow-indigo-500/25 shadow-lg'
                                             : 'bg-slate-900 text-white hover:bg-slate-800'

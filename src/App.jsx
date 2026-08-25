@@ -6,6 +6,7 @@ import { VerifyAccount } from './components/pages/VerifyAccount';
 import { ForgotPassword } from './components/pages/ForgotPassword';
 import { NotFound } from './components/pages/NotFound';
 import { UnderMaintenance } from './components/pages/UnderMaintenance';
+import { UserDashboard } from './components/pages/UserDashboard';
 
 function App() {
 
@@ -31,6 +32,9 @@ function App() {
               <Route path="/login" element={<Login />} />
               <Route path="/verify" element={<VerifyAccount />} />
               <Route path="/forgot-password" element={<ForgotPassword />} />
+
+              <Route path="/user/dashboard" element={<UserDashboard />} />
+
 
             </Routes>
           </>
