@@ -193,7 +193,7 @@ export const Navbar = () => {
                 SIDEBAR
             ====================================================== */}
 
-            <aside className={` fixed left-0 top-0 z-50 flex h-screen flex-col overflow-hidden bg-[#0F172A] text-white transition-all duration-300 ease-in-out ${sidebarOpen ? "w-[280px] translate-x-0" : "w-0 -translate-x-full"} lg:translate-x-0 max-lg:w-[280px] max-lg:${sidebarOpen ? "translate-x-0" : "-translate-x-full"} `} >
+            <aside className={` fixed left-0 top-0 z-50 flex min-h-dvh flex-col overflow-hidden bg-[#0F172A] text-white transition-all duration-300 ease-in-out ${sidebarOpen ? "w-[280px] translate-x-0" : "w-0 -translate-x-full"} lg:translate-x-0 max-lg:w-[280px] max-lg:${sidebarOpen ? "translate-x-0" : "-translate-x-full"} `} >
 
                 {/* =================================================
                     SIDEBAR HEADER

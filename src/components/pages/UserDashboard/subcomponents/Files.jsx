@@ -2846,25 +2846,24 @@ function FolderPickerModal({
     onClose,
 }) {
     return (
-        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-slate-950/50 p-4 backdrop-blur-sm">
-            <div className="m-x-auto">
-
-                <div className="w-full max-w-lg animate-[modalIn_.2s_ease-out] overflow-hidden rounded-2xl bg-white shadow-2xl">
+        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-slate-950/50 p-2 sm:p-4 backdrop-blur-sm">
+            <div className="mx-auto flex w-full max-w-lg max-h-[calc(100vh-1rem)] sm:max-h-[90vh]">
+                <div className="flex w-full flex-col overflow-hidden rounded-xl sm:rounded-2xl bg-white shadow-2xl animate-[modalIn_.2s_ease-out]">
 
                     {/* HEADER */}
-                    <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4">
-                        <div>
+                    <div className="flex shrink-0 items-center justify-between border-b border-slate-100 px-3 py-3 sm:px-5 sm:py-4">
+                        <div className="min-w-0">
                             <div className="flex items-center gap-2">
-                                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
+                                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-blue-600 sm:h-9 sm:w-9">
                                     <i className="ri-folder-open-line text-lg" />
                                 </div>
 
-                                <h2 className="text-lg font-bold text-slate-900">
+                                <h2 className="truncate text-base font-bold text-slate-900 sm:text-lg">
                                     Select Folder
                                 </h2>
                             </div>
 
-                            <p className="mt-1 pl-11 text-xs text-slate-400">
+                            <p className="mt-1 pl-10 text-[11px] text-slate-400 sm:pl-11 sm:text-xs">
                                 Choose a destination folder
                             </p>
                         </div>
@@ -2872,39 +2871,33 @@ function FolderPickerModal({
                         <button
                             type="button"
                             onClick={onClose}
-                            className="flex h-9 w-9 items-center justify-center rounded-lg text-xl text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
+                            className="ml-2 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-xl text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 sm:h-9 sm:w-9"
                         >
                             <i className="ri-close-line" />
                         </button>
                     </div>
 
                     {/* SEARCH */}
-
-                    <div className="border-b border-slate-100 p-4">
+                    <div className="shrink-0 border-b border-slate-100 p-3 sm:p-4">
                         <div className="relative">
-                            <i className="ri-search-line pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-lg text-slate-400" />
+                            <i className="ri-search-line pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-lg text-slate-400" />
 
                             <input
                                 autoFocus
                                 type="text"
                                 value={search}
-                                onChange={(e) =>
-                                    setSearch(
-                                        e.target.value
-                                    )
-                                }
+                                onChange={(e) => setSearch(e.target.value)}
                                 placeholder="Search folders..."
-                                className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 pl-10 pr-4 text-sm outline-none transition focus:border-blue-400 focus:bg-white focus:ring-4 focus:ring-blue-500/10"
+                                className="h-10 w-full rounded-xl border border-slate-200 bg-slate-50 pl-10 pr-4 text-sm outline-none transition focus:border-blue-400 focus:bg-white focus:ring-4 focus:ring-blue-500/10 sm:h-11"
                             />
                         </div>
                     </div>
 
                     {/* FOLDER LIST */}
-
-                    <div className="min-h-[300px] p-3">
+                    <div className="min-h-0 flex-1 overflow-y-auto p-2.5 sm:p-3">
                         {folders.length === 0 ? (
-                            <div className="flex min-h-[280px] flex-col items-center justify-center text-center">
-                                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 text-slate-400">
+                            <div className="flex min-h-[220px] flex-col items-center justify-center px-4 text-center sm:min-h-[280px]">
+                                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100 text-slate-400 sm:h-14 sm:w-14">
                                     <i className="ri-folder-search-line text-2xl" />
                                 </div>
 
@@ -2918,151 +2911,118 @@ function FolderPickerModal({
                             </div>
                         ) : (
                             <div className="space-y-1.5">
-                                {folders.map(
-                                    (folder) => {
-                                        const style =
-                                            getFolderStyle(
-                                                folder.color
-                                            );
+                                {folders.map((folder) => {
+                                    const style = getFolderStyle(folder.color);
 
-                                        const isCurrent =
-                                            folder.id ===
-                                            currentFolderId;
+                                    const isCurrent =
+                                        folder.id === currentFolderId;
 
-                                        const isSelected =
-                                            selectedFolder?.id ===
-                                            folder.id;
+                                    const isSelected =
+                                        selectedFolder?.id === folder.id;
 
-                                        return (
-                                            <button
-                                                key={
-                                                    folder.id
-                                                }
-                                                type="button"
-                                                disabled={
-                                                    isCurrent
-                                                }
-                                                onClick={() =>
-                                                    onSelect(
-                                                        folder
-                                                    )
-                                                }
-                                                className={`flex w-full items-center gap-3 rounded-xl border p-3 text-left transition ${isCurrent
+                                    return (
+                                        <button
+                                            key={folder.id}
+                                            type="button"
+                                            disabled={isCurrent}
+                                            onClick={() => onSelect(folder)}
+                                            className={`flex w-full min-w-0 items-center gap-2.5 rounded-xl border p-2.5 text-left transition sm:gap-3 sm:p-3 ${isCurrent
                                                     ? "cursor-not-allowed border-slate-100 bg-slate-50 opacity-50"
                                                     : isSelected
                                                         ? "border-blue-200 bg-blue-50"
                                                         : "border-transparent hover:border-slate-200 hover:bg-slate-50"
-                                                    }`}
+                                                }`}
+                                        >
+                                            <span
+                                                className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg sm:h-10 sm:w-10 sm:rounded-xl ${style.bg} ${style.text}`}
                                             >
-                                                <span
-                                                    className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${style.bg} ${style.text}`}
-                                                >
-                                                    <i className="ri-folder-5-fill text-xl" />
+                                                <i className="ri-folder-5-fill text-lg sm:text-xl" />
+                                            </span>
+
+                                            <span className="min-w-0 flex-1">
+                                                <span className="block truncate text-xs font-semibold text-slate-700 sm:text-sm">
+                                                    {folder.name}
                                                 </span>
 
-                                                <span className="min-w-0 flex-1">
-                                                    <span className="block truncate text-sm font-semibold text-slate-700">
-                                                        {folder.name}
-                                                    </span>
-
-                                                    <span className="mt-0.5 block text-[11px] text-slate-400">
-                                                        Updated{" "}
-                                                        {formatDate(
-                                                            folder.updatedAt
-                                                        )}
-                                                    </span>
+                                                <span className="mt-0.5 block truncate text-[10px] text-slate-400 sm:text-[11px]">
+                                                    Updated{" "}
+                                                    {formatDate(folder.updatedAt)}
                                                 </span>
+                                            </span>
 
+                                            <span className="shrink-0">
                                                 {isCurrent ? (
-                                                    <span className="rounded-full bg-slate-200 px-2 py-1 text-[9px] font-bold text-slate-500">
+                                                    <span className="rounded-full bg-slate-200 px-1.5 py-1 text-[8px] font-bold text-slate-500 sm:px-2 sm:text-[9px]">
                                                         Current
                                                     </span>
                                                 ) : isSelected ? (
-                                                    <i className="ri-checkbox-circle-fill text-xl text-blue-600" />
+                                                    <i className="ri-checkbox-circle-fill text-lg text-blue-600 sm:text-xl" />
                                                 ) : (
-                                                    <i className="ri-arrow-right-s-line text-lg text-slate-300" />
+                                                    <i className="ri-arrow-right-s-line text-base text-slate-300 sm:text-lg" />
                                                 )}
-                                            </button>
-                                        );
-                                    }
-                                )}
+                                            </span>
+                                        </button>
+                                    );
+                                })}
                             </div>
                         )}
                     </div>
 
                     {/* PAGINATION */}
-
                     {totalPages > 1 && (
-                        <div className="flex items-center justify-between border-t border-slate-100 px-4 py-3">
-                            <p className="text-[11px] text-slate-400">
+                        <div className="flex shrink-0 flex-col gap-2 border-t border-slate-100 px-3 py-2.5 sm:flex-row sm:items-center sm:justify-between sm:px-4 sm:py-3">
+                            <p className="text-center text-[11px] text-slate-400 sm:text-left">
                                 {totalItems} folders
                             </p>
 
-                            <div className="flex items-center gap-1">
+                            <div className="flex items-center justify-center gap-1">
                                 <button
                                     type="button"
-                                    disabled={
-                                        page === 1
-                                    }
+                                    disabled={page === 1}
                                     onClick={() =>
-                                        onPageChange(
-                                            (prev) =>
-                                                Math.max(
-                                                    1,
-                                                    prev - 1
-                                                )
+                                        onPageChange((prev) =>
+                                            Math.max(1, prev - 1)
                                         )
                                     }
-                                    className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 text-slate-500 transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-600 disabled:cursor-not-allowed disabled:opacity-40"
+                                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-slate-200 text-slate-500 transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-600 disabled:cursor-not-allowed disabled:opacity-40"
                                 >
                                     <i className="ri-arrow-left-s-line" />
                                 </button>
 
-                                {Array.from(
-                                    {
-                                        length: totalPages,
-                                    },
-                                    (_, index) =>
-                                        index + 1
-                                ).map(
-                                    (number) => (
+                                {/* Mobile: current page only */}
+                                <span className="flex h-8 min-w-8 items-center justify-center rounded-lg bg-blue-600 px-2 text-xs font-semibold text-white sm:hidden">
+                                    {page}
+                                </span>
+
+                                {/* Desktop: all pages */}
+                                <div className="hidden items-center gap-1 sm:flex">
+                                    {Array.from(
+                                        { length: totalPages },
+                                        (_, index) => index + 1
+                                    ).map((number) => (
                                         <button
                                             key={number}
                                             type="button"
-                                            onClick={() =>
-                                                onPageChange(
-                                                    number
-                                                )
-                                            }
-                                            className={`flex h-8 min-w-8 items-center justify-center rounded-lg px-2 text-xs font-semibold transition ${page ===
-                                                number
-                                                ? "bg-blue-600 text-white"
-                                                : "border border-slate-200 text-slate-600 hover:border-blue-200 hover:bg-blue-50 hover:text-blue-600"
+                                            onClick={() => onPageChange(number)}
+                                            className={`flex h-8 min-w-8 items-center justify-center rounded-lg px-2 text-xs font-semibold transition ${page === number
+                                                    ? "bg-blue-600 text-white"
+                                                    : "border border-slate-200 text-slate-600 hover:border-blue-200 hover:bg-blue-50 hover:text-blue-600"
                                                 }`}
                                         >
-                                            {
-                                                number
-                                            }
+                                            {number}
                                         </button>
-                                    )
-                                )}
+                                    ))}
+                                </div>
 
                                 <button
                                     type="button"
-                                    disabled={
-                                        page ===
-                                        totalPages
-                                    }
+                                    disabled={page === totalPages}
                                     onClick={() =>
-                                        onPageChange(
-                                            (prev) =>
-                                                Math.min(
-                                                    totalPages,
-                                                    prev + 1
-                                                )
+                                        onPageChange((prev) =>
+                                            Math.min(totalPages, prev + 1)
                                         )
                                     }
-                                    className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 text-slate-500 transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-600 disabled:cursor-not-allowed disabled:opacity-40"
+                                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-slate-200 text-slate-500 transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-600 disabled:cursor-not-allowed disabled:opacity-40"
                                 >
                                     <i className="ri-arrow-right-s-line" />
                                 </button>
@@ -3071,33 +3031,31 @@ function FolderPickerModal({
                     )}
 
                     {/* FOOTER */}
-
-                    <div className="border-t border-slate-100 bg-slate-50/70 px-4 py-3">
+                    <div className="shrink-0 border-t border-slate-100 bg-slate-50/70 px-3 py-2.5 sm:px-4 sm:py-3">
                         <button
                             type="button"
                             onClick={onClose}
-                            className="h-10 w-full rounded-xl border border-slate-200 bg-white text-sm font-semibold text-slate-600 transition hover:bg-slate-50"
+                            className="h-9 w-full rounded-xl border border-slate-200 bg-white text-sm font-semibold text-slate-600 transition hover:bg-slate-50 sm:h-10"
                         >
                             Cancel
                         </button>
                     </div>
-
                 </div>
 
                 <style>
                     {`
-          @keyframes modalIn {
-            from {
-              opacity: 0;
-              transform: translateY(10px) scale(.98);
-            }
+                @keyframes modalIn {
+                    from {
+                        opacity: 0;
+                        transform: translateY(10px) scale(.98);
+                    }
 
-            to {
-              opacity: 1;
-              transform: translateY(0) scale(1);
-            }
-          }
-        `}
+                    to {
+                        opacity: 1;
+                        transform: translateY(0) scale(1);
+                    }
+                }
+            `}
                 </style>
             </div>
         </div>
