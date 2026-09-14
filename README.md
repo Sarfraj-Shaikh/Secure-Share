@@ -354,3 +354,20 @@ Across all views, modals, and file/folder listings:
 | --- | --- |
 | **Folders** | `Rename`, `Favourite / Unfavourite`, `Delete` (with Cascade Confirmation) |
 | **Files** | `Rename`, `Move File`, `Share`, `Favourite / Unfavourite`, `Delete` |
+
+### Day 5: 14-09-2026
+
+#### Landing Page
+
+- Updated the **README.md** page.
+
+#### User Dashboard Development
+
+- Fixed **My Files** Click Issues
+- Created **Shared Files** Page
+- Created **Favorites** Page
+- Created **History** Page
+- Created **Upgrade** Page
+- Created **Wallet** Page
+
+

@@ -2846,7 +2846,8 @@ function FolderPickerModal({
     onClose,
 }) {
     return (
-        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-slate-950/50 p-2 sm:p-4 backdrop-blur-sm">
+        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-slate-950/50 p-4 sm:p-4 backdrop-blur-sm">
+
             <div className="mx-auto flex w-full max-w-lg max-h-[calc(100vh-1rem)] sm:max-h-[90vh]">
                 <div className="flex w-full flex-col overflow-hidden rounded-xl sm:rounded-2xl bg-white shadow-2xl animate-[modalIn_.2s_ease-out]">
 
