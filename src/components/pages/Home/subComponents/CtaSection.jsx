@@ -70,3 +70,5 @@ export const CtaSection = () => {
         </>
     );
 };
+
+export default CtaSection;

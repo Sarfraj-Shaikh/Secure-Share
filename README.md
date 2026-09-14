@@ -369,5 +369,7 @@ Across all views, modals, and file/folder listings:
 - Created **History** Page
 - Created **Upgrade** Page
 - Created **Wallet** Page
-
+- Created **Profile** Page
+- Created **Blocked** Page
+- Implemented Lazy Loading For **Landing Page** and **User Dashbaord Pages**
 

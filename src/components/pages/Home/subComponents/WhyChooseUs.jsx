@@ -153,3 +153,5 @@ export const WhyChooseUs = () => {
         </>
     )
 }
+
+export default WhyChooseUs;

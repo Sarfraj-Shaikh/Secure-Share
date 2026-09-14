@@ -168,3 +168,5 @@ export const HowItsWorks = () => {
         </>
     );
 };
+
+export default HowItsWorks;
