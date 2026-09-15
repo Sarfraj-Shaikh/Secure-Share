@@ -249,7 +249,7 @@ const AllUsers = () => {
     };
 
     return (
-        <div className="min-h-screen bg-slate-50 px-4 pb-10 pt-24 sm:px-6 lg:px-8">
+        <div className="min-h-screen bg-slate-50 px-4 pb-10 pt-24 sm:px-6 lg:px-8 pt-[90px]">
             <div className="mx-auto max-w-7xl">
                 
                 {/* PAGE HEADER */}
@@ -442,7 +442,7 @@ const AllUsers = () => {
 
                                         <button
                                             type="button"
-                                            onClick={() => navigate(`/all-users/${user.id}`)}
+                                            onClick={() => navigate(`/admin/all-users/${user.id}`)}
                                             className="inline-flex items-center gap-1.5 rounded-xl bg-blue-600 px-4 py-2.5 text-xs font-semibold text-white shadow-md shadow-blue-600/20 transition-all duration-300 hover:-translate-y-0.5 hover:bg-blue-700 hover:shadow-lg hover:shadow-blue-600/25 active:translate-y-0"
                                         >
                                             View
