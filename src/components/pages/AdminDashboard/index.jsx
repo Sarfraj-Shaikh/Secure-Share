@@ -16,7 +16,7 @@ const AdminDashboard = () => {
             <Navbar />
 
             <Routes>
-                <Route path="dashboard" element={""} />
+                <Route path="dashboard" element={} />
                 <Route path="all-users" element={<AllUsers />} />
                 <Route path="all-users/:id" element={<UserDetails />} />
                 <Route path="all-folders" element={<AllFolders />} />
