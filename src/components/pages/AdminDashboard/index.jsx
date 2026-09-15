@@ -7,6 +7,7 @@ import UserDetails from "./subComponents/UserDetails";
 import AllFolders from "./subComponents/AllFolders";
 import AllFiles from "./subComponents/AllFiles";
 import AllSharedFiles from "./subComponents/AllSharedFiles";
+import History from "./subComponents/History";
 
 const AdminDashboard = () => {
     return (
@@ -20,6 +21,7 @@ const AdminDashboard = () => {
                 <Route path="all-folders" element={<AllFolders />} />
                 <Route path="all-files" element={<AllFiles />} />
                 <Route path="all-shared-files" element={<AllSharedFiles />} />
+                <Route path="history" element={<History />} />
                 <Route path="profile" element={<Profile />} />
 
             </Routes>

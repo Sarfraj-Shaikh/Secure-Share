@@ -392,3 +392,4 @@ Across all views, modals, and file/folder listings:
 - Created **All Files Page** For Admin Panel
 - Created **All Folders Page** For Admin Panel
 - Created **All Shared Files Page** For Admin Panel
+- Created **History Page** For Admin Panel
