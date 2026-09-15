@@ -1,6 +1,6 @@
-import { lazy, Suspense } from "react"
 import { Routes, Route } from "react-router-dom"
 import Navbar from "./Navbar";
+import Dashboard from "./subComponents/Dashboard";
 import AllUsers from "./subComponents/AllUsers";
 import Profile from "../UserDashboard/subcomponents/Profile";
 import UserDetails from "./subComponents/UserDetails";
@@ -9,6 +9,7 @@ import AllFiles from "./subComponents/AllFiles";
 import AllSharedFiles from "./subComponents/AllSharedFiles";
 import History from "./subComponents/History";
 import ManageServices from "./subComponents/ManageServices";
+import { NotFound } from "../NotFound";
 
 const AdminDashboard = () => {
     return (
@@ -16,7 +17,7 @@ const AdminDashboard = () => {
             <Navbar />
 
             <Routes>
-                <Route path="dashboard" element={} />
+                <Route path="dashboard" element={<Dashboard />} />
                 <Route path="all-users" element={<AllUsers />} />
                 <Route path="all-users/:id" element={<UserDetails />} />
                 <Route path="all-folders" element={<AllFolders />} />
@@ -26,6 +27,7 @@ const AdminDashboard = () => {
                 <Route path="manage-services" element={<ManageServices />} />
                 <Route path="profile" element={<Profile />} />
 
+                <Route path="*" element={<NotFound />} />
             </Routes>
 
         </>
