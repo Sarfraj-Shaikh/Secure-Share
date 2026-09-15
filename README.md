@@ -355,6 +355,8 @@ Across all views, modals, and file/folder listings:
 | **Folders** | `Rename`, `Favourite / Unfavourite`, `Delete` (with Cascade Confirmation) |
 | **Files** | `Rename`, `Move File`, `Share`, `Favourite / Unfavourite`, `Delete` |
 
+---
+
 ### Day 5: 14-09-2026
 
 #### Landing Page
@@ -373,3 +375,15 @@ Across all views, modals, and file/folder listings:
 - Created **Blocked** Page
 - Implemented Lazy Loading For **Landing Page** and **User Dashbaord Pages**
 
+----
+
+### Day 6: 15-09-2026
+
+#### Landing Page
+
+- Updated the **README.md** page.
+
+#### Admin Dashboard Development
+
+- Created **Admin Dashboard Folder** and set Routes
+- Created **Navbar** For Admin Panel
