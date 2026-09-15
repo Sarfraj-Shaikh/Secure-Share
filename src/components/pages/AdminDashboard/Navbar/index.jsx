@@ -170,7 +170,7 @@ const Navbar = () => {
             {/* ================= SIDEBAR ================= */}
 
             <aside
-                className={`fixed left-0 top-0 bottom-0 z-[1200] flex w-[285px] flex-col border-r border-slate-200 bg-white shadow-2xl transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}`}
+                className={`fixed left-0 top-0 bottom-0 z-[1200] flex w-[285px] flex-col border-r border-slate-200 bg-white transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}`}
             >
 
                 {/* SIDEBAR HEADER */}
