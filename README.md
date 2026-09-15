@@ -389,3 +389,4 @@ Across all views, modals, and file/folder listings:
 - Created **Navbar** For Admin Panel
 - Created **All Users Page** For Admin Panel
 - Created **Users Details Page** For Admin Panel
+- Created **All Files Page** For Admin Panel
