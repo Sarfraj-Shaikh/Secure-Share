@@ -388,3 +388,4 @@ Across all views, modals, and file/folder listings:
 - Created **Admin Dashboard Folder** and set Routes
 - Created **Navbar** For Admin Panel
 - Created **All Users Page** For Admin Panel
+- Created **Users Details Page** For Admin Panel
