@@ -7,6 +7,7 @@ import { ForgotPassword } from './components/pages/ForgotPassword';
 import { NotFound } from './components/pages/NotFound';
 import { UnderMaintenance } from './components/pages/UnderMaintenance';
 import { UserDashboard } from './components/pages/UserDashboard';
+import AdminDashboard from './components/pages/AdminDashboard';
 
 function App() {
 
@@ -34,6 +35,7 @@ function App() {
               <Route path="/forgot-password" element={<ForgotPassword />} />
 
               <Route path="/user/*" element={<UserDashboard />} />
+              <Route path="/admin/*" element={<AdminDashboard />} />
 
 
             </Routes>
