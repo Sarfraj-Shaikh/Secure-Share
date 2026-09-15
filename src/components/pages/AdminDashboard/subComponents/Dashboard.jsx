@@ -117,7 +117,7 @@ const Dashboard = () => {
                                 <StatCard
                                     title="Active Users"
                                     count={stats.users.active}
-                                    icon="ri-user-checkbox-line"
+                                    icon="ri-user-line"
                                     colorClass="bg-emerald-50 text-emerald-600"
                                     borderHoverClass="hover:border-emerald-500"
                                     path="/admin/all-users"
