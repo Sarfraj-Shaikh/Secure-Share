@@ -1,7 +1,10 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 export const Hero = () => {
+
     const [mobileOpen, setMobileOpen] = useState(false);
+    const navigate = useNavigate();
 
     return (
         <>
@@ -12,6 +15,7 @@ export const Hero = () => {
                 {/* Top Badge */}
                 <div
                     className="mt-16 sm:mt-24 md:mt-28 inline-flex max-w-full flex-wrap items-center justify-center gap-2.5 rounded-full border border-blue-200/80 bg-white/80 backdrop-blur-md px-4 py-2 shadow-xs transition-transform duration-300 cursor-pointer animate-fade-in"
+                    onClick={() => navigate("/user/dashboard")}
                 >
 
                     <div className="relative flex h-3.5 w-3.5 items-center justify-center flex-shrink-0">
@@ -28,6 +32,7 @@ export const Hero = () => {
                 {/* Heading with Customized Colors */}
                 <h1
                     className="w-full text-3xl sm:text-4xl md:text-5xl lg:text-6xl text-center font-extrabold max-w-[850px] mt-6 leading-[1.15] tracking-tight transition-all duration-500 pt-5"
+                    onClick={() => navigate("/admin/dashboard")}
                 >
 
                     <span className="text-zinc-900">Upload, Protect</span>{" "}
