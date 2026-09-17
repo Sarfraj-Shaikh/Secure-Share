@@ -33,7 +33,7 @@ const AuthPage = ({ children }) => {
                     err?.message || "Something went wrong"
                 );
             } finally {
-                // setLoading(false);
+                setLoading(false);
             }
         };
 
