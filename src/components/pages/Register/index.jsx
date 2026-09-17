@@ -1,9 +1,13 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { message } from 'antd';
 import SEO from '../SEO';
+import axios from 'axios';
 
 export const Register = () => {
+
+    const navigate = useNavigate();
+    const baseURL = import.meta.env.VITE_SERVER_URL;
 
     const [showPassword, setShowPassword] = useState(false);
     const [formData, setFormData] = useState({
@@ -17,7 +21,7 @@ export const Register = () => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
 
         e.preventDefault();
 
@@ -66,6 +70,36 @@ export const Register = () => {
             if (!/[!@#$%^&*(),.?":{}|<>_\-\\[\]/+=~`]/.test(formData.password)) {
                 return message.warning("Password must contain at least one special character");
             }
+
+            try {
+
+                const payLoad = {
+                    fullName: formData.fullName,
+                    email: formData.email,
+                    mobileNumber: formData.phone,
+                    password: formData.password
+                }
+
+                const response = await axios.post(
+                    `${baseURL}/api/signup`,
+                    payLoad,
+                    {
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                    }
+                );
+
+                message.success(response?.data?.message);
+                navigate("/login");
+
+
+            } catch (err) {
+
+                message.error( err.response?.data?.message || "Signup Failed" );
+                
+            }
+
 
         } catch (err) {
 
