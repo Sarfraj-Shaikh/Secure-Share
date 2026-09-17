@@ -19,6 +19,8 @@ const About = lazy(() => import("./subComponents/About"));
 
 export const Home = () => {
 
+    console.log("SERVER URL:", import.meta.env.VITE_SERVER_URL);
+
     return (
         <>
             <SEO
