@@ -1,12 +1,17 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { message } from 'antd';
 import SEO from '../SEO';
 import api from '../../../../utils/api';
+import { checkIsAuth } from '../../../../utils/isUserLogin';
 
 export const Login = () => {
 
     const navigate = useNavigate();
+
+    useEffect(() => {
+        checkIsAuth(navigate);
+    }, [navigate]);
 
     const [showPassword, setShowPassword] = useState(false);
     const [formData, setFormData] = useState({

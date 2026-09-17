@@ -41,7 +41,7 @@ export const Home = () => {
             <Suspense fallback={<ShimmerLoading />}>
                 <WhyChooseUs />
             </Suspense>
-            
+
             <Suspense fallback={<ShimmerLoading />}>
                 <HowItsWorks />
             </Suspense>
