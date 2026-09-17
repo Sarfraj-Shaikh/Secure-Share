@@ -51,8 +51,8 @@ export const Register = () => {
                 return message.error("Password is required");
             }
 
-            if (formData.password.length < 6) {
-                return message.warning("Password must be at least 6 characters long");
+            if (formData.password.length < 8) {
+                return message.warning("Password must be at least 8 characters long");
             }
 
             if (!/[A-Z]/.test(formData.password)) {

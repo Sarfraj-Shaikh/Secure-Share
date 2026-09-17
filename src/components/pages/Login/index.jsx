@@ -2,9 +2,13 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { message } from 'antd';
 import SEO from '../SEO';
+import axios from 'axios';
 
 export const Login = () => {
+
     const navigate = useNavigate();
+    const baseURL = import.meta.env.VITE_SERVER_URL;
+
     const [showPassword, setShowPassword] = useState(false);
     const [formData, setFormData] = useState({
         email: '',
@@ -15,7 +19,8 @@ export const Login = () => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
+
         e.preventDefault();
 
         try {
@@ -31,8 +36,8 @@ export const Login = () => {
                 return message.error("Password is required");
             }
 
-            if (formData.password.length < 6) {
-                return message.warning("Password must be at least 6 characters long");
+            if (formData.password.length < 8) {
+                return message.warning("Password must be at least 8 characters long");
             }
 
             if (!/[A-Z]/.test(formData.password)) {
@@ -51,16 +56,43 @@ export const Login = () => {
                 return message.warning("Password must contain at least one special character");
             }
 
-            // Successful Validation logic
-            message.success("Login successful!");
+            try {
 
-            // Redirect user to dashboard/home after login
-            navigate('/dashboard');
+                const payLoad = {
+                    email: formData.email,
+                    password: formData.password
+                }
+
+                const response = await axios.post(
+                    `${baseURL}/api/login`,
+                    payLoad,
+                    {
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                    }
+                );
+
+                message.success(response?.data?.message);
+                navigate("/user/dashboard");
+
+            } catch (err) {
+
+                if (err.response?.data?.code === "NOT_VERIFIED") {
+                    navigate("/verify");
+                }
+                else if (err.response?.data?.code === "ACCESS_BLOCKED") {
+                    navigate("/user/blocked");
+                }
+
+                message.error(err.response?.data?.message || "Login Failed");
+                console.log(err.response?.data);
+            }
+
 
         } catch (err) {
 
             message.error(err.message);
-            console.log(err);
 
         }
     };
