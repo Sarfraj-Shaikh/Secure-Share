@@ -86,9 +86,8 @@ export const Login = () => {
                 }
 
                 message.error(err.response?.data?.message || "Login Failed");
-                console.log(err.response?.data);
-            }
 
+            }
 
         } catch (err) {
 
