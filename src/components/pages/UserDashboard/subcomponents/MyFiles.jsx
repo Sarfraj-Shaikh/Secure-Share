@@ -136,7 +136,7 @@ const formatDate = (date) =>
         year: "numeric",
     }).format(new Date(date));
 
-export default function MyFiles() {
+const MyFiles = () => {
 
     const navigate = useNavigate();
 
@@ -1135,3 +1135,5 @@ function EmptyState({ search, onClear }) {
         </div>
     );
 }
+
+export default MyFiles;

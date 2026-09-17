@@ -7,3 +7,20 @@
 }
 
 @import "tailwindcss";
+
+@theme {
+  
+  --animate-standalone: standalone 3s infinite ease-in-out both;
+
+  @keyframes standalone {
+
+    0%,
+    100% {
+      transform: translateZ(-100px) scaleX(-1);
+    }
+
+    50% {
+      transform: translateZ(100px) scaleX(1);
+    }
+  }
+}

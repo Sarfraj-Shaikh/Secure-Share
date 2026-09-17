@@ -9,6 +9,7 @@ import { NotFound } from './components/pages/NotFound';
 import { UnderMaintenance } from './components/pages/UnderMaintenance';
 import { UserDashboard } from './components/pages/UserDashboard';
 import AdminDashboard from './components/pages/AdminDashboard';
+import Blocked from './components/pages/UserDashboard/subcomponents/Blocked';
 
 function App() {
 
@@ -35,10 +36,11 @@ function App() {
               <Route path="/verify" element={<VerifyAccount />} />
               <Route path="/verify-account" element={<ValidateAccount />} />
               <Route path="/forgot-password" element={<ForgotPassword />} />
+              <Route path="/user/blocked" element={<Blocked />} />
+              <Route path="/admin/blocked" element={<Blocked />} />
 
               <Route path="/user/*" element={<UserDashboard />} />
               <Route path="/admin/*" element={<AdminDashboard />} />
-
 
             </Routes>
           </>
