@@ -7,7 +7,6 @@ import api from '../../../../utils/api';
 export const VerifyAccount = () => {
 
     const navigate = useNavigate();
-    const baseURL = import.meta.env.VITE_SERVER_URL;
 
     const [email, setEmail] = useState('');
     const [status, setStatus] = useState('idle'); // 'idle' | 'loading' | 'success' | 'failed'
@@ -37,18 +36,10 @@ export const VerifyAccount = () => {
                     email: email,
                 }
 
-                const response = await api.post("/api/verify",
-                    payLoad,
-                    {
-                        headers: {
-                            "Content-Type": "application/json",
-                        },
-                    }
-                );
+                const response = await api.post("/api/verify", payLoad);
 
                 message.success(response?.data?.message);
                 setStatus('success');
-                // navigate("/login");
 
             } catch (err) {
 

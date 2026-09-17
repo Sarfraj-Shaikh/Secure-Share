@@ -7,9 +7,6 @@ import api from '../../../../utils/api';
 const ValidateAccount = () => {
 
     const navigate = useNavigate();
-    const [searchParams] = useSearchParams();
-
-    const baseURL = import.meta.env.VITE_SERVER_URL;
     const siteName = import.meta.env.VITE_SITE_NAME;
 
     const [status, setStatus] = useState('loading');
@@ -21,47 +18,33 @@ const ValidateAccount = () => {
 
         try {
 
-            const response = await api.post("/api/verify-account",
-                {},
-                {
-                    withCredentials: true
-                }
-            );
+            const response = await api.post("/api/verify-account");
 
             if (response?.data?.success) {
+
                 setStatus('success');
                 message.success(response?.data?.message || 'Account verified successfully.');
+                navigate("/login");
+
             } else {
+
                 setStatus('failed');
                 message.error(response?.data?.message || 'Account verification failed.');
+
             }
 
-            console.log(response?.data);
-
         } catch (err) {
-            console.error('Account verification error:', err);
 
-            /*
-             * Handle specific backend response codes if your API
-             * returns them.
-             */
-            const code = err?.response?.data?.code;
-
-            if (code === 'ALREADY_VERIFIED') {
+            if (err.response?.data?.code === "ALREADY_VERIFIED") {
                 setStatus('success');
-                message.success(
-                    err?.response?.data?.message ||
-                    'Your account is already verified.'
-                );
-                return;
+            }
+            else if (err.response?.data?.code === "ACCESS_BLOCKED") {
+                navigate("/user/blocked");
             }
 
             setStatus('failed');
 
-            message.error(
-                err?.response?.data?.message ||
-                'Unable to verify your account.'
-            );
+            message.error( err?.response?.data?.message || 'Unable to verify your account.' );
         }
     };
 

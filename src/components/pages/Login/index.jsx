@@ -7,7 +7,6 @@ import api from '../../../../utils/api';
 export const Login = () => {
 
     const navigate = useNavigate();
-    const baseURL = import.meta.env.VITE_SERVER_URL;
 
     const [showPassword, setShowPassword] = useState(false);
     const [formData, setFormData] = useState({
@@ -63,14 +62,7 @@ export const Login = () => {
                     password: formData.password
                 }
 
-                const response = await api.post("/api/login",
-                    payLoad,
-                    {
-                        headers: {
-                            "Content-Type": "application/json",
-                        },
-                    }
-                );
+                const response = await api.post("/api/login", payLoad);
 
                 message.success(response?.data?.message);
                 navigate("/user/dashboard");
