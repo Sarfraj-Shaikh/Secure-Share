@@ -3,6 +3,7 @@ import { Home } from './components/pages/Home';
 import { Register } from './components/pages/Register';
 import { Login } from './components/pages/Login';
 import { VerifyAccount } from './components/pages/VerifyAccount';
+import ValidateAccount from './components/pages/validateAccount';
 import { ForgotPassword } from './components/pages/ForgotPassword';
 import { NotFound } from './components/pages/NotFound';
 import { UnderMaintenance } from './components/pages/UnderMaintenance';
@@ -32,6 +33,7 @@ function App() {
               <Route path="/register" element={<Register />} />
               <Route path="/login" element={<Login />} />
               <Route path="/verify" element={<VerifyAccount />} />
+              <Route path="/verify-account" element={<ValidateAccount />} />
               <Route path="/forgot-password" element={<ForgotPassword />} />
 
               <Route path="/user/*" element={<UserDashboard />} />

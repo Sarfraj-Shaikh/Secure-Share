@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { message } from 'antd';
 import SEO from '../SEO';
-import axios from 'axios';
+import api from '../../../../utils/api';
 
 export const Login = () => {
 
@@ -63,8 +63,7 @@ export const Login = () => {
                     password: formData.password
                 }
 
-                const response = await axios.post(
-                    `${baseURL}/api/login`,
+                const response = await api.post("/api/login",
                     payLoad,
                     {
                         headers: {

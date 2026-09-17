@@ -1,9 +1,13 @@
 import { message } from 'antd';
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import SEO from '../SEO';
+import api from '../../../../utils/api';
 
 export const VerifyAccount = () => {
+
+    const navigate = useNavigate();
+    const baseURL = import.meta.env.VITE_SERVER_URL;
 
     const [email, setEmail] = useState('');
     const [status, setStatus] = useState('idle'); // 'idle' | 'loading' | 'success' | 'failed'
@@ -26,13 +30,39 @@ export const VerifyAccount = () => {
         setStatus('loading');
 
         try {
-            // TODO: Replace with your actual backend API call
-            // await axios.post('/api/auth/forgot-password', { email });
 
-            // Simulating API call response (Success)
-            await new Promise((resolve) => setTimeout(resolve, 1500));
+            try {
 
-            setStatus('success');
+                const payLoad = {
+                    email: email,
+                }
+
+                const response = await api.post("/api/verify",
+                    payLoad,
+                    {
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                    }
+                );
+
+                message.success(response?.data?.message);
+                setStatus('success');
+                // navigate("/login");
+
+            } catch (err) {
+
+                if (err.response?.data?.code === "ALREADY_VERIFIED") {
+                    navigate("/login");
+                }
+                else if (err.response?.data?.code === "ACCESS_BLOCKED") {
+                    navigate("/user/blocked");
+                }
+
+                message.error(err.response?.data?.message || "Login Failed");
+                setStatus('failed');
+
+            }
 
         } catch (err) {
 

@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { message } from 'antd';
 import SEO from '../SEO';
-import axios from 'axios';
+import api from '../../../../utils/api';
 
 export const Register = () => {
 
@@ -80,8 +80,7 @@ export const Register = () => {
                     password: formData.password
                 }
 
-                const response = await axios.post(
-                    `${baseURL}/api/signup`,
+                const response = await api.post("/api/signup",
                     payLoad,
                     {
                         headers: {
@@ -96,8 +95,8 @@ export const Register = () => {
 
             } catch (err) {
 
-                message.error( err.response?.data?.message || "Signup Failed" );
-                
+                message.error(err.response?.data?.message || "Signup Failed");
+
             }
 
 
