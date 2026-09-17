@@ -1,9 +1,12 @@
 import { message } from 'antd';
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import SEO from '../SEO';
+import api from '../../../../utils/api';
 
 export const ForgotPassword = () => {
+
+    const navigate = useNavigate();
 
     // Current Step: 'email' | 'code' | 'resetPassword' | 'success' | 'failed'
     const [step, setStep] = useState('email');
@@ -18,7 +21,6 @@ export const ForgotPassword = () => {
 
     // Handle initial email submission
     const handleEmailSubmit = async (e) => {
-
         e.preventDefault();
 
         if (!inputValue || inputValue.trim() === '') {
@@ -31,33 +33,46 @@ export const ForgotPassword = () => {
             return;
         }
 
+        const email = inputValue.trim().toLowerCase();
+
+        setUserEmail(email);
         setLoading(true);
 
         try {
+            const payload = {
+                email: email,
+            };
 
-            // TODO: API Call to send reset code
-            await new Promise((resolve) => setTimeout(resolve, 1200));
+            const response = await api.post("/api/reset-password", payload);
 
-            setUserEmail(inputValue);
-            setInputValue(''); // Clear input for code entry
+            message.success(response?.data?.message);
+
+            setInputValue('');
             setStep('code');
 
         } catch (err) {
+            if (err.response?.data?.code === "NOT_VERIFIED") {
+                navigate("/verify");
+                return;
+            }
 
-            message.error(err.message);
-            console.log(err);
+            if (err.response?.data?.code === "ACCESS_BLOCKED") {
+                navigate("/user/blocked");
+                return;
+            }
 
+            message.error(
+                err.response?.data?.message || "Operation Failed"
+            );
+
+            console.error(err);
         } finally {
-
             setLoading(false);
-
         }
-
     };
 
     // Handle code verification submission
     const handleCodeSubmit = async (e) => {
-
         e.preventDefault();
 
         if (!inputValue || inputValue.trim() === '') {
@@ -65,17 +80,44 @@ export const ForgotPassword = () => {
             return;
         }
 
+        const otp = inputValue.trim();
+
         setLoading(true);
 
         try {
-            // TODO: API Call to verify code
-            await new Promise((resolve) => setTimeout(resolve, 1200));
+            const payload = {
+                email: userEmail,
+                otp: otp,
+            };
 
-            // Code verify hone ke baad Password Reset Step par le jayein
+            const response = await api.post("/api/verify-otp", payload);
+
+            message.success(response?.data?.message);
+
+            setInputValue('');
             setStep('resetPassword');
+
         } catch (err) {
-            message.error(err.message);
-            console.log(err);
+            if (err.response?.data?.code === "NOT_VERIFIED") {
+                navigate("/verify");
+                return;
+            }
+
+            if (err.response?.data?.code === "ACCESS_BLOCKED") {
+                navigate("/user/blocked");
+                return;
+            }
+
+            if (err.response?.data?.code === "ACCESS_DENIED") {
+                setStep('code');
+            }
+
+            message.error(
+                err.response?.data?.message || "OTP Verification Failed"
+            );
+
+            console.error(err);
+
         } finally {
             setLoading(false);
         }
@@ -91,8 +133,8 @@ export const ForgotPassword = () => {
             return;
         }
 
-        if (newPassword.length < 6) {
-            message.error('Password must be at least 6 characters long.');
+        if (newPassword.length < 8) {
+            message.error('Password must be at least 8 characters long.');
             return;
         }
 
@@ -104,10 +146,32 @@ export const ForgotPassword = () => {
         setLoading(true);
 
         try {
-            // TODO: API Call to update password (e.g., await axios.post('/api/auth/reset-password', { email: userEmail, password: newPassword }))
-            await new Promise((resolve) => setTimeout(resolve, 1200));
 
-            setStep('success');
+            try {
+
+                const payLoad = {
+                    password: confirmPassword,
+                }
+
+                const response = await api.post("/api/change-password", payLoad);
+
+                message.success(response?.data?.message);
+
+                setStep('success');
+
+            } catch (err) {
+
+                if (err.response?.data?.code === "NOT_VERIFIED") {
+                    navigate("/verify");
+                }
+                else if (err.response?.data?.code === "ACCESS_BLOCKED") {
+                    navigate("/user/blocked");
+                }
+
+                message.error(err.response?.data?.message || "Password Cannot Update");
+
+            }
+
         } catch (err) {
             message.error(err.message);
             console.log(err);
