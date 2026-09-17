@@ -10,7 +10,6 @@ import { UnderMaintenance } from './components/pages/UnderMaintenance';
 import { UserDashboard } from './components/pages/UserDashboard';
 import AdminDashboard from './components/pages/AdminDashboard';
 import Blocked from './components/pages/UserDashboard/subcomponents/Blocked';
-import AuthPage from './components/pages/AuthPage';
 
 function App() {
 
@@ -32,11 +31,11 @@ function App() {
               <Route path="*" element={<NotFound />} />
 
               <Route path="/" element={<Home />} />
-              <Route path="/register" element={<AuthPage> <Register /> </AuthPage>} />
-              <Route path="/login" element={<AuthPage> <Login /> </AuthPage>} />
-              <Route path="/verify" element={<AuthPage> <VerifyAccount /> </AuthPage>} />
-              <Route path="/verify-account" element={<AuthPage> <ValidateAccount /></AuthPage>} />
-              <Route path="/forgot-password" element={<AuthPage> <ForgotPassword /></AuthPage>} />
+              <Route path="/register" element={<Register />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/verify" element={<VerifyAccount />} />
+              <Route path="/verify-account" element={<ValidateAccount />} />
+              <Route path="/forgot-password" element={<ForgotPassword />} />
               <Route path="/user/blocked" element={<Blocked />} />
               <Route path="/admin/blocked" element={<Blocked />} />
 

@@ -3,7 +3,6 @@ import { Routes, Route, useNavigate } from "react-router-dom";
 
 import { Navbar } from "./Navbar";
 import { ShimmerLoading } from "../../shared/LoadingShimmer";
-import { checkIsAuth } from "../../../../utils/isUserLogin";
 
 const Dashboard = lazy(() => import("./subcomponents/Dashboard"));
 const MyFiles = lazy(() => import("./subcomponents/MyFiles"));
@@ -20,10 +19,6 @@ const NotFound = lazy(() => import("../NotFound"));
 export const UserDashboard = () => {
     
     const navigate = useNavigate();
-
-    useEffect(() => {
-        checkIsAuth(navigate);
-    }, [navigate]);
 
     return (
         <>
