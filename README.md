@@ -420,3 +420,4 @@ Across all views, modals, and file/folder listings:
 
 - Updated **Validate Account** Page To Verify User Account Using Token.
 - Implemented Loading, Disabled, Hover States In Login & Signup Page.
+- Fixed **Forgot Password** Page For Required Email On Every API For Backend.
