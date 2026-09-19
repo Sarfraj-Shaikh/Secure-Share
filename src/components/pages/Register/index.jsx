@@ -4,6 +4,7 @@ import { message } from 'antd';
 import SEO from '../SEO';
 import api from '../../../../utils/api';
 import { verifyToken } from '../../../../utils/isUserLogin';
+import SpinLoader from '../../shared/SpinLoader';
 
 export const Register = () => {
 
@@ -126,6 +127,10 @@ export const Register = () => {
         }
 
     };
+
+    if (checkingAuth) {
+        return <SpinLoader />;
+    }
 
     return (
 

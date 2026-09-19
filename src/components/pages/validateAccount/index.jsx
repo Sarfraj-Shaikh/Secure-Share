@@ -4,6 +4,7 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import SEO from '../SEO';
 import api from '../../../../utils/api';
 import { verifyToken } from '../../../../utils/isUserLogin';
+import SpinLoader from '../../shared/SpinLoader';
 
 const ValidateAccount = () => {
 
@@ -109,6 +110,10 @@ const ValidateAccount = () => {
     const handleVerifyNow = () => {
         navigate('/verify');
     };
+
+    if (checkingAuth) {
+        return <SpinLoader text="Validating..." />;
+    }
 
     return (
         <>

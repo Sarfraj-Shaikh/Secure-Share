@@ -4,6 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import SEO from '../SEO';
 import api from '../../../../utils/api';
 import { verifyToken } from '../../../../utils/isUserLogin';
+import SpinLoader from '../../shared/SpinLoader';
 
 export const ForgotPassword = () => {
 
@@ -191,6 +192,10 @@ export const ForgotPassword = () => {
         setErrorMessage('');
         setStep('email');
     };
+
+    if (checkingAuth) {
+        return <SpinLoader />;
+    }
 
     return (
         <>
