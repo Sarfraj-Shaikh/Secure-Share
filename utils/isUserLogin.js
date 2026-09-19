@@ -31,6 +31,7 @@ export const verifyToken = async (navigate) => {
         }
 
         const response = await api.post("/api/isAuth", payLoad);
+        return response.data;
         message.success(response.data.message);
 
     } catch (err) {
@@ -44,7 +45,8 @@ export const verifyToken = async (navigate) => {
             if (window.location.pathname !== "/login") {
                 redirect("/login");
             }
-            return;
+            return false;
+
         };
 
         if (code === "USER_NOT_FOUND") {
@@ -52,7 +54,8 @@ export const verifyToken = async (navigate) => {
             if (window.location.pathname !== "/register") {
                 redirect("/register");
             }
-            return;
+            return false;
+
         };
 
         if (code === "ACCESS_BLOCKED") {
@@ -69,14 +72,16 @@ export const verifyToken = async (navigate) => {
                     redirect("/admin/blocked");
                 }
             }
-            return;
+            return false;
+
         };
 
         if (code === "NOT_VERIFIED") {
             if (window.location.pathname !== "/verify" || window.location.pathname !== "/verify-account") {
                 redirect("/verify");
             }
-            return;
+            return false;
+
         };
 
         if (window.location.pathname !== "/login") {
