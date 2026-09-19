@@ -1,12 +1,33 @@
 import { message } from 'antd';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import SEO from '../SEO';
 import api from '../../../../utils/api';
+import { verifyToken } from '../../../../utils/isUserLogin';
 
 export const VerifyAccount = () => {
 
     const navigate = useNavigate();
+    
+        const [checkingAuth, setCheckingAuth] = useState(true);
+        const [authenticated, setAuthenticated] = useState(false);
+    
+        useEffect(() => {
+    
+            const checkAuth = async () => {
+    
+                const result = await verifyToken(navigate);
+    
+                if (result?.success) {
+                    setAuthenticated(true);
+                }
+    
+                setCheckingAuth(false);
+            };
+    
+            checkAuth();
+    
+        }, [navigate]);
 
     const [email, setEmail] = useState('');
     const [status, setStatus] = useState('idle'); // 'idle' | 'loading' | 'success' | 'failed'
