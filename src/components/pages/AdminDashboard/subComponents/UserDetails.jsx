@@ -1,9 +1,37 @@
-import React, { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import SpinLoader from "../../../shared/SpinLoader";
+import { verifyToken } from "../../../../../utils/isUserLogin";
 
 const UserDetails = () => {
-    const { userId } = useParams();
+
     const navigate = useNavigate();
+
+    const [checkingAuth, setCheckingAuth] = useState(true);
+    const [authenticated, setAuthenticated] = useState(false);
+
+    useEffect(() => {
+
+        const checkAuth = async () => {
+
+            const result = await verifyToken(navigate, {
+                requireAuth: true,
+                requireVerified: true,
+                allowedRoles: ["admin", "superAdmin"],
+            });
+
+            if (result?.success) {
+                setAuthenticated(true);
+            }
+
+            setCheckingAuth(false);
+        };
+
+        checkAuth();
+
+    }, [navigate]);
+
+    const { userId } = useParams();
 
     // =========================================================
     // STATE MANAGEMENT
@@ -263,6 +291,10 @@ const UserDetails = () => {
     }
 
     if (!user) return null;
+
+    if (checkingAuth) {
+        return <SpinLoader />;
+    }
 
     return (
         <div className="min-h-screen bg-slate-50 px-4 py-8 sm:px-6 lg:px-8 pt-10 sm:pt-[90px] antialiased">

@@ -1,4 +1,7 @@
-import React, { useState, useEffect, useMemo, useRef } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
+import SpinLoader from "../../../shared/SpinLoader";
+import { useNavigate } from "react-router-dom";
+import { verifyToken } from "../../../../../utils/isUserLogin";
 
 // Mock Data for Folders
 const MOCK_FOLDERS = [
@@ -77,6 +80,33 @@ const MOCK_FOLDERS = [
 const ITEMS_PER_PAGE = 4;
 
 const AllFolders = () => {
+
+     const navigate = useNavigate();
+
+    const [checkingAuth, setCheckingAuth] = useState(true);
+    const [authenticated, setAuthenticated] = useState(false);
+
+    useEffect(() => {
+
+        const checkAuth = async () => {
+
+            const result = await verifyToken(navigate, {
+                requireAuth: true,
+                requireVerified: true,
+                allowedRoles: ["admin", "superAdmin"],
+            });
+
+            if (result?.success) {
+                setAuthenticated(true);
+            }
+
+            setCheckingAuth(false);
+        };
+
+        checkAuth();
+
+    }, [navigate]);
+
     // States
     const [folders, setFolders] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -197,6 +227,10 @@ const AllFolders = () => {
             year: "numeric",
         });
     };
+
+    if (checkingAuth) {
+        return <SpinLoader />;
+    }
 
     return (
         <div className="min-h-screen bg-slate-50 px-4 py-8 sm:px-6 lg:px-8 pt-[90px] antialiased">
@@ -426,8 +460,8 @@ const AllFolders = () => {
                                     key={pageNum}
                                     onClick={() => setCurrentPage(pageNum)}
                                     className={`h-10 w-10 rounded-xl text-sm font-extrabold transition ${currentPage === pageNum
-                                            ? "bg-blue-600 text-white shadow-md shadow-blue-600/20"
-                                            : "border border-slate-200 text-slate-700 hover:bg-slate-50"
+                                        ? "bg-blue-600 text-white shadow-md shadow-blue-600/20"
+                                        : "border border-slate-200 text-slate-700 hover:bg-slate-50"
                                         }`}
                                 >
                                     {pageNum}
