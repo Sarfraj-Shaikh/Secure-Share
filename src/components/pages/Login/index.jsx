@@ -9,6 +9,8 @@ export const Login = () => {
     const navigate = useNavigate();
 
     const [showPassword, setShowPassword] = useState(false);
+    const [loading, setLoading] = useState(false);
+
     const [formData, setFormData] = useState({
         email: '',
         password: ''
@@ -23,6 +25,7 @@ export const Login = () => {
         e.preventDefault();
 
         try {
+
             if (!formData.email || formData.email.trim() === "") {
                 return message.error("Email ID Is Required");
             }
@@ -57,6 +60,8 @@ export const Login = () => {
 
             try {
 
+                setLoading(true);
+
                 const payLoad = {
                     email: formData.email,
                     password: formData.password
@@ -79,12 +84,16 @@ export const Login = () => {
                 message.error(err.response?.data?.message || "Login Failed");
 
             }
+            finally {
+                setLoading(false);
+            }
 
         } catch (err) {
 
             message.error(err.message);
 
-        }
+        };
+
     };
 
     return (
@@ -182,9 +191,14 @@ export const Login = () => {
                         {/* Submit Button */}
                         <button
                             type="submit"
-                            className="w-full mt-2 py-3 px-4 text-sm font-semibold rounded-lg text-white bg-blue-600 hover:bg-blue-700 active:scale-[0.99] focus:outline-none focus:ring-indigo-500/20 shadow-md shadow-indigo-600/20 transition-all duration-200 cursor-pointer"
+                            disabled={loading}
+                            className="w-full mt-2 py-3 px-4 text-sm font-semibold rounded-lg text-white bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 disabled:cursor-not-allowed disabled:hover:bg-blue-400 active:scale-[0.99] focus:outline-none focus:ring-2 focus:ring-indigo-500/20 shadow-md shadow-indigo-600/20 transition-all duration-200 cursor-pointer disabled:cursor-not-allowed"
                         >
-                            Continue
+                            {loading && (
+                                <i className="ri-loader-line mr-2 inline-block animate-spin" />
+                            )}
+
+                            {loading ? "Loading..." : "Continue"}
                         </button>
 
                         {/* Footer Link */}
