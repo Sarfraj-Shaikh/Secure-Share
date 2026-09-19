@@ -3,10 +3,39 @@ import { Link, useNavigate } from 'react-router-dom';
 import { message } from 'antd';
 import SEO from '../SEO';
 import api from '../../../../utils/api';
+import { verifyToken } from '../../../../utils/isUserLogin';
 
 export const Login = () => {
 
     const navigate = useNavigate();
+
+    const [checkingAuth, setCheckingAuth] = useState(true);
+    const [authenticated, setAuthenticated] = useState(false);
+
+    useEffect(() => {
+
+        const checkAuth = async () => {
+
+            const result = await verifyToken(navigate);
+
+            if (result?.success) {
+                setAuthenticated(true);
+            }
+
+            setCheckingAuth(false);
+        };
+
+        checkAuth();
+
+    }, [navigate]);
+
+    // if (checkingAuth) {
+    //     return <div>Checking authentication...</div>;
+    // }
+
+    // if (!authenticated) {
+    //     return null;
+    // }
 
     const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
@@ -68,7 +97,7 @@ export const Login = () => {
                 }
 
                 const response = await api.post("/api/login", payLoad);
-                localStorage.getItem("userToken", response?.data?.token);
+                localStorage.setItem("userToken", response?.data?.token);
 
                 message.success(response?.data?.message);
                 navigate("/user/dashboard");
