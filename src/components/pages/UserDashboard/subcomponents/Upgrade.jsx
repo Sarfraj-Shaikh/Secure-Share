@@ -1,4 +1,7 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import SpinLoader from "../../../shared/SpinLoader";
+import { verifyToken } from "../../../../../utils/isUserLogin";
+import { useNavigate } from "react-router-dom";
 
 // Mock API Data Structure (Dynamic Admin Settings & Conversion Rates)
 const initialUserData = {
@@ -36,15 +39,36 @@ const initialAdminConfig = {
     },
 };
 
-export default function Upgrade({
-    userDataProps = initialUserData,
-    adminConfigProps = initialAdminConfig,
-    loading = false,
-    apiError = null,
-    onUpgradeSuccess,
-}) {
+export default function Upgrade({ userDataProps = initialUserData, adminConfigProps = initialAdminConfig, loading = false, apiError = null, onUpgradeSuccess, }) {
+
     const [userData, setUserData] = useState(userDataProps);
     const [adminConfig] = useState(adminConfigProps);
+
+        const navigate = useNavigate();
+
+    const [checkingAuth, setCheckingAuth] = useState(true);
+    const [authenticated, setAuthenticated] = useState(false);
+
+    useEffect(() => {
+
+        const checkAuth = async () => {
+
+            const result = await verifyToken(navigate, {
+                requireAuth: true,
+                requireVerified: true,
+                allowedRoles: ["user"],
+            });
+
+            if (result?.success) {
+                setAuthenticated(true);
+            }
+
+            setCheckingAuth(false);
+        };
+
+        checkAuth();
+
+    }, [navigate]);
 
     // Modal & Custom Quantity States
     const [selectedCategory, setSelectedCategory] = useState(null); // 'storage' | 'folders' | 'shares'
@@ -180,6 +204,10 @@ export default function Upgrade({
         }
     };
 
+    if (checkingAuth) {
+        return <SpinLoader />;
+    }
+
     return (
         <div className="w-full mx-auto pt-[90px] pb-5 px-5 lg:px-10">
             {/* Header with Balance */}
@@ -271,13 +299,12 @@ export default function Upgrade({
 
                                 <div className="mt-3 h-2.5 w-full overflow-hidden rounded-full bg-slate-100">
                                     <div
-                                        className={`h-full rounded-full transition-all duration-500 ${
-                                            itemStats.percentage > 85
+                                        className={`h-full rounded-full transition-all duration-500 ${itemStats.percentage > 85
                                                 ? "bg-rose-500"
                                                 : itemStats.percentage > 60
-                                                ? "bg-amber-500"
-                                                : "bg-blue-600"
-                                        }`}
+                                                    ? "bg-amber-500"
+                                                    : "bg-blue-600"
+                                            }`}
                                         style={{ width: `${itemStats.percentage}%` }}
                                     />
                                 </div>
