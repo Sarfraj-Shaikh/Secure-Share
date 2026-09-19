@@ -1,4 +1,7 @@
-import React, { useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import { verifyToken } from "../../../../../utils/isUserLogin";
+import { useNavigate } from "react-router-dom";
+import SpinLoader from "../../../shared/SpinLoader";
 
 /* =========================================================
    CONFIG
@@ -433,6 +436,33 @@ const getFileNameWithoutExtension = (fileName) => {
 ========================================================= */
 
 export default function Files() {
+
+    const navigate = useNavigate();
+
+    const [checkingAuth, setCheckingAuth] = useState(true);
+    const [authenticated, setAuthenticated] = useState(false);
+
+    useEffect(() => {
+
+        const checkAuth = async () => {
+
+            const result = await verifyToken(navigate, {
+                requireAuth: true,
+                requireVerified: true,
+                allowedRoles: ["user"],
+            });
+
+            if (result?.success) {
+                setAuthenticated(true);
+            }
+
+            setCheckingAuth(false);
+        };
+
+        checkAuth();
+
+    }, [navigate]);
+
     /* ---------------- DATA ---------------- */
 
     const [files, setFiles] = useState(INITIAL_FILES);
@@ -1217,6 +1247,10 @@ export default function Files() {
                 </div>
             </div>
         );
+    }
+
+    if (checkingAuth) {
+        return <SpinLoader />;
     }
 
     /* =========================================================
@@ -2928,10 +2962,10 @@ function FolderPickerModal({
                                             disabled={isCurrent}
                                             onClick={() => onSelect(folder)}
                                             className={`flex w-full min-w-0 items-center gap-2.5 rounded-xl border p-2.5 text-left transition sm:gap-3 sm:p-3 ${isCurrent
-                                                    ? "cursor-not-allowed border-slate-100 bg-slate-50 opacity-50"
-                                                    : isSelected
-                                                        ? "border-blue-200 bg-blue-50"
-                                                        : "border-transparent hover:border-slate-200 hover:bg-slate-50"
+                                                ? "cursor-not-allowed border-slate-100 bg-slate-50 opacity-50"
+                                                : isSelected
+                                                    ? "border-blue-200 bg-blue-50"
+                                                    : "border-transparent hover:border-slate-200 hover:bg-slate-50"
                                                 }`}
                                         >
                                             <span
@@ -3006,8 +3040,8 @@ function FolderPickerModal({
                                             type="button"
                                             onClick={() => onPageChange(number)}
                                             className={`flex h-8 min-w-8 items-center justify-center rounded-lg px-2 text-xs font-semibold transition ${page === number
-                                                    ? "bg-blue-600 text-white"
-                                                    : "border border-slate-200 text-slate-600 hover:border-blue-200 hover:bg-blue-50 hover:text-blue-600"
+                                                ? "bg-blue-600 text-white"
+                                                : "border border-slate-200 text-slate-600 hover:border-blue-200 hover:bg-blue-50 hover:text-blue-600"
                                                 }`}
                                         >
                                             {number}

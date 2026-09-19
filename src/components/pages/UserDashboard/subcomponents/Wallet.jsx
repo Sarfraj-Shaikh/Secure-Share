@@ -1,4 +1,7 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { verifyToken } from '../../../../../utils/isUserLogin';
+import SpinLoader from '../../../shared/SpinLoader';
 
 // Admin Config Mock (Backend Se Fetch Hone Wala Data)
 const ADMIN_CONFIG = {
@@ -26,6 +29,33 @@ const INITIAL_TRANSACTIONS = [
 ];
 
 export default function Wallet() {
+
+    const navigate = useNavigate();
+
+    const [checkingAuth, setCheckingAuth] = useState(true);
+    const [authenticated, setAuthenticated] = useState(false);
+
+    useEffect(() => {
+
+        const checkAuth = async () => {
+
+            const result = await verifyToken(navigate, {
+                requireAuth: true,
+                requireVerified: true,
+                allowedRoles: ["user"],
+            });
+
+            if (result?.success) {
+                setAuthenticated(true);
+            }
+
+            setCheckingAuth(false);
+        };
+
+        checkAuth();
+
+    }, [navigate]);
+
     // Main States
     const [stats, setStats] = useState(INITIAL_STATS);
     const [transactions, setTransactions] = useState(INITIAL_TRANSACTIONS);
@@ -174,6 +204,10 @@ export default function Wallet() {
             showToast(`${val} Credits transfer ho gaye user ${transferRecipient} ko!`);
         }, 1000);
     };
+
+    if (checkingAuth) {
+        return <SpinLoader />;
+    }
 
     return (
         <div className="min-h-screen bg-slate-50 text-slate-800 p-4 md:p-8 font-sans antialiased">

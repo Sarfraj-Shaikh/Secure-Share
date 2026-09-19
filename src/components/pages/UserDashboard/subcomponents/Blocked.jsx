@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../../../../../utils/api";
+import SpinLoader from "../../../shared/SpinLoader";
+import { verifyToken } from "../../../../../utils/isUserLogin";
 
 
 const INITIAL_BLOCKED_DATA = {
@@ -25,6 +27,30 @@ const INITIAL_BLOCKED_DATA = {
 export default function Blocked() {
 
     const navigate = useNavigate();
+
+    const [checkingAuth, setCheckingAuth] = useState(true);
+    const [authenticated, setAuthenticated] = useState(false);
+
+    useEffect(() => {
+
+        const checkAuth = async () => {
+
+            const result = await verifyToken(navigate, {
+                requireAuth: true,
+                requireVerified: true,
+                allowedRoles: ["user", "admin", "superAdmin"],
+            });
+
+            if (result?.success) {
+                setAuthenticated(true);
+            }
+
+            setCheckingAuth(false);
+        };
+
+        checkAuth();
+
+    }, [navigate]);
 
     const [blockedDetails, setBlockedDetails] = useState(
         INITIAL_BLOCKED_DATA
@@ -67,10 +93,10 @@ export default function Blocked() {
                     }
                 }
 
-                if(response?.data?.user.role === "user") {
+                if (response?.data?.user.role === "user") {
                     navigate("/user/dashboard", { replace: true });
-                    
-                } else if(response?.data?.user.role === "admin" || response?.data?.user.role === "superAdmin") {
+
+                } else if (response?.data?.user.role === "admin" || response?.data?.user.role === "superAdmin") {
                     navigate("/admin/dashboard", { replace: true });
                 }
 
@@ -232,6 +258,10 @@ export default function Blocked() {
         (socials &&
             Object.values(socials).some((value) => Boolean(value)))
     );
+
+    if (checkingAuth) {
+        return <SpinLoader />;
+    }
 
     return (
         <div className="min-h-screen bg-slate-50 text-slate-800 p-4 md:p-8 font-sans antialiased flex items-center justify-center">

@@ -1,4 +1,7 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { verifyToken } from '../../../../../utils/isUserLogin';
+import SpinLoader from '../../../shared/SpinLoader';
 
 // Dynamic User Profile & Usage Stats Mock Data (API Payload Pattern)
 const INITIAL_USER_PROFILE = {
@@ -35,6 +38,33 @@ const formatDate = (dateString) => {
 };
 
 export default function Profile() {
+
+    const navigate = useNavigate();
+
+    const [checkingAuth, setCheckingAuth] = useState(true);
+    const [authenticated, setAuthenticated] = useState(false);
+
+    useEffect(() => {
+
+        const checkAuth = async () => {
+
+            const result = await verifyToken(navigate, {
+                requireAuth: true,
+                requireVerified: true,
+                allowedRoles: ["user"],
+            });
+
+            if (result?.success) {
+                setAuthenticated(true);
+            }
+
+            setCheckingAuth(false);
+        };
+
+        checkAuth();
+
+    }, [navigate]);
+
     // Main Lifecycle & UI States
     const [userData, setUserData] = useState(INITIAL_USER_PROFILE);
     const [loading, setLoading] = useState(false);
@@ -116,6 +146,10 @@ export default function Profile() {
                 </div>
             </div>
         );
+    }
+
+    if (checkingAuth) {
+        return <SpinLoader />;
     }
 
     return (

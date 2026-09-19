@@ -1,4 +1,7 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import SpinLoader from "../../../shared/SpinLoader";
+import { useNavigate } from "react-router-dom";
+import { verifyToken } from "../../../../../utils/isUserLogin";
 
 const ITEMS_PER_PAGE = 5;
 
@@ -69,11 +72,34 @@ const defaultHistory = [
     },
 ];
 
-export default function History({
-    data = defaultHistory,
-    loading = false,
-    error = null,
-}) {
+export default function History({ data = defaultHistory, loading = false, error = null, }) {
+
+    const navigate = useNavigate();
+
+    const [checkingAuth, setCheckingAuth] = useState(true);
+    const [authenticated, setAuthenticated] = useState(false);
+
+    useEffect(() => {
+
+        const checkAuth = async () => {
+
+            const result = await verifyToken(navigate, {
+                requireAuth: true,
+                requireVerified: true,
+                allowedRoles: ["user"],
+            });
+
+            if (result?.success) {
+                setAuthenticated(true);
+            }
+
+            setCheckingAuth(false);
+        };
+
+        checkAuth();
+
+    }, [navigate]);
+
     const [search, setSearch] = useState("");
     const [sort, setSort] = useState("latest");
     const [sortOpen, setSortOpen] = useState(false);
@@ -165,6 +191,10 @@ export default function History({
         }
     };
 
+    if (checkingAuth) {
+        return <SpinLoader />;
+    }
+
     return (
         <div className="w-full mx-auto pt-[90px] pb-5">
             <div className="overflow-hidden bg-white transition-all duration-300">
@@ -231,8 +261,8 @@ export default function History({
                                                 type="button"
                                                 onClick={() => handleSortChange("latest")}
                                                 className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm transition-colors ${sort === "latest"
-                                                        ? "bg-blue-50 font-semibold text-blue-600"
-                                                        : "text-slate-600 hover:bg-slate-50"
+                                                    ? "bg-blue-50 font-semibold text-blue-600"
+                                                    : "text-slate-600 hover:bg-slate-50"
                                                     }`}
                                             >
                                                 Latest
@@ -244,8 +274,8 @@ export default function History({
                                                 type="button"
                                                 onClick={() => handleSortChange("oldest")}
                                                 className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm transition-colors ${sort === "oldest"
-                                                        ? "bg-blue-50 font-semibold text-blue-600"
-                                                        : "text-slate-600 hover:bg-slate-50"
+                                                    ? "bg-blue-50 font-semibold text-blue-600"
+                                                    : "text-slate-600 hover:bg-slate-50"
                                                     }`}
                                             >
                                                 Oldest
@@ -269,8 +299,8 @@ export default function History({
                                     key={tab}
                                     onClick={() => handleTabChange(tab)}
                                     className={`relative flex items-center gap-2 px-4 py-2.5 text-sm font-medium transition-all duration-200 whitespace-nowrap rounded-lg ${isActive
-                                            ? "text-blue-600 bg-blue-50/80"
-                                            : "text-slate-500 hover:text-slate-800 hover:bg-slate-50"
+                                        ? "text-blue-600 bg-blue-50/80"
+                                        : "text-slate-500 hover:text-slate-800 hover:bg-slate-50"
                                         }`}
                                 >
                                     {tab}
@@ -495,8 +525,8 @@ export default function History({
                                         type="button"
                                         onClick={() => setCurrentPage(pageNum)}
                                         className={`flex h-9 min-w-[36px] items-center justify-center rounded-lg px-2.5 text-xs sm:text-sm font-semibold transition-all duration-200 ${isActive
-                                                ? "bg-blue-600 text-white shadow-sm shadow-blue-200"
-                                                : "text-slate-600 hover:bg-blue-50 hover:text-blue-600"
+                                            ? "bg-blue-600 text-white shadow-sm shadow-blue-200"
+                                            : "text-slate-600 hover:bg-blue-50 hover:text-blue-600"
                                             }`}
                                     >
                                         {pageNum}
