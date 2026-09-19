@@ -395,3 +395,15 @@ Across all views, modals, and file/folder listings:
 - Created **History Page** For Admin Panel
 - Created **Manage Service Page** For Admin Panel
 - Created **Dashboard Page** For Admin Panel
+
+----
+
+### Day 7-8: 16-09-2026 & 17-09-2026
+
+#### Landing Page
+
+- Updated the **README.md** page.
+
+#### Authentication Development
+
+- Conneted **Server with DB** and set **Authentication Flows** For User Registration, Login, Verify Account, Account Validation, Forget Password OTP, Verify OTP, Change Password Features.

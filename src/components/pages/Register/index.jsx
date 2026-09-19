@@ -9,6 +9,8 @@ export const Register = () => {
     const navigate = useNavigate();
 
     const [showPassword, setShowPassword] = useState(false);
+    const [loading, setLoading] = useState(false);
+
     const [formData, setFormData] = useState({
         fullName: '',
         email: '',
@@ -72,6 +74,8 @@ export const Register = () => {
 
             try {
 
+                setLoading(true);
+
                 const payLoad = {
                     fullName: formData.fullName,
                     email: formData.email,
@@ -90,12 +94,13 @@ export const Register = () => {
                 message.error(err.response?.data?.message || "Signup Failed");
 
             }
-
+            finally {
+                setLoading(false);
+            }
 
         } catch (err) {
 
             message.error(err.message);
-            console.log(err);
 
         }
 
@@ -254,9 +259,15 @@ export const Register = () => {
                         {/* Submit Button */}
                         <button
                             type="submit"
-                            className="w-full mt-2 py-3 px-4 text-sm font-semibold rounded-lg text-white bg-blue-600 hover:bg-blue-700 active:scale-[0.99] focus:outline-none focus:ring-indigo-500/20 shadow-md shadow-indigo-600/20 transition-all duration-200 cursor-pointer"
+                            className="w-full mt-2 py-3 px-4 text-sm font-semibold rounded-lg text-white bg-blue-600 hover:bg-blue-700 active:scale-[0.99] focus:outline-none focus:ring-indigo-500/20 shadow-md shadow-indigo-600/20 transition-all duration-200 cursor-pointer disabled:cursor-not-allowed disabled:bg-blue-400 disabled:hover:bg-blue-400"
+                            disabled={loading}
                         >
-                            Create Account
+                            {loading && (
+                                <i className="ri-loader-line mr-2 inline-block animate-spin" />
+                            )}
+
+                            {loading ? "Loading..." : "Create Account"}
+
                         </button>
 
                         {/* Footer Link */}
