@@ -150,6 +150,7 @@ export const ForgotPassword = () => {
             try {
 
                 const payLoad = {
+                    email: userEmail,
                     password: confirmPassword,
                 }
 
@@ -173,10 +174,13 @@ export const ForgotPassword = () => {
             }
 
         } catch (err) {
+
             message.error(err.message);
-            console.log(err);
+
         } finally {
+
             setLoading(false);
+
         }
     };
 
@@ -189,7 +193,6 @@ export const ForgotPassword = () => {
             await new Promise((resolve) => setTimeout(resolve, 1000));
         } catch (err) {
             message.error(err.message);
-            console.log(err);
         } finally {
             setLoading(false);
         }
