@@ -1,7 +1,7 @@
 import { message } from "antd";
 import api from "./api";
 
-const PUBLIC_AUTH_ROUTES = [
+const AUTH_ROUTES = [
     "/login",
     "/register",
     "/forgot-password",
@@ -13,6 +13,7 @@ const VERIFICATION_ROUTES = [
 ];
 
 const getDashboardByRole = (role) => {
+
     if (role === "user") {
         return "/user/dashboard";
     }
@@ -25,8 +26,10 @@ const getDashboardByRole = (role) => {
 };
 
 export const verifyToken = async (navigate, options = {}) => {
+
     const {
         requireAuth = false,
+        requireVerified = false,
         allowedRoles = [],
     } = options;
 
@@ -34,43 +37,51 @@ export const verifyToken = async (navigate, options = {}) => {
     const path = window.location.pathname;
 
     const redirect = (route) => {
-        navigate(route, { replace: true });
+        if (path !== route) {
+            navigate(route, {
+                replace: true,
+            });
+        }
     };
 
     const deleteToken = () => {
         localStorage.removeItem("userToken");
     };
 
-    /*
-    |--------------------------------------------------------------------------
-    | NO TOKEN
-    |--------------------------------------------------------------------------
-    */
+
+    // ============================================================
+    // NO TOKEN
+    // ============================================================
 
     if (!token) {
 
-        // Public route -> allow
+        // Public route
         if (!requireAuth) {
             return {
                 success: true,
                 authenticated: false,
+                verified: false,
+                authorized: true,
+                user: null,
             };
         }
 
-        // Protected route -> login
+        // Protected route
         redirect("/login");
 
         return {
             success: false,
             authenticated: false,
+            verified: false,
+            authorized: false,
+            user: null,
         };
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | VALIDATE TOKEN
-    |--------------------------------------------------------------------------
-    */
+
+    // ============================================================
+    // VERIFY TOKEN
+    // ============================================================
 
     try {
 
@@ -81,90 +92,96 @@ export const verifyToken = async (navigate, options = {}) => {
         const data = response?.data;
 
         if (data?.code !== "AUTHENTICATED") {
-            return false;
+            return {
+                success: false,
+                authenticated: false,
+                verified: false,
+                authorized: false,
+            };
         }
 
+
         const user = data.user;
+
         const role = user?.role;
+
         const verified = user?.verified;
 
-        /*
-        |--------------------------------------------------------------------------
-        | LOGGED-IN USER
-        |--------------------------------------------------------------------------
-        */
 
-        // ---------------------------------------------------------
-        // 1. User is NOT verified
-        // ---------------------------------------------------------
+        // ========================================================
+        // LOGGED IN + NOT VERIFIED
+        // ========================================================
 
         if (!verified) {
 
-            // Verification pages are allowed
+            // /verify and /verify-account are allowed
             if (VERIFICATION_ROUTES.includes(path)) {
                 return {
                     success: true,
                     authenticated: true,
                     verified: false,
+                    authorized: true,
                     user,
                 };
             }
 
-            // Everything else -> /verify
-            redirect("/verify");
+            // /login, /register, /forgot-password are NOT allowed
+            if (AUTH_ROUTES.includes(path)) {
+                redirect("/verify");
 
+                return {
+                    success: false,
+                    authenticated: true,
+                    verified: false,
+                    authorized: false,
+                    user,
+                };
+            }
+
+            // Protected page
+            if (requireAuth || requireVerified) {
+                redirect("/verify");
+
+                return {
+                    success: false,
+                    authenticated: true,
+                    verified: false,
+                    authorized: false,
+                    user,
+                };
+            }
+
+            // Other public pages are allowed
             return {
-                success: false,
+                success: true,
                 authenticated: true,
                 verified: false,
+                authorized: true,
                 user,
             };
         }
 
-        // ---------------------------------------------------------
-        // 2. User IS verified
-        // ---------------------------------------------------------
 
-        // Logged-in verified user cannot access auth/verification pages
-        const guestOnlyRoutes = [
-            ...PUBLIC_AUTH_ROUTES,
-            ...VERIFICATION_ROUTES,
-        ];
+        // ========================================================
+        // LOGGED IN + VERIFIED
+        // ========================================================
 
-        if (guestOnlyRoutes.includes(path)) {
-
-            redirect(getDashboardByRole(role));
-
-            return {
-                success: false,
-                authenticated: true,
-                verified: true,
-                user,
-            };
-        }
-
-        // ---------------------------------------------------------
-        // 3. Role protection
-        // ---------------------------------------------------------
+        /*
+         * Logged-in verified user cannot access:
+         *
+         * /login
+         * /register
+         * /forgot-password
+         * /verify
+         * /verify-account
+         */
 
         if (
-            allowedRoles.length > 0 &&
-            !allowedRoles.includes(role)
+            AUTH_ROUTES.includes(path) ||
+            VERIFICATION_ROUTES.includes(path)
         ) {
 
-            // User doesn't have permission
-            if (role === "user") {
-                redirect("/user/dashboard");
-            }
-            else if (
-                role === "admin" ||
-                role === "superAdmin"
-            ) {
-                redirect("/admin/dashboard");
-            }
-            else {
-                redirect("/login");
-            }
+            redirect(getDashboardByRole(role));
 
             return {
                 success: false,
@@ -175,11 +192,53 @@ export const verifyToken = async (navigate, options = {}) => {
             };
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | EVERYTHING IS OK
-        |--------------------------------------------------------------------------
-        */
+
+        // ========================================================
+        // ROLE AUTHORIZATION
+        // ========================================================
+
+        if (allowedRoles.length > 0) {
+
+            if (!allowedRoles.includes(role)) {
+
+                /*
+                 * User tried to access admin route
+                 */
+
+                if (role === "user") {
+                    redirect("/user/dashboard");
+                }
+
+                /*
+                 * Admin/SuperAdmin tried unauthorized route
+                 */
+
+                else if (
+                    role === "admin" ||
+                    role === "superAdmin"
+                ) {
+                    redirect("/admin/dashboard");
+                }
+
+                else {
+                    redirect("/login");
+                }
+
+
+                return {
+                    success: false,
+                    authenticated: true,
+                    verified: true,
+                    authorized: false,
+                    user,
+                };
+            }
+        }
+
+
+        // ========================================================
+        // EVERYTHING OK
+        // ========================================================
 
         return {
             success: true,
@@ -189,18 +248,19 @@ export const verifyToken = async (navigate, options = {}) => {
             user,
         };
 
+
     } catch (err) {
 
-        console.log(err);
+        console.log("verifyToken error:", err);
 
         const code = err?.response?.data?.code;
-        const role = err?.response?.data?.user?.role;
 
-        /*
-        |--------------------------------------------------------------------------
-        | TOKEN INVALID / EXPIRED
-        |--------------------------------------------------------------------------
-        */
+        const errorRole = err?.response?.data?.user?.role;
+
+
+        // ========================================================
+        // INVALID / EXPIRED TOKEN
+        // ========================================================
 
         if (
             code === "UNAUTHORIZED" ||
@@ -217,14 +277,16 @@ export const verifyToken = async (navigate, options = {}) => {
             return {
                 success: false,
                 authenticated: false,
+                verified: false,
+                authorized: false,
+                user: null,
             };
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | USER NOT FOUND
-        |--------------------------------------------------------------------------
-        */
+
+        // ========================================================
+        // USER NOT FOUND
+        // ========================================================
 
         if (code === "USER_NOT_FOUND") {
 
@@ -232,25 +294,30 @@ export const verifyToken = async (navigate, options = {}) => {
 
             redirect("/register");
 
-            return false;
+            return {
+                success: false,
+                authenticated: false,
+                verified: false,
+                authorized: false,
+                user: null,
+            };
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | ACCOUNT BLOCKED
-        |--------------------------------------------------------------------------
-        */
+
+        // ========================================================
+        // BLOCKED
+        // ========================================================
 
         if (code === "ACCESS_BLOCKED") {
 
             deleteToken();
 
-            if (role === "user") {
+            if (errorRole === "user") {
                 redirect("/user/blocked");
             }
             else if (
-                role === "admin" ||
-                role === "superAdmin"
+                errorRole === "admin" ||
+                errorRole === "superAdmin"
             ) {
                 redirect("/admin/blocked");
             }
@@ -258,14 +325,19 @@ export const verifyToken = async (navigate, options = {}) => {
                 redirect("/login");
             }
 
-            return false;
+            return {
+                success: false,
+                authenticated: false,
+                verified: false,
+                authorized: false,
+                user: null,
+            };
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | NOT VERIFIED
-        |--------------------------------------------------------------------------
-        */
+
+        // ========================================================
+        // NOT VERIFIED
+        // ========================================================
 
         if (code === "NOT_VERIFIED") {
 
@@ -277,14 +349,14 @@ export const verifyToken = async (navigate, options = {}) => {
                 success: false,
                 authenticated: true,
                 verified: false,
+                authorized: false,
             };
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | SERVER ERROR
-        |--------------------------------------------------------------------------
-        */
+
+        // ========================================================
+        // SERVER ERROR
+        // ========================================================
 
         message.error(
             err?.response?.data?.message ||
@@ -295,6 +367,11 @@ export const verifyToken = async (navigate, options = {}) => {
             redirect("/login");
         }
 
-        return false;
+        return {
+            success: false,
+            authenticated: false,
+            verified: false,
+            authorized: false,
+        };
     }
 };

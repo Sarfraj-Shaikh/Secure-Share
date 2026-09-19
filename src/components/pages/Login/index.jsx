@@ -29,13 +29,6 @@ export const Login = () => {
 
     }, [navigate]);
 
-    // if (checkingAuth) {
-    //     return <div>Checking authentication...</div>;
-    // }
-
-    // if (!authenticated) {
-    //     return null;
-    // }
 
     const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
