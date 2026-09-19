@@ -49,26 +49,19 @@ const ValidateAccount = () => {
 
                 setStatus('failed');
 
-                message.error(
-                    response?.data?.message ||
-                    'Account verification failed.'
-                );
+                message.error(response?.data?.message || 'Account verification failed.');
             }
 
         } catch (err) {
 
             const errorCode = err?.response?.data?.code;
-            const errorMessage =
-                err?.response?.data?.message ||
-                'Unable to verify your account.';
+            const errorMessage = err?.response?.data?.message || 'Unable to verify your account.';
 
             if (errorCode === 'ALREADY_VERIFIED') {
 
                 setStatus('success');
 
-                message.success(
-                    errorMessage || 'Your account is already verified.'
-                );
+                message.success(errorMessage || 'Your account is already verified.');
 
                 return;
             }
