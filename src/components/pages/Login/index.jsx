@@ -4,6 +4,7 @@ import { message } from 'antd';
 import SEO from '../SEO';
 import api from '../../../../utils/api';
 import { verifyToken } from '../../../../utils/isUserLogin';
+import SpinLoader from '../../shared/SpinLoader';
 
 export const Login = () => {
 
@@ -28,7 +29,6 @@ export const Login = () => {
         checkAuth();
 
     }, [navigate]);
-
 
     const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
@@ -118,6 +118,10 @@ export const Login = () => {
         };
 
     };
+
+    if (checkingAuth) {
+        return <SpinLoader />;
+    }
 
     return (
 

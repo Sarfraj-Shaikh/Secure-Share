@@ -8,26 +8,26 @@ import { verifyToken } from '../../../../utils/isUserLogin';
 const ValidateAccount = () => {
 
     const navigate = useNavigate();
-    
-        const [checkingAuth, setCheckingAuth] = useState(true);
-        const [authenticated, setAuthenticated] = useState(false);
-    
-        useEffect(() => {
-    
-            const checkAuth = async () => {
-    
-                const result = await verifyToken(navigate);
-    
-                if (result?.success) {
-                    setAuthenticated(true);
-                }
-    
-                setCheckingAuth(false);
-            };
-    
-            checkAuth();
-    
-        }, [navigate]);
+
+    const [checkingAuth, setCheckingAuth] = useState(true);
+    const [authenticated, setAuthenticated] = useState(false);
+
+    useEffect(() => {
+
+        const checkAuth = async () => {
+
+            const result = await verifyToken(navigate);
+
+            if (result?.success) {
+                setAuthenticated(true);
+            }
+
+            setCheckingAuth(false);
+        };
+
+        checkAuth();
+
+    }, [navigate]);
 
     const [searchParams] = useSearchParams();
 
@@ -60,10 +60,7 @@ const ValidateAccount = () => {
 
                 setStatus('success');
 
-                message.success(
-                    response?.data?.message ||
-                    'Account verified successfully.'
-                );
+                message.success(response?.data?.message || 'Account verified successfully.');
 
                 navigate('/login');
 
