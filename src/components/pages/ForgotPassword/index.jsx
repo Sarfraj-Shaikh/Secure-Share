@@ -5,7 +5,6 @@ import SEO from '../SEO';
 import api from '../../../../utils/api';
 
 export const ForgotPassword = () => {
-
     const navigate = useNavigate();
 
     // Current Step: 'email' | 'code' | 'resetPassword' | 'success' | 'failed'
@@ -19,9 +18,22 @@ export const ForgotPassword = () => {
     const [newPassword, setNewPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
 
-    // Handle initial email submission
+    // Helper for Common Navigation Error Check
+    const handleAuthErrors = (err) => {
+        if (err.response?.data?.code === "NOT_VERIFIED") {
+            navigate("/verify");
+            return true;
+        }
+        if (err.response?.data?.code === "ACCESS_BLOCKED") {
+            navigate("/user/blocked");
+            return true;
+        }
+        return false;
+    };
+
+    // 1. Send OTP / Initial Email Submit
     const handleEmailSubmit = async (e) => {
-        e.preventDefault();
+        e?.preventDefault();
 
         if (!inputValue || inputValue.trim() === '') {
             message.error('Email address is required.');
@@ -34,44 +46,46 @@ export const ForgotPassword = () => {
         }
 
         const email = inputValue.trim().toLowerCase();
-
         setUserEmail(email);
         setLoading(true);
 
         try {
-            const payload = {
-                email: email,
-            };
-
-            const response = await api.post("/api/reset-password", payload);
-
-            message.success(response?.data?.message);
-
+            const response = await api.post("/api/reset-password", { email });
+            message.success(response?.data?.message || "Verification code sent.");
             setInputValue('');
             setStep('code');
-
         } catch (err) {
-            if (err.response?.data?.code === "NOT_VERIFIED") {
-                navigate("/verify");
-                return;
-            }
-
-            if (err.response?.data?.code === "ACCESS_BLOCKED") {
-                navigate("/user/blocked");
-                return;
-            }
-
-            message.error(
-                err.response?.data?.message || "Operation Failed"
-            );
-
+            if (handleAuthErrors(err)) return;
+            message.error(err.response?.data?.message || "Operation Failed");
             console.error(err);
         } finally {
             setLoading(false);
         }
     };
 
-    // Handle code verification submission
+    // 2. Resend Code Action
+    const handleResendCode = async () => {
+        if (!userEmail) {
+            message.error("Email not found. Please re-enter email.");
+            setStep('email');
+            return;
+        }
+
+        setLoading(true);
+
+        try {
+            const response = await api.post("/api/reset-password", { email: userEmail });
+            message.success(response?.data?.message || "Verification code resent.");
+        } catch (err) {
+            if (handleAuthErrors(err)) return;
+            message.error(err.response?.data?.message || "Resend Failed");
+            console.error(err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // 3. Verify OTP Submission
     const handleCodeSubmit = async (e) => {
         e.preventDefault();
 
@@ -81,7 +95,6 @@ export const ForgotPassword = () => {
         }
 
         const otp = inputValue.trim();
-
         setLoading(true);
 
         try {
@@ -91,41 +104,25 @@ export const ForgotPassword = () => {
             };
 
             const response = await api.post("/api/verify-otp", payload);
-
-            message.success(response?.data?.message);
-
+            message.success(response?.data?.message || "Code verified successfully.");
             setInputValue('');
             setStep('resetPassword');
-
         } catch (err) {
-            if (err.response?.data?.code === "NOT_VERIFIED") {
-                navigate("/verify");
-                return;
-            }
-
-            if (err.response?.data?.code === "ACCESS_BLOCKED") {
-                navigate("/user/blocked");
-                return;
-            }
+            if (handleAuthErrors(err)) return;
 
             if (err.response?.data?.code === "ACCESS_DENIED") {
                 setStep('code');
             }
 
-            message.error(
-                err.response?.data?.message || "OTP Verification Failed"
-            );
-
+            message.error(err.response?.data?.message || "OTP Verification Failed");
             console.error(err);
-
         } finally {
             setLoading(false);
         }
     };
 
-    // Handle New Password setup submission
+    // 4. Set New Password Submission
     const handlePasswordResetSubmit = async (e) => {
-
         e.preventDefault();
 
         if (!newPassword || newPassword.trim() === '') {
@@ -146,53 +143,18 @@ export const ForgotPassword = () => {
         setLoading(true);
 
         try {
+            const payload = {
+                email: userEmail,
+                password: confirmPassword,
+            };
 
-            try {
-
-                const payLoad = {
-                    email: userEmail,
-                    password: confirmPassword,
-                }
-
-                const response = await api.post("/api/change-password", payLoad);
-
-                message.success(response?.data?.message);
-
-                setStep('success');
-
-            } catch (err) {
-
-                if (err.response?.data?.code === "NOT_VERIFIED") {
-                    navigate("/verify");
-                }
-                else if (err.response?.data?.code === "ACCESS_BLOCKED") {
-                    navigate("/user/blocked");
-                }
-
-                message.error(err.response?.data?.message || "Password Cannot Update");
-
-            }
-
+            const response = await api.post("/api/change-password", payload);
+            message.success(response?.data?.message || "Password updated successfully.");
+            setStep('success');
         } catch (err) {
-
-            message.error(err.message);
-
-        } finally {
-
-            setLoading(false);
-
-        }
-    };
-
-    // Resend code logic
-    const handleResendCode = async () => {
-        setLoading(true);
-
-        try {
-            // TODO: API Call to resend code
-            await new Promise((resolve) => setTimeout(resolve, 1000));
-        } catch (err) {
-            message.error(err.message);
+            if (handleAuthErrors(err)) return;
+            message.error(err.response?.data?.message || "Password Cannot Update");
+            console.error(err);
         } finally {
             setLoading(false);
         }
@@ -201,6 +163,7 @@ export const ForgotPassword = () => {
     // Reset flow on error
     const handleResetFlow = () => {
         setInputValue('');
+        setUserEmail('');
         setNewPassword('');
         setConfirmPassword('');
         setErrorMessage('');
@@ -208,7 +171,6 @@ export const ForgotPassword = () => {
     };
 
     return (
-
         <>
             <SEO
                 title={`Reset Password | ${import.meta.env.VITE_SITE_NAME}`}
@@ -350,9 +312,9 @@ export const ForgotPassword = () => {
                                     type="button"
                                     onClick={handleResendCode}
                                     disabled={loading}
-                                    className="font-semibold text-blue-600 hover:text-blue-700 hover:underline cursor-pointer disabled:opacity-60 transition-colors"
+                                    className="font-semibold text-blue-600 hover:text-blue-700 hover:underline cursor-pointer disabled:opacity-60 transition-colors inline-flex items-center gap-1"
                                 >
-                                    Resend Code
+                                    {loading ? 'Sending...' : 'Resend Code'}
                                 </button>
                             </div>
                         </>
@@ -478,7 +440,6 @@ export const ForgotPassword = () => {
 
                 </div>
             </main>
-
         </>
     );
 };
