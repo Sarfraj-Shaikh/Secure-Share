@@ -1,4 +1,7 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
+import SpinLoader from "../../../shared/SpinLoader";
+import { useNavigate } from "react-router-dom";
+import { verifyToken } from "../../../../../utils/isUserLogin";
 
 // Mock Initial Rates Data
 const INITIAL_SERVICE_RATES = {
@@ -10,6 +13,33 @@ const INITIAL_SERVICE_RATES = {
 };
 
 const ManageServices = () => {
+
+    const navigate = useNavigate();
+
+    const [checkingAuth, setCheckingAuth] = useState(true);
+    const [authenticated, setAuthenticated] = useState(false);
+
+    useEffect(() => {
+
+        const checkAuth = async () => {
+
+            const result = await verifyToken(navigate, {
+                requireAuth: true,
+                requireVerified: true,
+                allowedRoles: ["admin", "superAdmin"],
+            });
+
+            if (result?.success) {
+                setAuthenticated(true);
+            }
+
+            setCheckingAuth(false);
+        };
+
+        checkAuth();
+
+    }, [navigate]);
+
     // States
     const [rates, setRates] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -184,6 +214,10 @@ const ManageServices = () => {
             </div>
         );
     };
+
+    if (checkingAuth) {
+        return <SpinLoader />;
+    }
 
     return (
         <div className="min-h-screen bg-slate-50 px-4 py-8 sm:px-6 lg:px-8 pt-10 sm:pt-[90px] antialiased">
