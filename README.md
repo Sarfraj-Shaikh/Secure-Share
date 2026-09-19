@@ -423,4 +423,6 @@ Across all views, modals, and file/folder listings:
 - Fixed **Forgot Password** Page For Required Email On Every API For Backend.
 - On Login Success Stored userToken In Local Storage.
 - Implemented Features To Check User Is Logged or Not.
+- Added Loading State While Checking User Is Authenticated or Not.
+- Added Is User Logged To All Authentication Page and Protected Routes.
 
