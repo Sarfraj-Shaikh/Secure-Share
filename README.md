@@ -407,3 +407,16 @@ Across all views, modals, and file/folder listings:
 #### Authentication Development
 
 - Conneted **Server with DB** and set **Authentication Flows** For User Registration, Login, Verify Account, Account Validation, Forget Password OTP, Verify OTP, Change Password Features.
+
+----
+
+### Day 9: 19-09-2026
+
+#### Landing Page
+
+- Updated the **README.md** page.
+
+#### Authentication Development
+
+- Updated **Validate Account** Page To Verify User Account Using Token.
+- Implemented Loading, Disabled, Hover States In Login & Signup Page.
