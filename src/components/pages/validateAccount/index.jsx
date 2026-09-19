@@ -7,6 +7,8 @@ import api from '../../../../utils/api';
 const ValidateAccount = () => {
 
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
+
     const siteName = import.meta.env.VITE_SITE_NAME;
 
     const [status, setStatus] = useState('loading');
@@ -16,35 +18,74 @@ const ValidateAccount = () => {
 
         setStatus('loading');
 
+        // Get token from URL:
+        const token = searchParams.get('token');
+
+        // Validate token before API request
+        if (!token || !token.trim()) {
+
+            setStatus('failed');
+
+            message.error('Verification token is missing.');
+
+            return;
+        }
+
         try {
 
-            const response = await api.post("/api/verify-account");
+            const response = await api.post(
+                `/ api / verify - account ? token = ${encodeURIComponent(token)} `
+            );
 
             if (response?.data?.success) {
 
                 setStatus('success');
-                message.success(response?.data?.message || 'Account verified successfully.');
-                navigate("/login");
+
+                message.success(
+                    response?.data?.message ||
+                    'Account verified successfully.'
+                );
+
+                navigate('/login');
 
             } else {
 
                 setStatus('failed');
-                message.error(response?.data?.message || 'Account verification failed.');
 
+                message.error(
+                    response?.data?.message ||
+                    'Account verification failed.'
+                );
             }
 
         } catch (err) {
 
-            if (err.response?.data?.code === "ALREADY_VERIFIED") {
+            const errorCode = err?.response?.data?.code;
+            const errorMessage =
+                err?.response?.data?.message ||
+                'Unable to verify your account.';
+
+            if (errorCode === 'ALREADY_VERIFIED') {
+
                 setStatus('success');
+
+                message.success(
+                    errorMessage || 'Your account is already verified.'
+                );
+
+                return;
             }
-            else if (err.response?.data?.code === "ACCESS_BLOCKED") {
-                navigate("/user/blocked");
+
+            if (errorCode === 'ACCESS_BLOCKED') {
+
+                navigate('/user/blocked');
+
+                return;
             }
 
             setStatus('failed');
 
-            message.error( err?.response?.data?.message || 'Unable to verify your account.' );
+            message.error(errorMessage);
         }
     };
 
@@ -63,11 +104,11 @@ const ValidateAccount = () => {
     return (
         <>
             <SEO
-                title={`Verify Account | ${siteName}`}
+                title={`Verify Account | ${siteName} `}
                 canonical={`${import.meta.env.VITE_WEB_URL}/verify-account`}
             />
 
-            <main className="min-h-[100dvh] flex items-center justify-center bg-white sm:bg-slate-50 p-0 sm:p-4">
+            <main main className="min-h-[100dvh] flex items-center justify-center bg-white sm:bg-slate-50 p-0 sm:p-4" >
                 <div className="w-full min-h-[100dvh] sm:min-h-0 sm:max-w-md bg-white p-5 sm:p-8 rounded-none sm:rounded-2xl shadow-none sm:shadow-xl sm:shadow-slate-200/60 border-0 sm:border sm:border-slate-100 flex flex-col justify-center">
 
                     {/* Logo */}
