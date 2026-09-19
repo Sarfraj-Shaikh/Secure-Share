@@ -1,4 +1,7 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { verifyToken } from "../../../../../utils/isUserLogin";
+import SpinLoader from "../../../shared/SpinLoader";
+import { useNavigate } from "react-router-dom";
 
 const ITEMS_PER_PAGE = 6;
 
@@ -111,12 +114,8 @@ const getFileIconBackground = (type) => {
     }
 };
 
-export default function SharedFiles({
-    files = defaultFiles,
-    loading = false,
-    error = null,
-    onPasswordChange,
-}) {
+export default function SharedFiles({ files = defaultFiles, loading = false, error = null, onPasswordChange, }) {
+
     const [localFiles, setLocalFiles] = useState(files);
 
     const [search, setSearch] = useState("");
@@ -134,6 +133,32 @@ export default function SharedFiles({
     const [passwordError, setPasswordError] = useState("");
     const [savingPassword, setSavingPassword] = useState(false);
     const [successMessage, setSuccessMessage] = useState("");
+
+    const navigate = useNavigate();
+
+    const [checkingAuth, setCheckingAuth] = useState(true);
+    const [authenticated, setAuthenticated] = useState(false);
+
+    useEffect(() => {
+
+        const checkAuth = async () => {
+
+            const result = await verifyToken(navigate, {
+                requireAuth: true,
+                requireVerified: true,
+                allowedRoles: ["user"],
+            });
+
+            if (result?.success) {
+                setAuthenticated(true);
+            }
+
+            setCheckingAuth(false);
+        };
+
+        checkAuth();
+
+    }, [navigate]);
 
     /*
      * Selected File
@@ -320,8 +345,8 @@ export default function SharedFiles({
                                 type="button"
                                 onClick={() => setCurrentPage(pageNumber)}
                                 className={`flex h-9 min-w-[36px] items-center justify-center rounded-lg px-2 text-sm font-medium transition-all duration-200 ${currentPage === pageNumber
-                                        ? "bg-blue-600 text-white shadow-sm shadow-blue-200"
-                                        : "text-slate-600 hover:bg-blue-50 hover:text-blue-600"
+                                    ? "bg-blue-600 text-white shadow-sm shadow-blue-200"
+                                    : "text-slate-600 hover:bg-blue-50 hover:text-blue-600"
                                     }`}
                             >
                                 {pageNumber}
@@ -341,6 +366,10 @@ export default function SharedFiles({
             </div>
         );
     };
+
+    if (checkingAuth) {
+        return <SpinLoader />;
+    }
 
     return (
         <section className="w-full pt-[90px] pb-5 overflow-hidden">
@@ -410,8 +439,8 @@ export default function SharedFiles({
                                             type="button"
                                             onClick={() => handleSort("latest")}
                                             className={`flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-sm transition ${sort === "latest"
-                                                    ? "bg-blue-50 font-medium text-blue-600"
-                                                    : "text-slate-600 hover:bg-slate-50"
+                                                ? "bg-blue-50 font-medium text-blue-600"
+                                                : "text-slate-600 hover:bg-slate-50"
                                                 }`}
                                         >
                                             Latest
@@ -424,8 +453,8 @@ export default function SharedFiles({
                                             type="button"
                                             onClick={() => handleSort("oldest")}
                                             className={`flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-sm transition ${sort === "oldest"
-                                                    ? "bg-blue-50 font-medium text-blue-600"
-                                                    : "text-slate-600 hover:bg-slate-50"
+                                                ? "bg-blue-50 font-medium text-blue-600"
+                                                : "text-slate-600 hover:bg-slate-50"
                                                 }`}
                                         >
                                             Oldest
@@ -582,8 +611,8 @@ export default function SharedFiles({
                                                     )
                                                 }
                                                 className={`flex h-9 w-9 items-center justify-center rounded-lg text-slate-400 transition-all duration-200 hover:bg-slate-100 hover:text-slate-700 ${activeMenu === file.id
-                                                        ? "bg-slate-100 text-slate-700"
-                                                        : ""
+                                                    ? "bg-slate-100 text-slate-700"
+                                                    : ""
                                                     }`}
                                             >
                                                 <i className="ri-more-2-fill text-lg" />

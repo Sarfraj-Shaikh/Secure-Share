@@ -1,5 +1,7 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { verifyToken } from "../../../../../utils/isUserLogin";
+import SpinLoader from "../../../shared/SpinLoader";
 
 const INITIAL_FOLDERS = [
     {
@@ -139,6 +141,30 @@ const formatDate = (date) =>
 const MyFiles = () => {
 
     const navigate = useNavigate();
+
+    const [checkingAuth, setCheckingAuth] = useState(true);
+    const [authenticated, setAuthenticated] = useState(false);
+
+    useEffect(() => {
+
+        const checkAuth = async () => {
+
+            const result = await verifyToken(navigate, {
+                requireAuth: true,
+                requireVerified: true,
+                allowedRoles: ["user"],
+            });
+
+            if (result?.success) {
+                setAuthenticated(true);
+            }
+
+            setCheckingAuth(false);
+        };
+
+        checkAuth();
+
+    }, [navigate]);
 
     const [folders, setFolders] = useState(INITIAL_FOLDERS);
     const [search, setSearch] = useState("");
@@ -355,6 +381,10 @@ const MyFiles = () => {
             </div>
         );
     };
+
+    if (checkingAuth) {
+        return <SpinLoader />;
+    }
 
     return (
 

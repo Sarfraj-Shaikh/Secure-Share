@@ -3,6 +3,7 @@ import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearSca
 import { Doughnut, Line } from "react-chartjs-2";
 import { verifyToken } from "../../../../../utils/isUserLogin";
 import { useNavigate } from "react-router-dom";
+import SpinLoader from "../../../shared/SpinLoader";
 
 // Chart.js registration
 ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, PointElement, LineElement, Filler);
@@ -21,7 +22,7 @@ const Dashboard = () => {
             const result = await verifyToken(navigate, {
                 requireAuth: true,
                 requireVerified: true,
-                allowedRoles: ["admin", "superAdmin"],
+                allowedRoles: ["user"],
             });
 
             if (result?.success) {
@@ -561,6 +562,10 @@ const Dashboard = () => {
     | Skeleton
     |--------------------------------------------------------------------------
     */
+
+    if (checkingAuth) {
+        return <SpinLoader />;
+    }
 
     return (
 
