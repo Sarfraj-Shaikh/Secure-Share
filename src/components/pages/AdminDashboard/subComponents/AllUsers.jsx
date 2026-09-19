@@ -1,8 +1,35 @@
 import { useEffect, useMemo, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import { verifyToken } from "../../../../../utils/isUserLogin";
+import SpinLoader from "../../../shared/SpinLoader";
 
 const AllUsers = () => {
+
     const navigate = useNavigate();
+
+    const [checkingAuth, setCheckingAuth] = useState(true);
+    const [authenticated, setAuthenticated] = useState(false);
+
+    useEffect(() => {
+
+        const checkAuth = async () => {
+
+            const result = await verifyToken(navigate, {
+                requireAuth: true,
+                requireVerified: true,
+                allowedRoles: ["admin", "superAdmin"],
+            });
+
+            if (result?.success) {
+                setAuthenticated(true);
+            }
+
+            setCheckingAuth(false);
+        };
+
+        checkAuth();
+
+    }, [navigate]);
 
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -248,10 +275,14 @@ const AllUsers = () => {
         setCurrentPage(1);
     };
 
+    if (checkingAuth) {
+        return <SpinLoader />;
+    }
+
     return (
         <div className="min-h-screen bg-slate-50 px-4 pb-10 pt-24 sm:px-6 lg:px-8 pt-[90px]">
             <div className="mx-auto max-w-7xl">
-                
+
                 {/* PAGE HEADER */}
                 <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
                     <div>
@@ -278,7 +309,7 @@ const AllUsers = () => {
                 {/* SEARCH + FILTER */}
                 <div className="mb-6 rounded-2xl border border-slate-200 bg-white p-3 shadow-sm sm:p-4">
                     <div className="flex flex-col gap-3 md:flex-row">
-                        
+
                         {/* SEARCH */}
                         <div className="relative flex-1">
                             <i className="ri-search-line absolute left-4 top-1/2 -translate-y-1/2 text-lg text-slate-400" />
@@ -305,9 +336,8 @@ const AllUsers = () => {
                             <button
                                 type="button"
                                 onClick={() => setIsDropdownOpen((prev) => !prev)}
-                                className={`flex h-12 w-full items-center justify-between rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm font-medium text-slate-700 outline-none transition-all duration-300 hover:bg-slate-100/70 ${
-                                    isDropdownOpen ? "border-blue-400 bg-white ring-4 ring-blue-500/10" : ""
-                                }`}
+                                className={`flex h-12 w-full items-center justify-between rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm font-medium text-slate-700 outline-none transition-all duration-300 hover:bg-slate-100/70 ${isDropdownOpen ? "border-blue-400 bg-white ring-4 ring-blue-500/10" : ""
+                                    }`}
                             >
                                 <div className="flex items-center gap-2.5">
                                     <i className="ri-sort-desc text-lg text-slate-400" />
@@ -316,9 +346,8 @@ const AllUsers = () => {
                                     </span>
                                 </div>
                                 <i
-                                    className={`ri-arrow-down-s-line text-slate-400 transition-transform duration-300 ${
-                                        isDropdownOpen ? "rotate-180" : ""
-                                    }`}
+                                    className={`ri-arrow-down-s-line text-slate-400 transition-transform duration-300 ${isDropdownOpen ? "rotate-180" : ""
+                                        }`}
                                 />
                             </button>
 
@@ -333,11 +362,10 @@ const AllUsers = () => {
                                                 setSort(option.value);
                                                 setIsDropdownOpen(false);
                                             }}
-                                            className={`flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-xs font-semibold transition-all ${
-                                                sort === option.value
-                                                    ? "bg-blue-50 text-blue-600"
-                                                    : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
-                                            }`}
+                                            className={`flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-xs font-semibold transition-all ${sort === option.value
+                                                ? "bg-blue-50 text-blue-600"
+                                                : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+                                                }`}
                                         >
                                             <span>{option.label}</span>
                                             {sort === option.value && (
@@ -496,9 +524,8 @@ const AllUsers = () => {
                                     key={page}
                                     type="button"
                                     onClick={() => setCurrentPage(page)}
-                                    className={`flex h-9 min-w-9 items-center justify-center rounded-lg px-2 text-xs font-semibold transition-all duration-300 ${
-                                        currentPage === page ? "bg-blue-600 text-white shadow-md shadow-blue-600/20" : "border border-transparent text-slate-500 hover:bg-blue-50 hover:text-blue-600"
-                                    }`}
+                                    className={`flex h-9 min-w-9 items-center justify-center rounded-lg px-2 text-xs font-semibold transition-all duration-300 ${currentPage === page ? "bg-blue-600 text-white shadow-md shadow-blue-600/20" : "border border-transparent text-slate-500 hover:bg-blue-50 hover:text-blue-600"
+                                        }`}
                                 >
                                     {page}
                                 </button>
