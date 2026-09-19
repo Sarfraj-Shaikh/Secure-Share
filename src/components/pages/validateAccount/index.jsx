@@ -33,10 +33,7 @@ const ValidateAccount = () => {
 
         try {
 
-            const response = await api.post(
-                `/ api / verify - account ? token = ${encodeURIComponent(token)} `
-            );
-
+            const response = await api.post(`/api/verify-account?token=${encodeURIComponent(token)}`);
             if (response?.data?.success) {
 
                 setStatus('success');
