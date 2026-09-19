@@ -3,10 +3,32 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import SEO from '../SEO';
 import api from '../../../../utils/api';
+import { verifyToken } from '../../../../utils/isUserLogin';
 
 const ValidateAccount = () => {
 
     const navigate = useNavigate();
+    
+        const [checkingAuth, setCheckingAuth] = useState(true);
+        const [authenticated, setAuthenticated] = useState(false);
+    
+        useEffect(() => {
+    
+            const checkAuth = async () => {
+    
+                const result = await verifyToken(navigate);
+    
+                if (result?.success) {
+                    setAuthenticated(true);
+                }
+    
+                setCheckingAuth(false);
+            };
+    
+            checkAuth();
+    
+        }, [navigate]);
+
     const [searchParams] = useSearchParams();
 
     const siteName = import.meta.env.VITE_SITE_NAME;
