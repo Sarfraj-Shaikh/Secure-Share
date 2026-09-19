@@ -68,6 +68,7 @@ export const Login = () => {
                 }
 
                 const response = await api.post("/api/login", payLoad);
+                localStorage.getItem("userToken", response?.data?.token);
 
                 message.success(response?.data?.message);
                 navigate("/user/dashboard");

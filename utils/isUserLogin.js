@@ -1,84 +1,88 @@
-import api from "./api";
 import { message } from "antd";
+import api from "./api";
 
-export const checkIsAuth = async (navigate) => {
+export const verifyToken = async (navigate) => {
+
+    const token = localStorage.getItem("userToken");
+
+    const redirect = (path) => {
+        navigate(path);
+    };
+
+    const deleteToken = () => {
+        if (token) {
+            localStorage.removeItem("userToken");
+        }
+    };
+
+    if (!token) {
+
+        if (window.location.pathname !== "/login") {
+            navigate("/login");
+        }
+
+        return false;
+    }
+
     try {
-        const response = await api.get("/api/isAuth");
 
-        // User is authenticated
-        const user = response.data?.user;
-
-        if (user?.role === "user") {
-            return {
-                isAuthenticated: true,
-                role: "user",
-                user,
-            };
+        const payLoad = {
+            token,
         }
 
-        if (user?.role === "admin") {
-            return {
-                isAuthenticated: true,
-                role: "admin",
-                user,
-            };
-        }
-
-        if (user?.role === "superAdmin") {
-            return {
-                isAuthenticated: true,
-                role: "superAdmin",
-                user,
-            };
-        }
-
-        return {
-            isAuthenticated: true,
-            role: user?.role,
-            user,
-        };
+        const response = await api.post("/api/isAuth", payLoad);
+        message.success(response.data.message);
 
     } catch (err) {
-        const code = err.response?.data?.code;
+
+        const code = err?.response?.data?.code;
+        const role = err?.response?.data?.user?.role;
+        message.error(err?.response?.data?.message || "Something went wrong.");
+
+        if (code === "UNAUTHORIZED" || code === "TOKEN_EXPIRED" || code === "INVALID_TOKEN") {
+            deleteToken();
+            if (window.location.pathname !== "/login") {
+                redirect("/login");
+            }
+            return;
+        };
 
         if (code === "USER_NOT_FOUND") {
-            return {
-                isAuthenticated: false,
-                role: null,
-            };
-        }
-
-        if (code === "NOT_VERIFIED") {
-            navigate("/verify", { replace: true });
-
-            return {
-                isAuthenticated: false,
-                role: null,
-            };
-        }
+            deleteToken();
+            if (window.location.pathname !== "/register") {
+                redirect("/register");
+            }
+            return;
+        };
 
         if (code === "ACCESS_BLOCKED") {
-            const role = err.response?.data?.user?.role;
+
+            deleteToken();
 
             if (role === "user") {
-                navigate("/user/blocked", { replace: true });
+                if (window.location.pathname !== "/user/blocked") {
+                    redirect("/user/blocked");
+                }
             }
-
-            if (role === "admin" || role === "superAdmin") {
-                navigate("/admin/blocked", { replace: true });
+            else if (role === "admin" || role === "superAdmin") {
+                if (window.location.pathname !== "/admin/blocked") {
+                    redirect("/admin/blocked");
+                }
             }
-
-            return {
-                isAuthenticated: false,
-                role,
-            };
-        }
-
-        // message.error( err.response?.data?.message || "Something Went Wrong" );
-
-        return {
-            isAuthenticated: false,
-            role: null,
+            return;
         };
+
+        if (code === "NOT_VERIFIED") {
+            if (window.location.pathname !== "/verify" || window.location.pathname !== "/verify-account") {
+                redirect("/verify");
+            }
+            return;
+        };
+
+        if (window.location.pathname !== "/login") {
+            redirect("/login");
+        };
+
+        return false;
     }
 };
