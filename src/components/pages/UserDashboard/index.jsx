@@ -6,7 +6,7 @@ import { ShimmerLoading } from "../../shared/LoadingShimmer";
 import MyFiles from "./subcomponents/f";
 
 const Dashboard = lazy(() => import("./subcomponents/Dashboard"));
-// const MyFiles = lazy(() => import("./subcomponents/MyFiles"));
+const MyFiles = lazy(() => import("./subcomponents/MyFiles"));
 const Files = lazy(() => import("./subcomponents/Files"));
 const SharedFiles = lazy(() => import("./subcomponents/SharedFiles"));
 const Favourites = lazy(() => import("./subcomponents/Favourites"));
@@ -37,15 +37,6 @@ export const UserDashboard = () => {
 
                 <Route
                     path="my-files"
-                    element={
-                        <Suspense fallback={<ShimmerLoading />}>
-                            <MyFiles />
-                        </Suspense>
-                    }
-                />
-
-                <Route
-                    path="f"
                     element={
                         <Suspense fallback={<ShimmerLoading />}>
                             <MyFiles />
