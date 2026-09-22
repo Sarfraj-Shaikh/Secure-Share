@@ -408,7 +408,7 @@ Across all views, modals, and file/folder listings:
 
 - Conneted **Server with DB** and set **Authentication Flows** For User Registration, Login, Verify Account, Account Validation, Forget Password OTP, Verify OTP, Change Password Features.
 
-----
+---
 
 ### Day 9: 19-09-2026
 
@@ -425,4 +425,19 @@ Across all views, modals, and file/folder listings:
 - Implemented Features To Check User Is Logged or Not.
 - Added Loading State While Checking User Is Authenticated or Not.
 - Added Is User Logged To All Authentication Page and Protected Routes.
+
+----
+
+### Day 10: 22-09-2026
+
+#### Documentation
+
+- Updated the **README.md** page.
+
+#### Folders Pages Development
+
+- Redesigned **My Files Page** For Better Experience From Scratch.
+- Implemented **CRUD Operation** In My Files Page.
+- Implemented **Pagination** In My Files Page.
+- Implemented **Searchbar and Shorting Filter** In My Files Page.
 

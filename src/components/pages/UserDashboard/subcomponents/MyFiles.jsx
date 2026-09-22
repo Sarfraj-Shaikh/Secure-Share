@@ -2,6 +2,8 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { verifyToken } from "../../../../../utils/isUserLogin";
 import SpinLoader from "../../../shared/SpinLoader";
+import api from "../../../../../utils/api";
+import { message } from "antd";
 
 const INITIAL_FOLDERS = [
     {
@@ -166,7 +168,7 @@ const MyFiles = () => {
 
     }, [navigate]);
 
-    const [folders, setFolders] = useState(INITIAL_FOLDERS);
+    const [folders, setFolders] = useState([]);
     const [search, setSearch] = useState("");
     const [sortBy, setSortBy] = useState("latest");
     const [sortOpen, setSortOpen] = useState(false);
@@ -382,6 +384,31 @@ const MyFiles = () => {
         );
     };
 
+    const fetchFolders = async () => {
+
+        try {
+
+            const token = localStorage.getItem("userToken") || null;
+
+            const response = await api.get("/api/folders", { headers: { Authorization: token } });
+            setFolders(response.data.folders);
+            console.log(response.data.folders);
+
+
+        } catch (err) {
+
+            message.error(err.message);
+
+        };
+
+    };
+
+    useEffect(() => {
+
+        fetchFolders();
+
+    }, []);
+
     if (checkingAuth) {
         return <SpinLoader />;
     }
@@ -516,9 +543,11 @@ const MyFiles = () => {
                 {/* Folder Cards */}
                 <div>
 
-                    {visibleFolders.length > 0 ? (
+                    {folders.length > 0 ? (
 
-                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                        <div
+                            className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+                        >
 
                             {visibleFolders.map((folder) => {
 
@@ -527,8 +556,8 @@ const MyFiles = () => {
                                 return (
 
                                     <div
-                                        key={folder.id}
-                                        onClick={() => { navigate(`/user/my-files/${folder.id}`) }}
+                                        key={folder._id}
+                                        onClick={() => { navigate(`/user/my-files/${folder._id}`) }}
                                         className="group relative overflow-visible rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition-all duration-300 hover:border-blue-200 hover:shadow-lg hover:shadow-blue-500/5 cursor-pointer"
                                     >
 
@@ -536,7 +565,7 @@ const MyFiles = () => {
                                         <div className="flex items-start justify-between gap-3">
 
                                             <div
-                                                className={`flex h-12 w-12 items-center justify-center rounded-xl ${color.bg} ${color.icon} transition-transform duration-300 group-hover:scale-105`}
+                                                className={`flex h-12 w-12 items-center justify-center rounded-xl ${color.bg} ${folder.color} transition-transform duration-300 group-hover:scale-105`}
                                             >
 
                                                 <i className="ri-folder-5-fill text-2xl" />
@@ -567,9 +596,18 @@ const MyFiles = () => {
                                                 {menuId === folder.id && (
                                                     <FolderMenu
                                                         folder={folder}
-                                                        onEdit={() => openEditModal(folder)}
-                                                        onDelete={() => openDeleteModal(folder)}
-                                                        onFavorite={() => toggleFavorite(folder.id)}
+                                                        onEdit={(e) => {
+                                                            e.stopPropagation();
+                                                            openEditModal(folder)
+                                                        }}
+                                                        onDelete={(e) => {
+                                                            e.stopPropagation();
+                                                            openDeleteModal(folder)
+                                                        }}
+                                                        onFavorite={(e) => {
+                                                            e.stopPropagation();
+                                                            toggleFavorite(folder.id)
+                                                        }}
                                                     />
                                                 )}
 
@@ -582,26 +620,26 @@ const MyFiles = () => {
 
                                             <div className="flex items-center gap-2">
 
-                                                <h3 className="min-w-0 truncate text-base font-bold text-slate-800">
+                                                <h3 className="min-w-0 truncate text-base font-bold text-slate-800 capitalize">
                                                     {folder.name}
                                                 </h3>
 
                                                 <button
                                                     type="button"
-                                                    onClick={() => toggleFavorite(folder.id)}
-                                                    className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg transition-all cursor-pointer ${folder.favorite
+                                                    onClick={() => toggleFavorite(folder._id)}
+                                                    className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg transition-all cursor-pointer ${folder.isFavorite
                                                         ? "bg-amber-50 text-amber-500"
                                                         : "text-slate-300 hover:bg-slate-100 hover:text-slate-500"
                                                         }`}
                                                     aria-label={
-                                                        folder.favorite
+                                                        folder.isFavorite
                                                             ? "Remove from favorites"
                                                             : "Add to favorites"
                                                     }
                                                 >
                                                     <i
                                                         className={
-                                                            folder.favorite
+                                                            folder.isFavorite
                                                                 ? "ri-star-fill"
                                                                 : "ri-star-line"
                                                         }
@@ -616,17 +654,8 @@ const MyFiles = () => {
 
                                         </div>
 
-                                        {/* Color + Files */}
+                                        {/* Total Files */}
                                         <div className="mt-5 flex items-center justify-between">
-
-                                            {/* <span
-                                                className={`inline-flex items-center gap-2 rounded-full px-2.5 py-1.5 text-xs font-medium ${color.bg} ${color.text}`}
-                                            >
-                                                <span
-                                                    className={`h-1.5 w-1.5 rounded-full ${color.dot}`}
-                                                />
-                                                {color.label}
-                                            </span> */}
 
                                             <span className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-500">
                                                 <i className="ri-file-3-line text-sm text-slate-400" />
@@ -655,20 +684,20 @@ const MyFiles = () => {
 
                                             <button
                                                 type="button"
-                                                onClick={() => toggleFavorite(folder.id)}
-                                                className={`flex h-9 items-center gap-1.5 rounded-lg px-2.5 text-xs font-semibold transition-all cursor-pointer ${folder.favorite
+                                                onClick={() => toggleFavorite(folder._id)}
+                                                className={`flex h-9 items-center gap-1.5 rounded-lg px-2.5 text-xs font-semibold transition-all cursor-pointer ${folder.isFavorite
                                                     ? "bg-amber-50 text-amber-600"
                                                     : "bg-slate-50 text-slate-500 hover:bg-blue-50 hover:text-blue-600"
                                                     }`}
                                             >
                                                 <i
                                                     className={
-                                                        folder.favorite
+                                                        folder.isFavorite
                                                             ? "ri-star-fill"
                                                             : "ri-star-line"
                                                     }
                                                 />
-                                                {folder.favorite ? "Favorite" : "Add Favorite"}
+                                                {folder.isFavorite ? "Favorite" : "Add Favorite"}
                                             </button>
 
                                         </div>
@@ -1166,4 +1195,4 @@ function EmptyState({ search, onClear }) {
     );
 }
 
-export default MyFiles;
+// export default MyFiles;
