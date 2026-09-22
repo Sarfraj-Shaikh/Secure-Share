@@ -3,7 +3,6 @@ import { Routes, Route, useNavigate } from "react-router-dom";
 
 import { Navbar } from "./Navbar";
 import { ShimmerLoading } from "../../shared/LoadingShimmer";
-import MyFiles from "./subcomponents/f";
 
 const Dashboard = lazy(() => import("./subcomponents/Dashboard"));
 const MyFiles = lazy(() => import("./subcomponents/MyFiles"));
