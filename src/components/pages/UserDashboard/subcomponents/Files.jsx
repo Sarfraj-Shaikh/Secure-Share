@@ -32,6 +32,8 @@ const Files = () => {
     const [deleteLoading, setDeleteLoading] = useState(false);
 
     const [selectedFile, setSelectedFile] = useState(null);
+    const [selectedFolderName, setSelectedFolderName] = useState(null);
+    const [currentFolderName, setCurrentFolderName] = useState(null);
     const [moveFolderId, setMoveFolderId] = useState(null);
 
     const [fileName, setFileName] = useState("");
@@ -207,9 +209,8 @@ const Files = () => {
                     ? responseFiles
                     : [...prev, ...responseFiles]
             );
-
             setTotalPages(responseTotalPages);
-
+            setCurrentFolderName(response.data?.folderName);
             setPageNo(currentPage + 1);
         } catch (err) {
             message.error(
@@ -473,7 +474,7 @@ const Files = () => {
 
             const page = reset ? 1 : folderPageNo;
 
-            const response = await api.get( `/api/folders?page=${page}`, getAuthConfig() );
+            const response = await api.get(`/api/folders?page=${page}`, getAuthConfig());
 
             const responseFolders = Array.isArray(response.data?.folders) ? response.data.folders : Array.isArray(response.data?.data) ? response.data.data : [];
 
@@ -517,6 +518,7 @@ const Files = () => {
      */
 
     const handleMoveFile = async (fileId) => {
+
         if (!moveFolderId) {
             message.error(
                 "Please select a destination folder."
@@ -1302,7 +1304,9 @@ const Files = () => {
 
                                                     <div className="min-w-0">
                                                         <p className="truncate text-sm font-medium text-slate-900">
-                                                            Current Folder
+                                                            {currentFolderName
+                                                                ? currentFolderName : "Current Folder"
+                                                            }
                                                         </p>
 
                                                         <p className="mt-1 text-xs text-slate-500">
@@ -1841,10 +1845,8 @@ const Files = () => {
                                                     </div>
 
                                                     <div>
-                                                        <p className="text-sm font-medium text-slate-800">
-                                                            {moveFolderId
-                                                                ? "Folder Selected"
-                                                                : "Select Folder"}
+                                                        <p className="text-sm font-medium text-slate-800 capitalize">
+                                                            {selectedFolderName ? selectedFolderName : "Select Folder"}
                                                         </p>
 
                                                         <p className="mt-1 text-xs text-slate-500">
@@ -1983,18 +1985,14 @@ const Files = () => {
                                             return (
                                                 <button
                                                     type="button"
-                                                    key={
-                                                        folder._id
-                                                    }
-                                                    disabled={
-                                                        isCurrent
-                                                    }
-                                                    onClick={() =>
-                                                        setMoveFolderId(
-                                                            folder._id
-                                                        )
-                                                    }
-                                                    className={`flex w-full items-center justify-between rounded-xl border p-3 text-left transition-all duration-200 ${isCurrent
+                                                    key={folder._id}
+                                                    disabled={isCurrent}
+                                                    onClick={() => {
+                                                        setMoveFolderId(folder._id),
+                                                            setSelectedFolderName(folder.name),
+                                                            setSelectFolderModal(false)
+                                                    }}
+                                                    className={`flex w-full items-center  capitalize justify-between rounded-xl border p-3 text-left transition-all duration-200 ${isCurrent
                                                         ? "cursor-not-allowed border-slate-200 bg-slate-50 opacity-50"
                                                         : isSelected
                                                             ? "border-slate-900 bg-slate-50"
