@@ -1303,7 +1303,7 @@ const Files = () => {
                                                     </div>
 
                                                     <div className="min-w-0">
-                                                        <p className="truncate text-sm font-medium text-slate-900">
+                                                        <p className="truncate text-sm font-medium text-slate-900 capitalize">
                                                             {currentFolderName
                                                                 ? currentFolderName : "Current Folder"
                                                             }
@@ -1818,8 +1818,8 @@ const Files = () => {
                                                     <i className="ri-folder-3-line text-xl text-slate-600" />
                                                 </div>
 
-                                                <p className="text-sm text-slate-700">
-                                                    Current Folder
+                                                <p className="text-sm text-slate-700 capitalize">
+                                                    {currentFolderName ? currentFolderName : "-"}
                                                 </p>
                                             </div>
                                         </div>
