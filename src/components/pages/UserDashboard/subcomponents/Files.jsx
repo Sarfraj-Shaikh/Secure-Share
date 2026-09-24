@@ -230,6 +230,7 @@ const Files = () => {
      */
 
     const handleFileSelection = (event) => {
+
         const selected = event.target.files?.[0];
 
         if (!selected) {
@@ -259,6 +260,7 @@ const Files = () => {
      */
 
     const handleFileUpload = async () => {
+
         if (!selectedFile) {
             message.error("Please select a file.");
             return;
@@ -277,62 +279,44 @@ const Files = () => {
         try {
             setLoading(true);
 
-            const payload = new FormData();
+            const formData = new FormData();
 
-            payload.append(
-                "fileName",
-                fileName.trim()
-            );
+            formData.append("fileName", fileName.trim());
+            formData.append("folderId", folderId);
+            formData.append("file", selectedFile, selectedFile.name);
 
-            payload.append(
-                "folderId",
-                folderId
-            );
-
-            payload.append(
-                "file",
-                selectedFile
-            );
+            const token = localStorage.getItem("userToken");
 
             const response = await api.post(
-                "/api/file",
-                payload,
-                getAuthConfig()
+                "/api/file", formData,
+                {
+                    headers: { Authorization: token || "", },
+                }
             );
 
-            /*
-             * Backend response:
-             *
-             * {
-             *   success: true,
-             *   message: "...",
-             *   file: newFile
-             * }
-             */
+            message.success(response.data?.message || "File uploaded successfully.");
 
-            message.success(
-                response.data?.message ||
-                "File uploaded successfully."
-            );
+            setAddFileModal(false);
+            resetUploadState();
 
-            closeAddFileModal();
-
-            /*
-             * Re-fetch page 1 instead of manually adding
-             * response.data.file.
-             *
-             * This keeps pagination consistent.
-             */
             await fetchFiles(true);
+
         } catch (err) {
             message.error(
-                getErrorMessage(
-                    err,
-                    "Unable to upload file."
-                )
+                err?.response?.data?.message ||
+                "Unable to upload file."
             );
         } finally {
             setLoading(false);
+        }
+    };
+
+    const resetUploadState = () => {
+        setSelectedFile(null);
+        setFileName("");
+
+        if (fileInputRef.current) {
+            fileInputRef.current.value = "";
         }
     };
 
@@ -482,22 +466,16 @@ const Files = () => {
      */
 
     const fetchFolders = async (reset = false) => {
+
         try {
+
             setFolderLoading(true);
 
             const page = reset ? 1 : folderPageNo;
 
-            const response = await api.get(
-                `/api/folder?page=${page}`,
-                getAuthConfig()
-            );
+            const response = await api.get( `/api/folders?page=${page}`, getAuthConfig() );
 
-            const responseFolders =
-                Array.isArray(response.data?.folders)
-                    ? response.data.folders
-                    : Array.isArray(response.data?.data)
-                        ? response.data.data
-                        : [];
+            const responseFolders = Array.isArray(response.data?.folders) ? response.data.folders : Array.isArray(response.data?.data) ? response.data.data : [];
 
             const currentPage = Number(
                 response.data?.currentPage || page
@@ -860,8 +838,8 @@ const Files = () => {
 
                             <i
                                 className={`ri-arrow-down-s-line text-lg transition-transform duration-200 ${isFilterOpen
-                                        ? "rotate-180"
-                                        : ""
+                                    ? "rotate-180"
+                                    : ""
                                     }`}
                             />
                         </button>
@@ -2017,10 +1995,10 @@ const Files = () => {
                                                         )
                                                     }
                                                     className={`flex w-full items-center justify-between rounded-xl border p-3 text-left transition-all duration-200 ${isCurrent
-                                                            ? "cursor-not-allowed border-slate-200 bg-slate-50 opacity-50"
-                                                            : isSelected
-                                                                ? "border-slate-900 bg-slate-50"
-                                                                : "border-slate-200 hover:border-slate-300 hover:bg-slate-50"
+                                                        ? "cursor-not-allowed border-slate-200 bg-slate-50 opacity-50"
+                                                        : isSelected
+                                                            ? "border-slate-900 bg-slate-50"
+                                                            : "border-slate-200 hover:border-slate-300 hover:bg-slate-50"
                                                         }`}
                                                 >
                                                     <div className="flex min-w-0 items-center gap-3">
