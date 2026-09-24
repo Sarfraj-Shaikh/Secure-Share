@@ -455,3 +455,10 @@ Across all views, modals, and file/folder listings:
 - Implemented **CRUD Operation** In Favourites Page.
 - Implemented **Pagination** In Favourites Page.
 - Implemented **Searchbar and Shorting Filter** In Favourites Page.
+
+#### Files Pages Development
+
+- Redesigned **Files Page** For Better Experience From Scratch.
+- Implemented **CRUD Operation** In Files Page.
+- Implemented **Pagination** In Files Page.
+- Implemented **Searchbar and Shorting Filter** In Files Page.
