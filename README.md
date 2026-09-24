@@ -441,3 +441,17 @@ Across all views, modals, and file/folder listings:
 - Implemented **Pagination** In My Files Page.
 - Implemented **Searchbar and Shorting Filter** In My Files Page.
 
+----
+
+### Day 10: 22-09-2026
+
+#### Documentation
+
+- Updated the **README.md** page.
+
+#### Folders Pages Development
+
+- Redesigned **Favourites Page** For Better Experience From Scratch.
+- Implemented **CRUD Operation** In Favourites Page.
+- Implemented **Pagination** In Favourites Page.
+- Implemented **Searchbar and Shorting Filter** In Favourites Page.
