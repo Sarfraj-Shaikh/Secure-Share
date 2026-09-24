@@ -1,3332 +1,2206 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
-import { verifyToken } from "../../../../../utils/isUserLogin";
-import { useNavigate } from "react-router-dom";
-import SpinLoader from "../../../shared/SpinLoader";
+import { message } from "antd";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useParams } from "react-router-dom";
+import api from "../../../../../utils/api";
 
-/* =========================================================
-   CONFIG
-========================================================= */
-
-const MAX_FILE_SIZE = 10 * 1024 * 1024;
-const FILES_PER_PAGE = 6;
-const FOLDERS_PER_PAGE = 10;
-
-const CURRENT_USER_EMAIL = "owner@example.com";
-
-/* =========================================================
-   DEMO REGISTERED USERS
-========================================================= */
-
-const REGISTERED_USERS = [
-    "john@example.com",
-    "sarah@example.com",
-    "alex@example.com",
-    "michael@example.com",
-];
-
-/* =========================================================
-   DEMO FOLDERS
-========================================================= */
-
-const INITIAL_FOLDERS = [
-    {
-        id: 1,
-        name: "My Documents",
-        color: "blue",
-        updatedAt: "2026-08-24T14:20:00",
-    },
-    {
-        id: 2,
-        name: "Work Projects",
-        color: "purple",
-        updatedAt: "2026-08-23T12:30:00",
-    },
-    {
-        id: 3,
-        name: "Personal",
-        color: "green",
-        updatedAt: "2026-08-21T10:15:00",
-    },
-    {
-        id: 4,
-        name: "Design Assets",
-        color: "pink",
-        updatedAt: "2026-08-20T16:45:00",
-    },
-    {
-        id: 5,
-        name: "Marketing",
-        color: "rose",
-        updatedAt: "2026-08-18T09:30:00",
-    },
-    {
-        id: 6,
-        name: "Invoices",
-        color: "blue",
-        updatedAt: "2026-08-17T11:20:00",
-    },
-    {
-        id: 7,
-        name: "Presentations",
-        color: "purple",
-        updatedAt: "2026-08-16T15:40:00",
-    },
-    {
-        id: 8,
-        name: "Videos",
-        color: "pink",
-        updatedAt: "2026-08-15T13:10:00",
-    },
-    {
-        id: 9,
-        name: "Archives",
-        color: "green",
-        updatedAt: "2026-08-14T08:50:00",
-    },
-    {
-        id: 10,
-        name: "Shared Files",
-        color: "rose",
-        updatedAt: "2026-08-13T17:25:00",
-    },
-    {
-        id: 11,
-        name: "Clients",
-        color: "blue",
-        updatedAt: "2026-08-12T14:35:00",
-    },
-    {
-        id: 12,
-        name: "Resources",
-        color: "purple",
-        updatedAt: "2026-08-10T10:20:00",
-    },
-];
-
-/* =========================================================
-   DEMO FILES
-========================================================= */
-
-const INITIAL_FILES = [
-    {
-        id: 1,
-        name: "Project Proposal.pdf",
-        fileName: "Project Proposal",
-        extension: ".pdf",
-        type: "PDF",
-        size: 2.5 * 1024 * 1024,
-        uploadedAt: "2026-08-18T10:30:00",
-        updatedAt: "2026-08-24T14:20:00",
-        downloads: 42,
-        shares: 8,
-        expiryDate: "2026-09-30",
-        password: true,
-        folderId: 1,
-    },
-    {
-        id: 2,
-        name: "Brand Guidelines.fig",
-        fileName: "Brand Guidelines",
-        extension: ".fig",
-        type: "FIG",
-        size: 8.2 * 1024 * 1024,
-        uploadedAt: "2026-08-16T09:15:00",
-        updatedAt: "2026-08-23T11:40:00",
-        downloads: 27,
-        shares: 5,
-        expiryDate: null,
-        password: false,
-        folderId: 4,
-    },
-    {
-        id: 3,
-        name: "Invoice August.xlsx",
-        fileName: "Invoice August",
-        extension: ".xlsx",
-        type: "XLSX",
-        size: 1.8 * 1024 * 1024,
-        uploadedAt: "2026-08-14T16:45:00",
-        updatedAt: "2026-08-21T18:10:00",
-        downloads: 19,
-        shares: 3,
-        expiryDate: "2026-12-31",
-        password: true,
-        folderId: 1,
-    },
-    {
-        id: 4,
-        name: "Product Demo.mp4",
-        fileName: "Product Demo",
-        extension: ".mp4",
-        type: "MP4",
-        size: 48.6 * 1024 * 1024,
-        uploadedAt: "2026-08-10T12:20:00",
-        updatedAt: "2026-08-20T15:30:00",
-        downloads: 63,
-        shares: 14,
-        expiryDate: null,
-        password: false,
-        folderId: 2,
-    },
-    {
-        id: 5,
-        name: "Meeting Notes.docx",
-        fileName: "Meeting Notes",
-        extension: ".docx",
-        type: "DOCX",
-        size: 780 * 1024,
-        uploadedAt: "2026-08-06T08:00:00",
-        updatedAt: "2026-08-18T13:25:00",
-        downloads: 11,
-        shares: 2,
-        expiryDate: "2026-10-15",
-        password: false,
-        folderId: 2,
-    },
-    {
-        id: 6,
-        name: "Profile Photo.jpg",
-        fileName: "Profile Photo",
-        extension: ".jpg",
-        type: "JPG",
-        size: 3.4 * 1024 * 1024,
-        uploadedAt: "2026-08-02T11:30:00",
-        updatedAt: "2026-08-15T09:45:00",
-        downloads: 31,
-        shares: 7,
-        expiryDate: null,
-        password: false,
-        folderId: 3,
-    },
-    {
-        id: 7,
-        name: "Presentation.pptx",
-        fileName: "Presentation",
-        extension: ".pptx",
-        type: "PPTX",
-        size: 5.7 * 1024 * 1024,
-        uploadedAt: "2026-07-28T14:00:00",
-        updatedAt: "2026-08-11T16:15:00",
-        downloads: 22,
-        shares: 4,
-        expiryDate: null,
-        password: true,
-        folderId: 2,
-    },
-    {
-        id: 8,
-        name: "Logo Pack.zip",
-        fileName: "Logo Pack",
-        extension: ".zip",
-        type: "ZIP",
-        size: 12.4 * 1024 * 1024,
-        uploadedAt: "2026-07-21T10:10:00",
-        updatedAt: "2026-08-07T12:00:00",
-        downloads: 38,
-        shares: 9,
-        expiryDate: "2026-11-20",
-        password: true,
-        folderId: 4,
-    },
-];
-
-/* =========================================================
-   FILE TYPE STYLES
-========================================================= */
-
-const FILE_STYLES = {
-    PDF: {
-        bg: "bg-red-50",
-        text: "text-red-500",
-        border: "border-red-100",
-        icon: "ri-file-pdf-2-fill",
-    },
-    DOC: {
-        bg: "bg-blue-50",
-        text: "text-blue-500",
-        border: "border-blue-100",
-        icon: "ri-file-word-2-fill",
-    },
-    DOCX: {
-        bg: "bg-blue-50",
-        text: "text-blue-500",
-        border: "border-blue-100",
-        icon: "ri-file-word-2-fill",
-    },
-    XLS: {
-        bg: "bg-emerald-50",
-        text: "text-emerald-500",
-        border: "border-emerald-100",
-        icon: "ri-file-excel-2-fill",
-    },
-    XLSX: {
-        bg: "bg-emerald-50",
-        text: "text-emerald-500",
-        border: "border-emerald-100",
-        icon: "ri-file-excel-2-fill",
-    },
-    PPT: {
-        bg: "bg-orange-50",
-        text: "text-orange-500",
-        border: "border-orange-100",
-        icon: "ri-file-ppt-2-fill",
-    },
-    PPTX: {
-        bg: "bg-orange-50",
-        text: "text-orange-500",
-        border: "border-orange-100",
-        icon: "ri-file-ppt-2-fill",
-    },
-    JPG: {
-        bg: "bg-purple-50",
-        text: "text-purple-500",
-        border: "border-purple-100",
-        icon: "ri-image-2-fill",
-    },
-    JPEG: {
-        bg: "bg-purple-50",
-        text: "text-purple-500",
-        border: "border-purple-100",
-        icon: "ri-image-2-fill",
-    },
-    PNG: {
-        bg: "bg-purple-50",
-        text: "text-purple-500",
-        border: "border-purple-100",
-        icon: "ri-image-2-fill",
-    },
-    GIF: {
-        bg: "bg-purple-50",
-        text: "text-purple-500",
-        border: "border-purple-100",
-        icon: "ri-image-2-fill",
-    },
-    SVG: {
-        bg: "bg-violet-50",
-        text: "text-violet-500",
-        border: "border-violet-100",
-        icon: "ri-shapes-fill",
-    },
-    FIG: {
-        bg: "bg-violet-50",
-        text: "text-violet-500",
-        border: "border-violet-100",
-        icon: "ri-paint-brush-fill",
-    },
-    MP4: {
-        bg: "bg-pink-50",
-        text: "text-pink-500",
-        border: "border-pink-100",
-        icon: "ri-video-fill",
-    },
-    MOV: {
-        bg: "bg-pink-50",
-        text: "text-pink-500",
-        border: "border-pink-100",
-        icon: "ri-video-fill",
-    },
-    ZIP: {
-        bg: "bg-amber-50",
-        text: "text-amber-500",
-        border: "border-amber-100",
-        icon: "ri-file-zip-fill",
-    },
-    RAR: {
-        bg: "bg-amber-50",
-        text: "text-amber-500",
-        border: "border-amber-100",
-        icon: "ri-file-zip-fill",
-    },
-    DEFAULT: {
-        bg: "bg-slate-100",
-        text: "text-slate-500",
-        border: "border-slate-200",
-        icon: "ri-file-3-fill",
-    },
-};
-
-/* =========================================================
-   FOLDER COLOR STYLES
-========================================================= */
-
-const FOLDER_COLORS = {
-    blue: {
-        bg: "bg-blue-50",
-        text: "text-blue-500",
-        dot: "bg-blue-500",
-    },
-    rose: {
-        bg: "bg-rose-50",
-        text: "text-rose-500",
-        dot: "bg-rose-500",
-    },
-    green: {
-        bg: "bg-emerald-50",
-        text: "text-emerald-500",
-        dot: "bg-emerald-500",
-    },
-    purple: {
-        bg: "bg-purple-50",
-        text: "text-purple-500",
-        dot: "bg-purple-500",
-    },
-    pink: {
-        bg: "bg-pink-50",
-        text: "text-pink-500",
-        dot: "bg-pink-500",
-    },
-};
-
-/* =========================================================
-   HELPERS
-========================================================= */
-
-const getFileStyle = (type) => {
-    return FILE_STYLES[type] || FILE_STYLES.DEFAULT;
-};
-
-const getFolderStyle = (color) => {
-    return FOLDER_COLORS[color] || FOLDER_COLORS.blue;
-};
-
-const formatDate = (date) => {
-    if (!date) return "—";
-
-    return new Intl.DateTimeFormat("en-IN", {
-        day: "2-digit",
-        month: "short",
-        year: "numeric",
-    }).format(new Date(date));
-};
-
-const formatFileSize = (bytes) => {
-    if (bytes < 1024) {
-        return `${bytes} B`;
-    }
-
-    if (bytes < 1024 * 1024) {
-        return `${(bytes / 1024).toFixed(1)} KB`;
-    }
-
-    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-};
-
-const getFileExtension = (fileName) => {
-    const lastDot = fileName.lastIndexOf(".");
-
-    if (lastDot <= 0) {
-        return "";
-    }
-
-    return fileName.slice(lastDot).toLowerCase();
-};
-
-const getFileNameWithoutExtension = (fileName) => {
-    const lastDot = fileName.lastIndexOf(".");
-
-    if (lastDot <= 0) {
-        return fileName;
-    }
-
-    return fileName.slice(0, lastDot);
-};
-
-/* =========================================================
-   MAIN COMPONENT
-========================================================= */
-
-export default function Files() {
-
-    const navigate = useNavigate();
-
-    const [checkingAuth, setCheckingAuth] = useState(true);
-    const [authenticated, setAuthenticated] = useState(false);
-
-    useEffect(() => {
-
-        const checkAuth = async () => {
-
-            const result = await verifyToken(navigate, {
-                requireAuth: true,
-                requireVerified: true,
-                allowedRoles: ["user"],
-            });
-
-            if (result?.success) {
-                setAuthenticated(true);
-            }
-
-            setCheckingAuth(false);
-        };
-
-        checkAuth();
-
-    }, [navigate]);
-
-    /* ---------------- DATA ---------------- */
-
-    const [files, setFiles] = useState(INITIAL_FILES);
-    const [folders, setFolders] = useState(INITIAL_FOLDERS);
-
-    /* ---------------- LIST STATE ---------------- */
-
-    const [loading, setLoading] = useState(true);
-
-    const [search, setSearch] = useState("");
-    const [sortBy, setSortBy] = useState("latest");
-    const [sortOpen, setSortOpen] = useState(false);
-
-    const [page, setPage] = useState(1);
-
-    /* ---------------- MENU ---------------- */
-
-    const [menuId, setMenuId] = useState(null);
-
-    /* ---------------- MODALS ---------------- */
-
-    const [modal, setModal] = useState(null);
-
-    const [selectedFile, setSelectedFile] = useState(null);
-
-    /* ---------------- TOAST ---------------- */
-
-    const [toast, setToast] = useState(null);
-
-    /* ---------------- EDIT ---------------- */
-
-    const [editFileName, setEditFileName] = useState("");
-    const [editError, setEditError] = useState("");
-    const [editLoading, setEditLoading] = useState(false);
-
-    /* ---------------- SHARE ---------------- */
-
-    const [recipientEmail, setRecipientEmail] = useState("");
-    const [sharePassword, setSharePassword] = useState("");
-    const [shareExpiry, setShareExpiry] = useState("");
-    const [shareError, setShareError] = useState("");
-    const [shareLoading, setShareLoading] = useState(false);
-
-    /* ---------------- DELETE ---------------- */
-
-    const [deleteLoading, setDeleteLoading] = useState(false);
-    const [deleteError, setDeleteError] = useState("");
-
-    /* ---------------- MOVE ---------------- */
-
-    const [moveError, setMoveError] = useState("");
-    const [moveLoading, setMoveLoading] = useState(false);
-    const [selectedDestination, setSelectedDestination] =
-        useState(null);
-
-    const [folderPickerOpen, setFolderPickerOpen] =
-        useState(false);
-
-    const [folderSearch, setFolderSearch] = useState("");
-    const [folderPage, setFolderPage] = useState(1);
-
-    /* ---------------- ADD FILE ---------------- */
+const Files = () => {
+    const { id } = useParams();
+    const routeFolderId = id;
 
     const fileInputRef = useRef(null);
 
-    const [uploadFile, setUploadFile] = useState(null);
-    const [uploadFileName, setUploadFileName] = useState("");
-    const [uploadExtension, setUploadExtension] = useState("");
-    const [uploadFolderId, setUploadFolderId] = useState(
-        INITIAL_FOLDERS[0]?.id || null
-    );
+    const [filter, setFilter] = useState("latest");
+    const [files, setFiles] = useState([]);
+    const [folders, setFolders] = useState([]);
 
-    const [uploadError, setUploadError] = useState("");
-    const [uploadLoading, setUploadLoading] = useState(false);
+    const [searchQuery, setSearchQuery] = useState("");
+    const [folderSearchQuery, setFolderSearchQuery] = useState("");
 
-    /* =========================================================
-       SIMULATE INITIAL LOADING
-    ========================================================= */
+    const [addFileModal, setAddFileModal] = useState(false);
+    const [editFileModal, setEditFileModal] = useState(false);
+    const [shareFileModal, setShareFileModal] = useState(false);
+    const [moveFileModal, setMoveFileModal] = useState(false);
+    const [deleteFileModal, setDeleteFileModal] = useState(false);
+    const [selectFolderModal, setSelectFolderModal] = useState(false);
 
-    if (loading) {
-        setTimeout(() => {
-            setLoading(false);
-        }, 700);
-    }
+    const [loading, setLoading] = useState(false);
+    const [fetchLoading, setFetchLoading] = useState(false);
+    const [folderLoading, setFolderLoading] = useState(false);
+    const [editLoading, setEditLoading] = useState(false);
+    const [shareLoading, setShareLoading] = useState(false);
+    const [moveLoading, setMoveLoading] = useState(false);
+    const [deleteLoading, setDeleteLoading] = useState(false);
 
-    /* =========================================================
-       FILTERED FILES
-    ========================================================= */
+    const [selectedFile, setSelectedFile] = useState(null);
+    const [moveFolderId, setMoveFolderId] = useState(null);
 
-    const filteredFiles = useMemo(() => {
-        const query = search.trim().toLowerCase();
+    const [fileName, setFileName] = useState("");
+    const [folderId, setFolderId] = useState(routeFolderId || null);
 
-        const result = files.filter((file) => {
-            if (!query) return true;
+    const [userEmail, setUserEmail] = useState("");
 
-            return (
-                file.name.toLowerCase().includes(query) ||
-                file.fileName.toLowerCase().includes(query) ||
-                file.extension.toLowerCase().includes(query) ||
-                file.type.toLowerCase().includes(query)
-            );
-        });
+    const [pageNo, setPageNo] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
 
-        return [...result].sort((a, b) => {
-            if (sortBy === "oldest") {
-                return (
-                    new Date(a.uploadedAt) -
-                    new Date(b.uploadedAt)
-                );
-            }
+    const [folderPageNo, setFolderPageNo] = useState(1);
+    const [folderTotalPages, setFolderTotalPages] = useState(1);
 
-            return (
-                new Date(b.uploadedAt) -
-                new Date(a.uploadedAt)
-            );
-        });
-    }, [files, search, sortBy]);
+    const [editFileName, setEditFileName] = useState("");
+    const [editPassword, setEditPassword] = useState("");
+    const [editExpiry, setEditExpiry] = useState("");
 
-    /* =========================================================
-       FILE PAGINATION
-    ========================================================= */
+    const [openMenuFileId, setOpenMenuFileId] = useState(null);
+    const [isFilterOpen, setIsFilterOpen] = useState(false);
 
-    const totalPages = Math.max(
-        1,
-        Math.ceil(filteredFiles.length / FILES_PER_PAGE)
-    );
+    /*
+     * -------------------------------------------------------
+     * Auth
+     * -------------------------------------------------------
+     */
 
-    const visibleFiles = filteredFiles.slice(
-        (page - 1) * FILES_PER_PAGE,
-        page * FILES_PER_PAGE
-    );
+    const getAuthConfig = () => {
+        const userToken = localStorage.getItem("userToken");
 
-    /* =========================================================
-       FOLDER SEARCH
-    ========================================================= */
+        return {
+            headers: {
+                Authorization: userToken || "",
+            },
+        };
+    };
 
-    const filteredFolders = useMemo(() => {
-        const query = folderSearch.trim().toLowerCase();
+    /*
+     * -------------------------------------------------------
+     * Helpers
+     * -------------------------------------------------------
+     */
 
-        if (!query) {
-            return folders;
+    const getErrorMessage = (err, fallback) => {
+        return (
+            err?.response?.data?.message ||
+            err?.message ||
+            fallback
+        );
+    };
+
+    const getFileExtension = (name = "") => {
+        const parts = name.split(".");
+
+        if (parts.length <= 1) {
+            return "";
         }
 
-        return folders.filter((folder) =>
-            folder.name.toLowerCase().includes(query)
-        );
-    }, [folders, folderSearch]);
+        return parts.pop();
+    };
 
-    const folderTotalPages = Math.max(
-        1,
-        Math.ceil(
-            filteredFolders.length / FOLDERS_PER_PAGE
-        )
-    );
+    const getFileNameWithoutExtension = (name = "") => {
+        const extension = getFileExtension(name);
 
-    const visibleFolders = filteredFolders.slice(
-        (folderPage - 1) * FOLDERS_PER_PAGE,
-        folderPage * FOLDERS_PER_PAGE
-    );
+        return extension
+            ? name.slice(0, -(extension.length + 1))
+            : name;
+    };
 
-    /* =========================================================
-       TOAST
-    ========================================================= */
+    const formatFileSize = (size) => {
+        const bytes = Number(size) || 0;
 
-    const showToast = (message, type = "success") => {
-        setToast({
-            message,
-            type,
+        if (bytes < 1024) {
+            return `${bytes} B`;
+        }
+
+        if (bytes < 1024 * 1024) {
+            return `${(bytes / 1024).toFixed(2)} KB`;
+        }
+
+        return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
+    };
+
+    const formatDate = (date) => {
+        if (!date) {
+            return "—";
+        }
+
+        const parsedDate = new Date(date);
+
+        if (Number.isNaN(parsedDate.getTime())) {
+            return date;
+        }
+
+        return parsedDate.toLocaleDateString("en-IN", {
+            day: "2-digit",
+            month: "short",
+            year: "numeric",
         });
-
-        setTimeout(() => {
-            setToast(null);
-        }, 2800);
     };
 
-    /* =========================================================
-       SEARCH
-    ========================================================= */
+    const getMimeExtension = (mimeType = "") => {
+        const parts = mimeType.split("/");
 
-    const handleSearch = (value) => {
-        setSearch(value);
-        setPage(1);
+        return parts.length > 1
+            ? parts[1].toUpperCase()
+            : "FILE";
     };
 
-    /* =========================================================
-       SORT
-    ========================================================= */
+    /*
+     * -------------------------------------------------------
+     * Route folder
+     * -------------------------------------------------------
+     */
 
-    const handleSort = (value) => {
-        setSortBy(value);
-        setSortOpen(false);
-        setPage(1);
-    };
+    useEffect(() => {
+        setFolderId(routeFolderId || null);
+    }, [routeFolderId]);
 
-    /* =========================================================
-       GET FOLDER
-    ========================================================= */
+    /*
+     * -------------------------------------------------------
+     * Fetch files whenever folder changes
+     * -------------------------------------------------------
+     */
 
-    const getFolder = (folderId) => {
-        return folders.find(
-            (folder) => folder.id === folderId
-        );
-    };
-
-    /* =========================================================
-       OPEN ADD FILE
-    ========================================================= */
-
-    const openAddFileModal = () => {
-        setUploadFile(null);
-        setUploadFileName("");
-        setUploadExtension("");
-        setUploadError("");
-        setUploadLoading(false);
-
-        setUploadFolderId(
-            folders[0]?.id || null
-        );
-
-        setModal("add");
-    };
-
-    /* =========================================================
-       SELECT FILE FROM DEVICE
-    ========================================================= */
-
-    const handleFileSelect = (event) => {
-        const file = event.target.files?.[0];
-
-        if (!file) {
+    useEffect(() => {
+        if (!folderId) {
+            setFiles([]);
+            setPageNo(1);
+            setTotalPages(1);
             return;
         }
 
-        setUploadError("");
+        fetchFiles(true);
+    }, [folderId]);
 
-        if (file.size > MAX_FILE_SIZE) {
-            setUploadFile(null);
-            setUploadFileName("");
-            setUploadExtension("");
+    /*
+     * -------------------------------------------------------
+     * File Fetch
+     * -------------------------------------------------------
+     */
 
-            setUploadError(
-                "File size must not exceed 10 MB."
+    const fetchFiles = async (reset = false) => {
+        if (!folderId) {
+            return;
+        }
+
+        try {
+            setFetchLoading(true);
+
+            const page = reset ? 1 : pageNo;
+
+            const response = await api.get(
+                `/api/file?folder=${encodeURIComponent(
+                    folderId
+                )}&page=${page}`,
+                getAuthConfig()
+            );
+
+            const responseFiles = Array.isArray(response.data?.files)
+                ? response.data.files
+                : [];
+
+            const currentPage = Number(
+                response.data?.currentPage || page
+            );
+
+            const responseTotalPages = Number(
+                response.data?.totalPages || 1
+            );
+
+            setFiles((prev) =>
+                reset
+                    ? responseFiles
+                    : [...prev, ...responseFiles]
+            );
+
+            setTotalPages(responseTotalPages);
+
+            setPageNo(currentPage + 1);
+        } catch (err) {
+            message.error(
+                getErrorMessage(
+                    err,
+                    "Unable to fetch files."
+                )
+            );
+        } finally {
+            setFetchLoading(false);
+        }
+    };
+
+    /*
+     * -------------------------------------------------------
+     * File Selection
+     * -------------------------------------------------------
+     */
+
+    const handleFileSelection = (event) => {
+        const selected = event.target.files?.[0];
+
+        if (!selected) {
+            return;
+        }
+
+        if (selected.size > 10 * 1024 * 1024) {
+            message.error(
+                "File size cannot exceed 10 MB."
             );
 
             event.target.value = "";
             return;
         }
 
-        const extension = getFileExtension(file.name);
+        setSelectedFile(selected);
 
-        const fileName = getFileNameWithoutExtension(
-            file.name
+        setFileName(
+            getFileNameWithoutExtension(selected.name)
         );
-
-        setUploadFile(file);
-        setUploadFileName(fileName);
-        setUploadExtension(extension);
     };
 
-    /* =========================================================
-       ADD FILE
-    ========================================================= */
+    /*
+     * -------------------------------------------------------
+     * Upload File
+     * -------------------------------------------------------
+     */
 
-    const handleAddFile = async () => {
-        if (!uploadFile) {
-            setUploadError("Please select a file.");
+    const handleFileUpload = async () => {
+        if (!selectedFile) {
+            message.error("Please select a file.");
             return;
         }
 
-        if (!uploadFileName.trim()) {
-            setUploadError("Please enter a file name.");
+        if (!fileName.trim()) {
+            message.error("Please enter file name.");
             return;
         }
 
-        if (!uploadFolderId) {
-            setUploadError("Please select a folder.");
+        if (!folderId) {
+            message.error("Folder ID is required.");
             return;
         }
-
-        if (uploadFile.size > MAX_FILE_SIZE) {
-            setUploadError(
-                "File size must not exceed 10 MB."
-            );
-            return;
-        }
-
-        const cleanName = uploadFileName.trim();
-
-        const finalName = `${cleanName}${uploadExtension}`;
-
-        const duplicate = files.some(
-            (file) =>
-                file.folderId === uploadFolderId &&
-                file.name.toLowerCase() ===
-                finalName.toLowerCase()
-        );
-
-        if (duplicate) {
-            setUploadError(
-                "A file with this name already exists in this folder."
-            );
-            return;
-        }
-
-        setUploadLoading(true);
-        setUploadError("");
 
         try {
-            /*
-             * Replace this simulated request with your upload API.
-             *
-             * Example:
-             *
-             * const formData = new FormData();
-             * formData.append("file", uploadFile);
-             * formData.append("fileName", cleanName);
-             * formData.append("folderId", uploadFolderId);
-             *
-             * await uploadFileApi(formData);
-             */
+            setLoading(true);
 
-            await new Promise((resolve) =>
-                setTimeout(resolve, 1000)
+            const payload = new FormData();
+
+            payload.append(
+                "fileName",
+                fileName.trim()
             );
 
-            const now = new Date().toISOString();
+            payload.append(
+                "folderId",
+                folderId
+            );
 
-            const newFile = {
-                id: Date.now(),
-                name: finalName,
-                fileName: cleanName,
-                extension: uploadExtension,
-                type: uploadExtension
-                    .replace(".", "")
-                    .toUpperCase(),
-                size: uploadFile.size,
-                uploadedAt: now,
-                updatedAt: now,
-                downloads: 0,
-                shares: 0,
-                expiryDate: null,
-                password: false,
-                folderId: uploadFolderId,
-            };
+            payload.append(
+                "file",
+                selectedFile
+            );
 
-            setFiles((prev) => [
-                newFile,
-                ...prev,
-            ]);
+            const response = await api.post(
+                "/api/file",
+                payload,
+                getAuthConfig()
+            );
 
-            setPage(1);
+            /*
+             * Backend response:
+             *
+             * {
+             *   success: true,
+             *   message: "...",
+             *   file: newFile
+             * }
+             */
 
-            setModal(null);
-
-            showToast(
+            message.success(
+                response.data?.message ||
                 "File uploaded successfully."
             );
-        } catch (error) {
-            setUploadError(
-                "Unable to upload the file. Please try again."
-            );
-        } finally {
-            setUploadLoading(false);
-        }
-    };
 
-    /* =========================================================
-       OPEN EDIT
-    ========================================================= */
+            closeAddFileModal();
 
-    const openEditModal = (file) => {
-        setSelectedFile(file);
-
-        setEditFileName(file.fileName);
-        setEditError("");
-        setEditLoading(false);
-
-        setMenuId(null);
-        setModal("edit");
-    };
-
-    /* =========================================================
-       RENAME FILE
-    ========================================================= */
-
-    const handleRename = async () => {
-        if (!selectedFile) return;
-
-        const cleanName = editFileName.trim();
-
-        if (!cleanName) {
-            setEditError(
-                "File name cannot be empty."
-            );
-            return;
-        }
-
-        const duplicate = files.some(
-            (file) =>
-                file.id !== selectedFile.id &&
-                file.folderId === selectedFile.folderId &&
-                file.name.toLowerCase() ===
-                `${cleanName}${selectedFile.extension}`.toLowerCase()
-        );
-
-        if (duplicate) {
-            setEditError(
-                "A file with this name already exists in this folder."
-            );
-            return;
-        }
-
-        setEditLoading(true);
-        setEditError("");
-
-        try {
             /*
-             * Replace with your rename API.
+             * Re-fetch page 1 instead of manually adding
+             * response.data.file.
+             *
+             * This keeps pagination consistent.
              */
-
-            await new Promise((resolve) =>
-                setTimeout(resolve, 700)
-            );
-
-            const newFullName = `${cleanName}${selectedFile.extension}`;
-
-            setFiles((prev) =>
-                prev.map((file) =>
-                    file.id === selectedFile.id
-                        ? {
-                            ...file,
-                            fileName: cleanName,
-                            name: newFullName,
-                            updatedAt:
-                                new Date().toISOString(),
-                        }
-                        : file
+            await fetchFiles(true);
+        } catch (err) {
+            message.error(
+                getErrorMessage(
+                    err,
+                    "Unable to upload file."
                 )
             );
+        } finally {
+            setLoading(false);
+        }
+    };
 
-            setModal(null);
-            setSelectedFile(null);
+    /*
+     * -------------------------------------------------------
+     * Update File
+     * -------------------------------------------------------
+     */
 
-            showToast(
-                "File renamed successfully."
+    const handleEditFile = async (fileId) => {
+        if (!editFileName.trim()) {
+            message.error("Please enter file name.");
+            return;
+        }
+
+        try {
+            setEditLoading(true);
+
+            /*
+             * Backend validation does NOT allow:
+             *
+             * password: ""
+             * expiresAt: ""
+             *
+             * So only send them when they contain a value.
+             */
+
+            const payload = {
+                fileName: editFileName.trim(),
+            };
+
+            if (editPassword.trim()) {
+                payload.password =
+                    editPassword.trim();
+            }
+
+            if (editExpiry.trim()) {
+                payload.expiresAt =
+                    editExpiry.trim();
+            }
+
+            const response = await api.put(
+                `/api/file/${fileId}`,
+                payload,
+                getAuthConfig()
             );
-        } catch (error) {
-            setEditError(
-                "Unable to rename the file."
+
+            message.success(
+                response.data?.message ||
+                "File updated successfully."
+            );
+
+            setEditFileModal(false);
+
+            resetEditState();
+
+            /*
+             * Backend does not return the updated file.
+             * Therefore fetch the files again.
+             */
+            await fetchFiles(true);
+        } catch (err) {
+            message.error(
+                getErrorMessage(
+                    err,
+                    "Unable to update file."
+                )
             );
         } finally {
             setEditLoading(false);
         }
     };
 
-    /* =========================================================
-       OPEN SHARE
-    ========================================================= */
+    /*
+     * -------------------------------------------------------
+     * Share File
+     *
+     * NOTE:
+     * Backend route for share-file was not included in the
+     * backend code you provided.
+     *
+     * Keeping your existing endpoint:
+     * POST /api/share-file
+     * -------------------------------------------------------
+     */
 
-    const openShareModal = (file) => {
-        setSelectedFile(file);
-
-        setRecipientEmail("");
-        setSharePassword("");
-        setShareExpiry("");
-        setShareError("");
-        setShareLoading(false);
-
-        setMenuId(null);
-        setModal("share");
-    };
-
-    /* =========================================================
-       SHARE FILE
-    ========================================================= */
-
-    const handleShare = async () => {
-        if (!selectedFile) return;
-
-        const email =
-            recipientEmail.trim().toLowerCase();
-
-        if (!email) {
-            setShareError(
+    const handleFileShare = async (fileId) => {
+        if (!userEmail.trim()) {
+            message.error(
                 "Please enter recipient email."
             );
             return;
         }
 
-        if (
-            email ===
-            CURRENT_USER_EMAIL.toLowerCase()
-        ) {
-            setShareError(
-                "You cannot share a file with your own email."
-            );
-            return;
-        }
-
-        const registered = REGISTERED_USERS.some(
-            (user) =>
-                user.toLowerCase() === email
-        );
-
-        if (!registered) {
-            setShareError(
-                "This email is not registered on the platform."
-            );
-            return;
-        }
-
-        setShareLoading(true);
-        setShareError("");
-
         try {
-            /*
-             * Replace with your share API.
-             */
+            setShareLoading(true);
 
-            await new Promise((resolve) =>
-                setTimeout(resolve, 900)
+            const payload = {
+                userEmail: userEmail.trim(),
+                fileId,
+            };
+
+            const response = await api.post(
+                "/api/share-file",
+                payload,
+                getAuthConfig()
             );
 
-            setFiles((prev) =>
-                prev.map((file) =>
-                    file.id === selectedFile.id
-                        ? {
-                            ...file,
-                            shares: file.shares + 1,
-                            updatedAt:
-                                new Date().toISOString(),
-                        }
-                        : file
-                )
-            );
-
-            setModal(null);
-            setSelectedFile(null);
-
-            showToast(
+            message.success(
+                response.data?.message ||
                 "File shared successfully."
             );
-        } catch (error) {
-            setShareError(
-                "Unable to share the file."
+
+            setUserEmail("");
+            setShareFileModal(false);
+        } catch (err) {
+            message.error(
+                getErrorMessage(
+                    err,
+                    "Unable to share file."
+                )
             );
         } finally {
             setShareLoading(false);
         }
     };
 
-    /* =========================================================
-       OPEN DELETE
-    ========================================================= */
+    /*
+     * -------------------------------------------------------
+     * Fetch Folders
+     * -------------------------------------------------------
+     *
+     * NOTE:
+     * Your provided backend does not include folder route/code,
+     * so this assumes:
+     *
+     * GET /api/folder?page=1
+     *
+     * with response:
+     * {
+     *   folders,
+     *   currentPage,
+     *   totalPages
+     * }
+     *
+     * -------------------------------------------------------
+     */
 
-    const openDeleteModal = (file) => {
-        setSelectedFile(file);
-
-        setDeleteError("");
-        setDeleteLoading(false);
-
-        setMenuId(null);
-        setModal("delete");
-    };
-
-    /* =========================================================
-       DELETE FILE
-    ========================================================= */
-
-    const handleDelete = async () => {
-        if (!selectedFile) return;
-
-        setDeleteLoading(true);
-        setDeleteError("");
-
+    const fetchFolders = async (reset = false) => {
         try {
-            /*
-             * Replace with your delete API.
-             */
+            setFolderLoading(true);
 
-            await new Promise((resolve) =>
-                setTimeout(resolve, 900)
+            const page = reset ? 1 : folderPageNo;
+
+            const response = await api.get(
+                `/api/folder?page=${page}`,
+                getAuthConfig()
             );
 
-            setFiles((prev) =>
-                prev.filter(
-                    (file) =>
-                        file.id !== selectedFile.id
+            const responseFolders =
+                Array.isArray(response.data?.folders)
+                    ? response.data.folders
+                    : Array.isArray(response.data?.data)
+                        ? response.data.data
+                        : [];
+
+            const currentPage = Number(
+                response.data?.currentPage || page
+            );
+
+            const responseTotalPages = Number(
+                response.data?.totalPages || 1
+            );
+
+            setFolders((prev) =>
+                reset
+                    ? responseFolders
+                    : [...prev, ...responseFolders]
+            );
+
+            setFolderTotalPages(
+                responseTotalPages
+            );
+
+            setFolderPageNo(
+                currentPage + 1
+            );
+        } catch (err) {
+            message.error(
+                getErrorMessage(
+                    err,
+                    "Unable to fetch folders."
                 )
-            );
-
-            setModal(null);
-            setSelectedFile(null);
-
-            const remaining =
-                filteredFiles.length - 1;
-
-            const newTotalPages = Math.max(
-                1,
-                Math.ceil(
-                    remaining / FILES_PER_PAGE
-                )
-            );
-
-            setPage((current) =>
-                Math.min(
-                    current,
-                    newTotalPages
-                )
-            );
-
-            showToast(
-                "File deleted successfully."
-            );
-        } catch (error) {
-            setDeleteError(
-                "Unable to delete the file."
             );
         } finally {
-            setDeleteLoading(false);
+            setFolderLoading(false);
         }
     };
 
-    /* =========================================================
-       OPEN MOVE
-    ========================================================= */
+    /*
+     * -------------------------------------------------------
+     * Move File
+     * -------------------------------------------------------
+     */
 
-    const openMoveModal = (file) => {
-        setSelectedFile(file);
-
-        setSelectedDestination(null);
-        setMoveError("");
-        setMoveLoading(false);
-
-        setFolderPickerOpen(false);
-
-        setFolderSearch("");
-        setFolderPage(1);
-
-        setMenuId(null);
-        setModal("move");
-    };
-
-    /* =========================================================
-       OPEN FOLDER PICKER
-    ========================================================= */
-
-    const openFolderPicker = () => {
-        setFolderPickerOpen(true);
-
-        setFolderSearch("");
-        setFolderPage(1);
-    };
-
-    /* =========================================================
-       SEARCH FOLDERS
-    ========================================================= */
-
-    const handleFolderSearch = (value) => {
-        setFolderSearch(value);
-        setFolderPage(1);
-    };
-
-    /* =========================================================
-       SELECT DESTINATION
-    ========================================================= */
-
-    const handleDestinationSelect = (
-        folder
-    ) => {
-        if (
-            folder.id ===
-            selectedFile?.folderId
-        ) {
-            setMoveError(
-                "This file is already inside this folder."
-            );
-
-            return;
-        }
-
-        setSelectedDestination(folder);
-
-        setMoveError("");
-        setFolderPickerOpen(false);
-    };
-
-    /* =========================================================
-       MOVE FILE
-    ========================================================= */
-
-    const handleMove = async () => {
-        if (!selectedFile) return;
-
-        if (!selectedDestination) {
-            setMoveError(
+    const handleMoveFile = async (fileId) => {
+        if (!moveFolderId) {
+            message.error(
                 "Please select a destination folder."
             );
-
             return;
         }
 
-        if (
-            selectedDestination.id ===
-            selectedFile.folderId
-        ) {
-            setMoveError(
-                "This file is already inside the selected folder."
+        if (moveFolderId === folderId) {
+            message.error(
+                "File is already in this folder."
             );
-
             return;
         }
-
-        const duplicate = files.some(
-            (file) =>
-                file.id !== selectedFile.id &&
-                file.folderId ===
-                selectedDestination.id &&
-                file.name.toLowerCase() ===
-                selectedFile.name.toLowerCase()
-        );
-
-        if (duplicate) {
-            setMoveError(
-                "A file with the same name already exists in the destination folder."
-            );
-
-            return;
-        }
-
-        setMoveLoading(true);
-        setMoveError("");
 
         try {
+            setMoveLoading(true);
+
             /*
-             * Replace with your move API.
+             * Backend PUT /api/file/:id accepts folderId.
              */
+            const payload = {
+                folderId: moveFolderId,
+            };
 
-            await new Promise((resolve) =>
-                setTimeout(resolve, 900)
+            const response = await api.put(
+                `/api/file/${fileId}`,
+                payload,
+                getAuthConfig()
             );
 
-            setFiles((prev) =>
-                prev.map((file) =>
-                    file.id === selectedFile.id
-                        ? {
-                            ...file,
-                            folderId:
-                                selectedDestination.id,
-                            updatedAt:
-                                new Date().toISOString(),
-                        }
-                        : file
-                )
+            message.success(
+                response.data?.message ||
+                "File moved successfully."
             );
 
-            setModal(null);
+            setMoveFolderId(null);
+            setSelectFolderModal(false);
+            setMoveFileModal(false);
             setSelectedFile(null);
-            setSelectedDestination(null);
 
-            showToast(
-                `File moved to ${selectedDestination.name}.`
-            );
-        } catch (error) {
-            setMoveError(
-                "Unable to move the file."
+            /*
+             * Current folder has changed, therefore
+             * fetch current folder again.
+             */
+            await fetchFiles(true);
+        } catch (err) {
+            message.error(
+                getErrorMessage(
+                    err,
+                    "Unable to move file."
+                )
             );
         } finally {
             setMoveLoading(false);
         }
     };
 
-    /* =========================================================
-       LOADING STATE
-    ========================================================= */
+    /*
+     * -------------------------------------------------------
+     * Delete File
+     * -------------------------------------------------------
+     */
 
-    if (loading) {
-        return (
-            <div className="min-h-screen bg-slate-50 p-4 sm:p-6 lg:p-8">
-                <div className="mx-auto max-w-7xl">
-                    <FilesSkeleton />
-                </div>
-            </div>
+    const handleFileDelete = async (fileId) => {
+        try {
+            setDeleteLoading(true);
+
+            const response = await api.delete(
+                `/api/file/${fileId}`,
+                getAuthConfig()
+            );
+
+            message.success(
+                response.data?.message ||
+                "File deleted successfully."
+            );
+
+            setFiles((prev) =>
+                prev.filter(
+                    (file) => file._id !== fileId
+                )
+            );
+
+            setDeleteFileModal(false);
+            setSelectedFile(null);
+        } catch (err) {
+            message.error(
+                getErrorMessage(
+                    err,
+                    "Unable to delete file."
+                )
+            );
+        } finally {
+            setDeleteLoading(false);
+        }
+    };
+
+    /*
+     * -------------------------------------------------------
+     * Modal Open / Close
+     * -------------------------------------------------------
+     */
+
+    const openEditModal = (file) => {
+        setSelectedFile(file);
+
+        setEditFileName(
+            getFileNameWithoutExtension(
+                file.fileName
+            )
         );
-    }
 
-    if (checkingAuth) {
-        return <SpinLoader />;
-    }
+        /*
+         * Backend may return password.
+         * Don't expose anything differently here.
+         */
+        setEditPassword(
+            file.password || ""
+        );
 
-    /* =========================================================
-       MAIN UI
-    ========================================================= */
+        setEditExpiry(
+            file.expiresAt
+                ? new Date(file.expiresAt)
+                    .toISOString()
+                    .split("T")[0]
+                : ""
+        );
+
+        setEditFileModal(true);
+        setOpenMenuFileId(null);
+    };
+
+    const openShareModal = (file) => {
+        setSelectedFile(file);
+        setUserEmail("");
+        setShareFileModal(true);
+        setOpenMenuFileId(null);
+    };
+
+    const openMoveModal = (file) => {
+        setSelectedFile(file);
+
+        setMoveFolderId(
+            file.folderId || null
+        );
+
+        setMoveFileModal(true);
+        setOpenMenuFileId(null);
+    };
+
+    const openDeleteModal = (file) => {
+        setSelectedFile(file);
+        setDeleteFileModal(true);
+        setOpenMenuFileId(null);
+    };
+
+    const openSelectFolderModal = () => {
+        setFolderSearchQuery("");
+        setSelectFolderModal(true);
+
+        /*
+         * Always start folder selection from page 1.
+         */
+        fetchFolders(true);
+    };
+
+    const closeAddFileModal = () => {
+        if (loading) {
+            return;
+        }
+
+        setAddFileModal(false);
+        setSelectedFile(null);
+        setFileName("");
+
+        if (fileInputRef.current) {
+            fileInputRef.current.value = "";
+        }
+    };
+
+    const resetEditState = () => {
+        setEditFileName("");
+        setEditPassword("");
+        setEditExpiry("");
+    };
+
+    const closeEditModal = () => {
+        if (editLoading) {
+            return;
+        }
+
+        setEditFileModal(false);
+        resetEditState();
+        setSelectedFile(null);
+    };
+
+    /*
+     * -------------------------------------------------------
+     * Filter + Search
+     * -------------------------------------------------------
+     *
+     * Backend currently ALWAYS sorts:
+     *
+     * .sort({ createdAt: -1 })
+     *
+     * Therefore oldest/latest filtering is handled here.
+     *
+     * Important:
+     * Pagination happens BEFORE frontend sorting.
+     * For true global oldest/latest pagination, backend should
+     * accept sort query parameter.
+     *
+     * -------------------------------------------------------
+     */
+
+    const filteredFiles = useMemo(() => {
+        const query = searchQuery
+            .trim()
+            .toLowerCase();
+
+        const result = files.filter((file) =>
+            file.fileName
+                ?.toLowerCase()
+                .includes(query)
+        );
+
+        return [...result].sort((a, b) => {
+            const dateA = new Date(
+                a.createdAt || 0
+            ).getTime();
+
+            const dateB = new Date(
+                b.createdAt || 0
+            ).getTime();
+
+            return filter === "latest"
+                ? dateB - dateA
+                : dateA - dateB;
+        });
+    }, [files, searchQuery, filter]);
+
+    const filteredFolders = useMemo(() => {
+        const query = folderSearchQuery
+            .trim()
+            .toLowerCase();
+
+        return folders.filter((folder) =>
+            folder.name
+                ?.toLowerCase()
+                .includes(query)
+        );
+    }, [folders, folderSearchQuery]);
+
+    /*
+     * -------------------------------------------------------
+     * Render
+     * -------------------------------------------------------
+     */
 
     return (
+        <section className="min-h-screen bg-slate-50 px-4 pt-[90px]">
+            <div className="mx-auto max-w-7xl">
 
-        <div className="bg-slate-50 pt-[90px] pb-5 min-h-dvh">
-
-            <div className="mx-auto px-3 md:px-[5%]">
-
-                <div className="mb-7 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-
+                {/* Header */}
+                <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                     <div>
-
-                        {/* <div className="mb-2 flex items-center gap-2">
-
-                            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600 text-white shadow-sm shadow-blue-200">
-                                <i className="ri-file-list-3-fill" />
-                            </span>
-
-                            <span className="text-sm font-medium text-blue-600">
-                                File Manager
-                            </span>
-
-                        </div> */}
-
-                        <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
+                        <p className="text-xl font-semibold text-slate-900 sm:text-2xl">
                             Files
-                        </h1>
-
-                        <p className="mt-1 text-sm text-slate-500">
-                            Manage, upload, share and organize
-                            your files.
                         </p>
 
+                        <p className="mt-1 text-sm text-slate-500">
+                            Manage, upload, share and organize your files.
+                        </p>
                     </div>
 
                     <button
                         type="button"
-                        onClick={openAddFileModal}
-                        className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 text-sm font-semibold text-white shadow-lg shadow-blue-600/20 transition-all duration-200 hover:-translate-y-0.5 hover:bg-blue-700 hover:shadow-blue-600/30 active:translate-y-0 cursor-pointer"
+                        onClick={() => setAddFileModal(true)}
+                        className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-slate-900 px-5 text-sm font-medium text-white transition-all duration-200 hover:bg-slate-800 active:scale-[0.98] sm:w-auto"
                     >
-                        <i className="ri-add-line text-lg" />
-                        Add Files
+                        <i className="ri-upload-2-line text-lg" />
+                        <span>Add File</span>
                     </button>
-
                 </div>
 
-                <div className="mb-5 flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white p-3 shadow-sm sm:flex-row">
-
+                {/* Search + Filter */}
+                <div className="relative mb-6 flex flex-col gap-3 sm:flex-row">
                     <div className="relative flex-1">
-
                         <i className="ri-search-line pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-lg text-slate-400" />
 
                         <input
                             type="text"
-                            value={search}
+                            value={searchQuery}
                             onChange={(e) =>
-                                handleSearch(
-                                    e.target.value
-                                )
+                                setSearchQuery(e.target.value)
                             }
                             placeholder="Search files..."
-                            className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 pl-11 pr-10 text-sm text-slate-800 outline-none transition-all placeholder:text-slate-400 focus:border-blue-400 focus:bg-white focus:ring-4 focus:ring-blue-500/10"
+                            className="h-11 w-full rounded-xl border border-slate-200 bg-white pl-11 pr-4 text-sm text-slate-900 outline-none transition focus:border-slate-400 focus:ring-2 focus:ring-slate-100"
                         />
-
-                        {search && (
-                            <button
-                                type="button"
-                                onClick={() =>
-                                    handleSearch("")
-                                }
-                                className="absolute right-3 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-lg text-slate-400 transition hover:bg-slate-200 hover:text-slate-600"
-                            >
-                                <i className="ri-close-line" />
-                            </button>
-                        )}
                     </div>
 
-                    {/* SORT */}
-
-                    <div className="relative sm:w-48">
+                    <div className="relative sm:w-44">
                         <button
                             type="button"
                             onClick={() =>
-                                setSortOpen(
+                                setIsFilterOpen(
                                     (prev) => !prev
                                 )
                             }
-                            className="flex h-11 w-full items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 transition hover:border-blue-300 hover:bg-blue-50/50"
+                            className="flex h-11 w-full items-center justify-between rounded-xl border border-slate-200 bg-white px-4 text-sm text-slate-700 transition hover:border-slate-300"
                         >
                             <span className="flex items-center gap-2">
-                                <i className="ri-sort-desc text-lg text-blue-600" />
+                                <i className="ri-filter-3-line text-lg text-slate-500" />
 
-                                {sortBy === "latest"
+                                {filter === "latest"
                                     ? "Latest"
                                     : "Oldest"}
                             </span>
 
                             <i
-                                className={`ri-arrow-down-s-line text-lg transition-transform duration-200 ${sortOpen
-                                    ? "rotate-180"
-                                    : ""
+                                className={`ri-arrow-down-s-line text-lg transition-transform duration-200 ${isFilterOpen
+                                        ? "rotate-180"
+                                        : ""
                                     }`}
                             />
                         </button>
 
-                        {sortOpen && (
-                            <div className="absolute right-0 z-30 mt-2 w-full overflow-hidden rounded-xl border border-slate-200 bg-white p-1.5 shadow-xl shadow-slate-900/10">
+                        {isFilterOpen && (
+                            <div className="absolute right-0 top-[calc(100%+6px)] z-30 w-full overflow-hidden rounded-xl border border-slate-200 bg-white p-1.5 shadow-lg">
                                 {[
-                                    {
-                                        value: "latest",
-                                        label: "Latest",
-                                    },
-                                    {
-                                        value: "oldest",
-                                        label: "Oldest",
-                                    },
-                                ].map((option) => (
-                                    <button
-                                        key={
-                                            option.value
-                                        }
-                                        type="button"
-                                        onClick={() =>
-                                            handleSort(
-                                                option.value
-                                            )
-                                        }
-                                        className={`flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-left text-sm transition ${sortBy ===
-                                            option.value
-                                            ? "bg-blue-50 font-semibold text-blue-600"
-                                            : "text-slate-600 hover:bg-slate-50"
-                                            }`}
-                                    >
-                                        {option.label}
-
-                                        {sortBy ===
-                                            option.value && (
-                                                <i className="ri-check-line text-lg" />
-                                            )}
-                                    </button>
-                                ))}
-                            </div>
-                        )}
-                    </div>
-
-                </div>
-
-                {files.length === 0 ? (
-                    <NoDataState
-                        onAdd={openAddFileModal}
-                    />
-                ) : filteredFiles.length ===
-                    0 ? (
-                    <NotFoundState
-                        search={search}
-                        onClear={() =>
-                            handleSearch("")
-                        }
-                    />
-                ) : (
-                    <>
-
-                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                            {visibleFiles.map(
-                                (file) => (
-
-                                    <FileCard
-                                        key={file.id}
-                                        file={file}
-                                        folder={getFolder(
-                                            file.folderId
-                                        )}
-                                        menuId={menuId}
-                                        setMenuId={setMenuId}
-                                        onEdit={() =>
-                                            openEditModal(
-                                                file
-                                            )
-                                        }
-                                        onShare={() =>
-                                            openShareModal(
-                                                file
-                                            )
-                                        }
-                                        onMove={() =>
-                                            openMoveModal(
-                                                file
-                                            )
-                                        }
-                                        onDelete={() =>
-                                            openDeleteModal(
-                                                file
-                                            )
-                                        }
-                                    />
-                                )
-                            )}
-                        </div>
-
-                        {/* =================================================
-                PAGINATION
-            ================================================= */}
-
-                        {totalPages > 1 && (
-                            <FilePagination
-                                page={page}
-                                totalPages={totalPages}
-                                totalItems={
-                                    filteredFiles.length
-                                }
-                                itemsPerPage={
-                                    FILES_PER_PAGE
-                                }
-                                onPageChange={setPage}
-                            />
-                        )}
-                    </>
-                )}
-            </div>
-
-            {folderPickerOpen && (
-                /* Outer Backdrop Container: Screen overlay & Centering rules */
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 overflow-y-auto">
-
-    /* Inner Modal Box: Fully Responsive width & max-height control */
-                    <div className="relative w-full max-w-lg rounded-2xl bg-white p-6 shadow-2xl transition-all my-8 max-h-[90vh] flex flex-col">
-
-                        {/* Modal Header */}
-                        <div className="flex items-center justify-between border-b pb-4 mb-4">
-                            <div>
-                                <h3 className="text-lg font-semibold text-slate-900">Select Folder</h3>
-                                <p className="text-xs text-slate-500">Choose a destination folder for your file</p>
-                            </div>
-                            <button
-                                onClick={() => setFolderPickerOpen(false)}
-                                className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors"
-                            >
-                                <i className="ri-close-line text-xl"></i>
-                            </button>
-                        </div>
-
-                        {/* Search Input Box */}
-                        <div className="relative mb-4">
-                            <i className="ri-search-line absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                            <input
-                                type="text"
-                                placeholder="Search folders..."
-                                value={folderSearch}
-                                onChange={(e) => handleFolderSearch(e.target.value)}
-                                className="w-full rounded-xl border border-slate-200 pl-9 pr-4 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                            />
-                        </div>
-
-                        {/* Folder List with Scrollbar */}
-                        <div className="overflow-y-auto flex-1 space-y-2 pr-1 min-h-[200px]">
-                            {visibleFolders.length > 0 ? (
-                                visibleFolders.map((folder) => {
-                                    const style = getFolderStyle(folder.color);
-                                    return (
+                                    ["latest", "Latest"],
+                                    ["oldest", "Oldest"],
+                                ].map(
+                                    ([value, label]) => (
                                         <button
-                                            key={folder.id}
-                                            onClick={() => handleDestinationSelect(folder)}
-                                            className="w-full flex items-center justify-between p-3 rounded-xl border border-slate-100 hover:border-blue-200 hover:bg-blue-50/50 transition-all text-left group"
+                                            key={value}
+                                            type="button"
+                                            onClick={() => {
+                                                setFilter(value);
+                                                setIsFilterOpen(false);
+                                            }}
+                                            className="flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-left text-sm text-slate-700 transition hover:bg-slate-50"
                                         >
-                                            <div className="flex items-center gap-3 min-w-0">
-                                                <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${style.bg} ${style.text}`}>
-                                                    <i className="ri-folder-fill text-xl"></i>
-                                                </div>
-                                                <div className="truncate">
-                                                    <p className="text-sm font-medium text-slate-800 group-hover:text-blue-600 truncate">
-                                                        {folder.name}
-                                                    </p>
-                                                    <p className="text-xs text-slate-400">
-                                                        Updated {formatDate(folder.updatedAt)}
-                                                    </p>
-                                                </div>
-                                            </div>
-                                            <i className="ri-arrow-right-s-line text-slate-400 group-hover:text-blue-600 shrink-0"></i>
-                                        </button>
-                                    );
-                                })
-                            ) : (
-                                <div className="py-8 text-center text-sm text-slate-400">
-                                    No folders found.
-                                </div>
-                            )}
-                        </div>
+                                            <span>
+                                                {label}
+                                            </span>
 
-                        {/* Modal Footer / Actions */}
-                        <div className="mt-4 pt-4 border-t flex items-center justify-end gap-2">
-                            <button
-                                type="button"
-                                onClick={() => setFolderPickerOpen(false)}
-                                className="rounded-xl px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 transition-colors"
-                            >
-                                Cancel
-                            </button>
-                        </div>
-
-                    </div>
-                </div>
-            )}
-
-            {/* =====================================================
-          ADD FILE MODAL
-      ===================================================== */}
-
-            {modal === "add" && (
-                <ModalShell>
-                    <ModalHeader
-                        icon="ri-upload-cloud-2-line"
-                        title="Add File"
-                        subtitle="Upload a file to your folder."
-                        onClose={() =>
-                            !uploadLoading &&
-                            setModal(null)
-                        }
-                    />
-
-                    <div className="space-y-5 p-5">
-                        {/* FILE PICKER */}
-
-                        {!uploadFile ? (
-                            <button
-                                type="button"
-                                onClick={() =>
-                                    fileInputRef.current?.click()
-                                }
-                                className="group flex w-full flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50 px-5 py-9 text-center transition hover:border-blue-300 hover:bg-blue-50/40"
-                            >
-                                <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-100 text-blue-600 transition group-hover:scale-105">
-                                    <i className="ri-upload-cloud-2-line text-2xl" />
-                                </span>
-
-                                <span className="mt-4 text-sm font-bold text-slate-700">
-                                    Click to select a file
-                                </span>
-
-                                <span className="mt-1 text-xs text-slate-400">
-                                    Maximum file size: 10 MB
-                                </span>
-
-                                <span className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-white px-3 py-1.5 text-[10px] font-medium text-slate-500 shadow-sm">
-                                    <i className="ri-information-line" />
-                                    File extension cannot be changed
-                                </span>
-                            </button>
-                        ) : (
-                            <div className="rounded-2xl border border-blue-100 bg-blue-50/50 p-4">
-                                <div className="flex items-center gap-3">
-                                    <div
-                                        className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl ${getFileStyle(
-                                            uploadExtension
-                                                .replace(
-                                                    ".",
-                                                    ""
-                                                )
-                                                .toUpperCase()
-                                        ).bg
-                                            } ${getFileStyle(
-                                                uploadExtension
-                                                    .replace(
-                                                        ".",
-                                                        ""
-                                                    )
-                                                    .toUpperCase()
-                                            ).text
-                                            }`}
-                                    >
-                                        <i
-                                            className={`${getFileStyle(
-                                                uploadExtension
-                                                    .replace(
-                                                        ".",
-                                                        ""
-                                                    )
-                                                    .toUpperCase()
-                                            ).icon
-                                                } text-xl`}
-                                        />
-                                    </div>
-
-                                    <div className="min-w-0 flex-1">
-                                        <p className="truncate text-sm font-bold text-slate-700">
-                                            {uploadFile.name}
-                                        </p>
-
-                                        <p className="mt-1 text-xs text-slate-400">
-                                            {formatFileSize(
-                                                uploadFile.size
+                                            {filter === value && (
+                                                <i className="ri-check-line text-lg text-slate-900" />
                                             )}
-                                        </p>
-                                    </div>
-
-                                    <button
-                                        type="button"
-                                        disabled={
-                                            uploadLoading
-                                        }
-                                        onClick={() => {
-                                            setUploadFile(
-                                                null
-                                            );
-                                            setUploadFileName(
-                                                ""
-                                            );
-                                            setUploadExtension(
-                                                ""
-                                            );
-
-                                            if (
-                                                fileInputRef.current
-                                            ) {
-                                                fileInputRef.current.value =
-                                                    "";
-                                            }
-                                        }}
-                                        className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition hover:bg-white hover:text-red-500"
-                                    >
-                                        <i className="ri-close-line text-lg" />
-                                    </button>
-                                </div>
+                                        </button>
+                                    )
+                                )}
                             </div>
                         )}
+                    </div>
+                </div>
 
-                        <input
-                            ref={fileInputRef}
-                            type="file"
-                            className="hidden"
-                            onChange={
-                                handleFileSelect
-                            }
-                        />
+                {/* Files */}
+                {fetchLoading && files.length === 0 ? (
+                    <div className="flex min-h-[300px] items-center justify-center">
+                        <div className="flex items-center gap-2 text-sm text-slate-500">
+                            <i className="ri-loader-4-line animate-spin text-xl" />
+                            Loading files...
+                        </div>
+                    </div>
+                ) : filteredFiles.length > 0 ? (
+                    <div className="grid gap-4 lg:grid-cols-2">
+                        {filteredFiles.map((file) => (
+                            <div
+                                key={file._id}
+                                className="group rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md sm:p-5"
+                            >
+                                {/* File Top */}
+                                <div className="flex items-start justify-between gap-3">
+                                    <div className="flex min-w-0 items-center gap-3">
+                                        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-slate-100">
+                                            <i className="ri-file-3-line text-xl text-slate-600" />
+                                        </div>
 
-                        {/* FILE NAME */}
+                                        <div className="min-w-0">
+                                            <p className="truncate text-sm font-semibold text-slate-900">
+                                                {file.fileName}
+                                            </p>
 
-                        {uploadFile && (
-                            <>
-                                <div>
-                                    <label className="mb-2 block text-sm font-semibold text-slate-700">
-                                        File Name
-                                    </label>
+                                            <div className="mt-1 flex flex-wrap items-center gap-1.5 text-xs text-slate-500">
+                                                <span>
+                                                    {getMimeExtension(
+                                                        file.mimeType
+                                                    )}
+                                                </span>
 
-                                    <div className="flex gap-2">
-                                        <input
-                                            type="text"
-                                            value={
-                                                uploadFileName
-                                            }
-                                            onChange={(e) =>
-                                                setUploadFileName(
-                                                    e.target
-                                                        .value
-                                                )
-                                            }
-                                            placeholder="Enter file name"
-                                            className="h-11 min-w-0 flex-1 rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm outline-none transition focus:border-blue-400 focus:bg-white focus:ring-4 focus:ring-blue-500/10"
-                                        />
+                                                <span>•</span>
 
-                                        {/* EXTENSION IS READ ONLY */}
+                                                <span>
+                                                    {file.mimeType
+                                                        ?.split(
+                                                            "/"
+                                                        )[0] ||
+                                                        "File"}
+                                                </span>
 
-                                        <div className="flex h-11 min-w-[80px] items-center justify-center rounded-xl border border-slate-200 bg-slate-100 px-3 text-sm font-bold text-slate-500">
-                                            {uploadExtension ||
-                                                ".file"}
+                                                <span>•</span>
+
+                                                <span>
+                                                    {formatFileSize(
+                                                        file.fileSize
+                                                    )}
+                                                </span>
+                                            </div>
                                         </div>
                                     </div>
 
-                                    <p className="mt-1.5 text-[11px] text-slate-400">
-                                        You can change only the file
-                                        name. Extension cannot be
-                                        modified.
-                                    </p>
-                                </div>
-
-                                {/* FOLDER */}
-
-                                <div>
-                                    <label className="mb-2 block text-sm font-semibold text-slate-700">
-                                        Upload To
-                                    </label>
-
-                                    <select
-                                        value={
-                                            uploadFolderId ||
-                                            ""
-                                        }
-                                        onChange={(e) =>
-                                            setUploadFolderId(
-                                                Number(
-                                                    e.target.value
+                                    {/* Menu */}
+                                    <div className="relative shrink-0">
+                                        <button
+                                            type="button"
+                                            onClick={() =>
+                                                setOpenMenuFileId(
+                                                    (prev) =>
+                                                        prev ===
+                                                            file._id
+                                                            ? null
+                                                            : file._id
                                                 )
-                                            )
-                                        }
-                                        className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm outline-none transition focus:border-blue-400 focus:bg-white focus:ring-4 focus:ring-blue-500/10"
-                                    >
-                                        {folders.map(
-                                            (folder) => (
-                                                <option
-                                                    key={
-                                                        folder.id
-                                                    }
-                                                    value={
-                                                        folder.id
-                                                    }
-                                                >
-                                                    {folder.name}
-                                                </option>
-                                            )
-                                        )}
-                                    </select>
-                                </div>
-                            </>
-                        )}
-
-                        {/* ERROR */}
-
-                        {uploadError && (
-                            <div className="flex gap-2 rounded-xl border border-red-100 bg-red-50 p-3 text-xs font-medium text-red-600">
-                                <i className="ri-error-warning-line text-base" />
-
-                                <span>
-                                    {uploadError}
-                                </span>
-                            </div>
-                        )}
-
-                        {/* LIMIT INFO */}
-
-                        <div className="flex items-center justify-between rounded-xl bg-slate-50 px-3.5 py-3">
-                            <span className="flex items-center gap-2 text-xs text-slate-500">
-                                <i className="ri-hard-drive-3-line text-blue-500" />
-                                Maximum file size
-                            </span>
-
-                            <span className="text-xs font-bold text-slate-700">
-                                10 MB
-                            </span>
-                        </div>
-                    </div>
-
-                    <div className="flex gap-2 border-t border-slate-100 bg-slate-50/70 p-4">
-                        <button
-                            type="button"
-                            disabled={
-                                uploadLoading
-                            }
-                            onClick={() =>
-                                setModal(null)
-                            }
-                            className="h-10 flex-1 rounded-xl border border-slate-200 bg-white text-sm font-semibold text-slate-600 transition hover:bg-slate-50 disabled:opacity-50"
-                        >
-                            Cancel
-                        </button>
-
-                        <button
-                            type="button"
-                            disabled={
-                                !uploadFile ||
-                                uploadLoading
-                            }
-                            onClick={
-                                handleAddFile
-                            }
-                            className="inline-flex h-10 flex-1 items-center justify-center gap-2 rounded-xl bg-blue-600 text-sm font-semibold text-white shadow-md shadow-blue-600/20 transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
-                        >
-                            {uploadLoading ? (
-                                <>
-                                    <i className="ri-loader-4-line animate-spin" />
-                                    Uploading...
-                                </>
-                            ) : (
-                                <>
-                                    <i className="ri-upload-2-line" />
-                                    Upload File
-                                </>
-                            )}
-                        </button>
-                    </div>
-                </ModalShell>
-            )}
-
-            {/* =====================================================
-          EDIT MODAL
-      ===================================================== */}
-
-            {modal === "edit" &&
-                selectedFile && (
-                    <ModalShell>
-                        <ModalHeader
-                            icon="ri-edit-line"
-                            title="Rename File"
-                            subtitle="Only the file name can be changed."
-                            onClose={() =>
-                                !editLoading &&
-                                setModal(null)
-                            }
-                        />
-
-                        <div className="space-y-5 p-5">
-                            <FileMiniInfo
-                                file={selectedFile}
-                            />
-
-                            <div>
-                                <label className="mb-2 block text-sm font-semibold text-slate-700">
-                                    File Name
-                                </label>
-
-                                <div className="flex gap-2">
-                                    <input
-                                        autoFocus
-                                        type="text"
-                                        value={
-                                            editFileName
-                                        }
-                                        onChange={(e) => {
-                                            setEditFileName(
-                                                e.target
-                                                    .value
-                                            );
-
-                                            setEditError(
-                                                ""
-                                            );
-                                        }}
-                                        onKeyDown={(e) => {
-                                            if (
-                                                e.key ===
-                                                "Enter"
-                                            ) {
-                                                handleRename();
                                             }
-                                        }}
-                                        className={`h-11 min-w-0 flex-1 rounded-xl border bg-slate-50 px-4 text-sm outline-none transition focus:bg-white focus:ring-4 ${editError
-                                            ? "border-red-300 focus:border-red-400 focus:ring-red-500/10"
-                                            : "border-slate-200 focus:border-blue-400 focus:ring-blue-500/10"
-                                            }`}
-                                    />
+                                            className="flex h-9 w-9 items-center justify-center rounded-lg text-slate-500 transition hover:bg-slate-100 hover:text-slate-900"
+                                        >
+                                            <i className="ri-more-2-fill text-lg" />
+                                        </button>
 
-                                    {/* EXTENSION LOCKED */}
+                                        {openMenuFileId ===
+                                            file._id && (
+                                                <div className="absolute right-0 top-10 z-20 w-44 overflow-hidden rounded-xl border border-slate-200 bg-white p-1.5 shadow-lg">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() =>
+                                                            openEditModal(
+                                                                file
+                                                            )
+                                                        }
+                                                        className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-slate-700 transition hover:bg-slate-50"
+                                                    >
+                                                        <i className="ri-edit-line text-lg" />
+                                                        <span>
+                                                            Edit
+                                                        </span>
+                                                    </button>
 
-                                    <div className="flex h-11 min-w-[80px] items-center justify-center rounded-xl border border-slate-200 bg-slate-100 px-3 text-sm font-bold text-slate-500">
-                                        {
-                                            selectedFile.extension
-                                        }
+                                                    <button
+                                                        type="button"
+                                                        onClick={() =>
+                                                            openShareModal(
+                                                                file
+                                                            )
+                                                        }
+                                                        className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-slate-700 transition hover:bg-slate-50"
+                                                    >
+                                                        <i className="ri-share-line text-lg" />
+                                                        <span>
+                                                            Share
+                                                        </span>
+                                                    </button>
+
+                                                    <button
+                                                        type="button"
+                                                        onClick={() =>
+                                                            openMoveModal(
+                                                                file
+                                                            )
+                                                        }
+                                                        className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-slate-700 transition hover:bg-slate-50"
+                                                    >
+                                                        <i className="ri-folder-transfer-line text-lg" />
+                                                        <span>
+                                                            Move File
+                                                        </span>
+                                                    </button>
+
+                                                    <div className="my-1.5 border-t border-slate-100" />
+
+                                                    <button
+                                                        type="button"
+                                                        onClick={() =>
+                                                            openDeleteModal(
+                                                                file
+                                                            )
+                                                        }
+                                                        className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-red-600 transition hover:bg-red-50"
+                                                    >
+                                                        <i className="ri-delete-bin-line text-lg" />
+                                                        <span>
+                                                            Delete
+                                                        </span>
+                                                    </button>
+                                                </div>
+                                            )}
                                     </div>
                                 </div>
 
-                                <p className="mt-1.5 text-[11px] text-slate-400">
-                                    Extension{" "}
-                                    <strong>
-                                        {
-                                            selectedFile.extension
-                                        }
-                                    </strong>{" "}
-                                    cannot be changed.
-                                </p>
+                                {/* Statistics */}
+                                <div className="mt-5 grid grid-cols-2 gap-3">
+                                    <div className="rounded-xl bg-slate-50 p-3">
+                                        <div className="flex items-center gap-2 text-xs text-slate-500">
+                                            <i className="ri-download-2-line text-base" />
+                                            <span>
+                                                Downloads
+                                            </span>
+                                        </div>
 
-                                {editError && (
-                                    <p className="mt-2 flex items-center gap-1.5 text-xs font-medium text-red-500">
-                                        <i className="ri-error-warning-line" />
-                                        {editError}
-                                    </p>
-                                )}
-                            </div>
-                        </div>
+                                        <p className="mt-1 text-sm font-semibold text-slate-900">
+                                            {file.downloads ??
+                                                0}
+                                        </p>
+                                    </div>
 
-                        <div className="flex gap-2 border-t border-slate-100 bg-slate-50/70 p-4">
-                            <button
-                                type="button"
-                                disabled={
-                                    editLoading
-                                }
-                                onClick={() =>
-                                    setModal(null)
-                                }
-                                className="h-10 flex-1 rounded-xl border border-slate-200 bg-white text-sm font-semibold text-slate-600 transition hover:bg-slate-50 disabled:opacity-50"
-                            >
-                                Cancel
-                            </button>
+                                    <div className="rounded-xl bg-slate-50 p-3">
+                                        <div className="flex items-center gap-2 text-xs text-slate-500">
+                                            <i className="ri-share-forward-line text-base" />
+                                            <span>
+                                                Shared
+                                            </span>
+                                        </div>
 
-                            <button
-                                type="button"
-                                disabled={
-                                    editLoading
-                                }
-                                onClick={
-                                    handleRename
-                                }
-                                className="inline-flex h-10 flex-1 items-center justify-center gap-2 rounded-xl bg-blue-600 text-sm font-semibold text-white shadow-md shadow-blue-600/20 transition hover:bg-blue-700 disabled:opacity-50"
-                            >
-                                {editLoading ? (
-                                    <>
-                                        <i className="ri-loader-4-line animate-spin" />
-                                        Saving...
-                                    </>
-                                ) : (
-                                    <>
-                                        <i className="ri-save-line" />
-                                        Save Changes
-                                    </>
-                                )}
-                            </button>
-                        </div>
-                    </ModalShell>
-                )}
-
-            {/* =====================================================
-          SHARE MODAL
-      ===================================================== */}
-
-            {modal === "share" &&
-                selectedFile && (
-                    <ModalShell>
-                        <ModalHeader
-                            icon="ri-share-forward-line"
-                            title="Share File"
-                            subtitle="Share this file with a registered user."
-                            onClose={() =>
-                                !shareLoading &&
-                                setModal(null)
-                            }
-                        />
-
-                        <div className="space-y-5 p-5">
-                            <FileMiniInfo
-                                file={selectedFile}
-                            />
-
-                            {/* EMAIL */}
-
-                            <div>
-                                <label className="mb-2 block text-sm font-semibold text-slate-700">
-                                    Recipient Email
-                                </label>
-
-                                <div className="relative">
-                                    <i className="ri-mail-line absolute left-3.5 top-1/2 -translate-y-1/2 text-lg text-slate-400" />
-
-                                    <input
-                                        type="email"
-                                        value={
-                                            recipientEmail
-                                        }
-                                        onChange={(e) => {
-                                            setRecipientEmail(
-                                                e.target
-                                                    .value
-                                            );
-
-                                            setShareError(
-                                                ""
-                                            );
-                                        }}
-                                        placeholder="recipient@example.com"
-                                        className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 pl-11 pr-4 text-sm outline-none transition focus:border-blue-400 focus:bg-white focus:ring-4 focus:ring-blue-500/10"
-                                    />
+                                        <p className="mt-1 text-sm font-semibold text-slate-900">
+                                            {file.shares ??
+                                                0}
+                                        </p>
+                                    </div>
                                 </div>
 
-                                <p className="mt-1.5 text-[11px] text-slate-400">
-                                    Recipient must already be
-                                    registered on the platform.
-                                </p>
-                            </div>
-
-                            {/* PASSWORD */}
-
-                            <div>
-                                <label className="mb-2 flex items-center justify-between text-sm font-semibold text-slate-700">
-                                    Password
-
-                                    <span className="text-[10px] font-medium text-slate-400">
-                                        Optional
-                                    </span>
-                                </label>
-
-                                <div className="relative">
-                                    <i className="ri-lock-password-line absolute left-3.5 top-1/2 -translate-y-1/2 text-lg text-slate-400" />
-
-                                    <input
-                                        type="text"
-                                        value={
-                                            sharePassword
-                                        }
-                                        onChange={(e) =>
-                                            setSharePassword(
-                                                e.target
-                                                    .value
-                                            )
-                                        }
-                                        placeholder="Custom password"
-                                        className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 pl-11 pr-4 text-sm outline-none transition focus:border-blue-400 focus:bg-white focus:ring-4 focus:ring-blue-500/10"
-                                    />
-                                </div>
-                            </div>
-
-                            {/* EXPIRY */}
-
-                            <div>
-                                <label className="mb-2 flex items-center justify-between text-sm font-semibold text-slate-700">
-                                    Expiry Date
-
-                                    <span className="text-[10px] font-medium text-slate-400">
-                                        Optional
-                                    </span>
-                                </label>
-
-                                <div className="relative">
-                                    <i className="ri-calendar-line absolute left-3.5 top-1/2 -translate-y-1/2 text-lg text-slate-400" />
-
-                                    <input
-                                        type="date"
-                                        min={
-                                            new Date()
-                                                .toISOString()
-                                                .split(
-                                                    "T"
-                                                )[0]
-                                        }
-                                        value={
-                                            shareExpiry
-                                        }
-                                        onChange={(e) =>
-                                            setShareExpiry(
-                                                e.target
-                                                    .value
-                                            )
-                                        }
-                                        className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 pl-11 pr-4 text-sm outline-none transition focus:border-blue-400 focus:bg-white focus:ring-4 focus:ring-blue-500/10"
-                                    />
-                                </div>
-                            </div>
-
-                            {/* ERROR */}
-
-                            {shareError && (
-                                <div className="flex gap-2 rounded-xl border border-red-100 bg-red-50 p-3 text-xs font-medium text-red-600">
-                                    <i className="ri-error-warning-line text-base" />
-
-                                    <span>
-                                        {shareError}
-                                    </span>
-                                </div>
-                            )}
-                        </div>
-
-                        <div className="flex gap-2 border-t border-slate-100 bg-slate-50/70 p-4">
-                            <button
-                                type="button"
-                                disabled={
-                                    shareLoading
-                                }
-                                onClick={() =>
-                                    setModal(null)
-                                }
-                                className="h-10 flex-1 rounded-xl border border-slate-200 bg-white text-sm font-semibold text-slate-600 transition hover:bg-slate-50 disabled:opacity-50"
-                            >
-                                Cancel
-                            </button>
-
-                            <button
-                                type="button"
-                                disabled={
-                                    shareLoading
-                                }
-                                onClick={
-                                    handleShare
-                                }
-                                className="inline-flex h-10 flex-1 items-center justify-center gap-2 rounded-xl bg-blue-600 text-sm font-semibold text-white shadow-md shadow-blue-600/20 transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
-                            >
-                                {shareLoading ? (
-                                    <>
-                                        <i className="ri-loader-4-line animate-spin" />
-                                        Sharing...
-                                    </>
-                                ) : (
-                                    <>
-                                        <i className="ri-share-forward-line" />
-                                        Share File
-                                    </>
-                                )}
-                            </button>
-                        </div>
-                    </ModalShell>
-                )}
-
-            {/* =====================================================
-          DELETE MODAL
-      ===================================================== */}
-
-            {modal === "delete" &&
-                selectedFile && (
-                    <ModalShell>
-                        <div className="p-5 sm:p-6">
-                            <div className="flex items-start gap-4">
-                                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-red-50 text-red-500">
-                                    <i className="ri-delete-bin-6-line text-xl" />
-                                </div>
-
-                                <div>
-                                    <h2 className="text-lg font-bold text-slate-900">
-                                        Delete file?
-                                    </h2>
-
-                                    <p className="mt-1 text-sm leading-5 text-slate-500">
-                                        Are you sure you want to
-                                        permanently delete{" "}
-                                        <strong className="text-slate-700">
-                                            "{selectedFile.name}"
-                                        </strong>
-                                        ?
-                                    </p>
-                                </div>
-                            </div>
-
-                            <div className="mt-5 rounded-xl border border-red-100 bg-red-50 p-3.5">
-                                <div className="flex gap-2.5">
-                                    <i className="ri-error-warning-fill mt-0.5 shrink-0 text-red-500" />
-
-                                    <p className="text-xs font-medium leading-5 text-red-700">
-                                        This action cannot be undone.
-                                        The file will be permanently
-                                        deleted.
-                                    </p>
-                                </div>
-                            </div>
-
-                            {deleteError && (
-                                <div className="mt-3 rounded-xl border border-red-200 bg-red-50 p-3 text-xs font-medium text-red-600">
-                                    {deleteError}
-                                </div>
-                            )}
-                        </div>
-
-                        <div className="flex flex-col-reverse gap-2 border-t border-slate-100 bg-slate-50/70 p-4 sm:flex-row">
-                            <button
-                                type="button"
-                                disabled={
-                                    deleteLoading
-                                }
-                                onClick={() =>
-                                    setModal(null)
-                                }
-                                className="h-10 flex-1 rounded-xl border border-slate-200 bg-white text-sm font-semibold text-slate-600 transition hover:bg-slate-50 disabled:opacity-50"
-                            >
-                                Cancel
-                            </button>
-
-                            <button
-                                type="button"
-                                disabled={
-                                    deleteLoading
-                                }
-                                onClick={
-                                    handleDelete
-                                }
-                                className="inline-flex h-10 flex-1 items-center justify-center gap-2 rounded-xl bg-red-600 text-sm font-semibold text-white transition hover:bg-red-700 disabled:opacity-60"
-                            >
-                                {deleteLoading ? (
-                                    <>
-                                        <i className="ri-loader-4-line animate-spin" />
-                                        Deleting...
-                                    </>
-                                ) : (
-                                    <>
-                                        <i className="ri-delete-bin-line" />
-                                        Delete
-                                    </>
-                                )}
-                            </button>
-                        </div>
-                    </ModalShell>
-                )}
-
-            {/* =====================================================
-          MOVE MODAL
-      ===================================================== */}
-
-            {modal === "move" &&
-                selectedFile && (
-                    <ModalShell>
-                        <ModalHeader
-                            icon="ri-folder-transfer-line"
-                            title="Move File"
-                            subtitle="Choose where you want to move this file."
-                            onClose={() =>
-                                !moveLoading &&
-                                setModal(null)
-                            }
-                        />
-
-                        <div className="space-y-4 p-5">
-                            {/* FILE INFO */}
-
-                            <FileMiniInfo
-                                file={selectedFile}
-                            />
-
-                            {/* CURRENT FOLDER */}
-
-                            <div className="rounded-xl border border-slate-200 bg-slate-50 p-3.5">
-                                <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                                    Current Folder
-                                </p>
-
-                                <div className="mt-2 flex items-center gap-2">
-                                    <i className="ri-folder-5-fill text-lg text-blue-500" />
-
-                                    <span className="text-sm font-semibold text-slate-700">
-                                        {getFolder(
-                                            selectedFile.folderId
-                                        )?.name ||
-                                            "Unknown Folder"}
-                                    </span>
-                                </div>
-                            </div>
-
-                            {/* MOVE TO */}
-
-                            <div>
-                                <label className="mb-2 block text-sm font-semibold text-slate-700">
-                                    Move To
-                                </label>
-
-                                <button
-                                    type="button"
-                                    disabled={
-                                        moveLoading
-                                    }
-                                    onClick={
-                                        openFolderPicker
-                                    }
-                                    className="flex min-h-12 w-full items-center justify-between rounded-xl border border-slate-200 bg-white px-3.5 text-left transition hover:border-blue-300 hover:bg-blue-50/30"
-                                >
-                                    <span className="flex items-center gap-2.5">
-                                        <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50 text-blue-500">
-                                            <i className="ri-folder-5-fill" />
-                                        </span>
+                                {/* File Information */}
+                                <div className="mt-4 grid gap-3 border-t border-slate-100 pt-4 sm:grid-cols-2">
+                                    <div className="flex items-center gap-2 text-xs text-slate-500">
+                                        <i className="ri-lock-line text-base" />
 
                                         <span>
-                                            <span className="block text-xs font-semibold text-slate-700">
-                                                {selectedDestination
-                                                    ? selectedDestination.name
-                                                    : "Select destination folder"}
-                                            </span>
-
-                                            {!selectedDestination && (
-                                                <span className="block text-[10px] text-slate-400">
-                                                    Click to browse folders
-                                                </span>
-                                            )}
+                                            {file.password
+                                                ? "Protected"
+                                                : "No Password"}
                                         </span>
-                                    </span>
-
-                                    <i className="ri-arrow-right-s-line text-lg text-slate-400" />
-                                </button>
-                            </div>
-
-                            {/* SELECTED DESTINATION */}
-
-                            {selectedDestination && (
-                                <div className="flex items-center gap-3 rounded-xl border border-blue-100 bg-blue-50 p-3">
-                                    <span
-                                        className={`flex h-8 w-8 items-center justify-center rounded-lg ${getFolderStyle(
-                                            selectedDestination.color
-                                        ).bg
-                                            } ${getFolderStyle(
-                                                selectedDestination.color
-                                            ).text
-                                            }`}
-                                    >
-                                        <i className="ri-folder-5-fill" />
-                                    </span>
-
-                                    <div className="min-w-0 flex-1">
-                                        <p className="text-[10px] font-semibold uppercase tracking-wide text-blue-400">
-                                            Destination
-                                        </p>
-
-                                        <p className="truncate text-sm font-bold text-blue-700">
-                                            {
-                                                selectedDestination.name
-                                            }
-                                        </p>
                                     </div>
 
-                                    <i className="ri-check-line text-xl text-blue-600" />
+                                    <div className="flex items-center gap-2 text-xs text-slate-500">
+                                        <i className="ri-calendar-line text-base" />
+
+                                        <span>
+                                            {file.expiresAt
+                                                ? `Expires: ${formatDate(
+                                                    file.expiresAt
+                                                )}`
+                                                : "No Expiry"}
+                                        </span>
+                                    </div>
+
+                                    <div className="flex items-center gap-2 text-xs text-slate-500">
+                                        <i className="ri-time-line text-base" />
+
+                                        <span>
+                                            Uploaded:{" "}
+                                            {formatDate(
+                                                file.createdAt
+                                            )}
+                                        </span>
+                                    </div>
+
+                                    <div className="flex items-center gap-2 text-xs text-slate-500">
+                                        <i className="ri-history-line text-base" />
+
+                                        <span>
+                                            Modified:{" "}
+                                            {formatDate(
+                                                file.updatedAt
+                                            )}
+                                        </span>
+                                    </div>
                                 </div>
-                            )}
-
-                            {/* ERROR */}
-
-                            {moveError && (
-                                <div className="flex gap-2 rounded-xl border border-red-100 bg-red-50 p-3 text-xs font-medium text-red-600">
-                                    <i className="ri-error-warning-line text-base" />
-
-                                    <span>
-                                        {moveError}
-                                    </span>
-                                </div>
-                            )}
+                            </div>
+                        ))}
+                    </div>
+                ) : (
+                    <div className="rounded-2xl border border-dashed border-slate-200 bg-white px-6 py-14 text-center">
+                        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-slate-100">
+                            <i className="ri-file-search-line text-2xl text-slate-500" />
                         </div>
 
-                        <div className="flex gap-2 border-t border-slate-100 bg-slate-50/70 p-4">
-                            <button
-                                type="button"
-                                disabled={
-                                    moveLoading
-                                }
-                                onClick={() =>
-                                    setModal(null)
-                                }
-                                className="h-10 flex-1 rounded-xl border border-slate-200 bg-white text-sm font-semibold text-slate-600 transition hover:bg-slate-50 disabled:opacity-50"
-                            >
-                                Cancel
-                            </button>
+                        <h3 className="mt-4 text-sm font-semibold text-slate-900">
+                            No Files Found
+                        </h3>
 
-                            <button
-                                type="button"
-                                disabled={
-                                    !selectedDestination ||
-                                    moveLoading
-                                }
-                                onClick={
-                                    handleMove
-                                }
-                                className="inline-flex h-10 flex-1 items-center justify-center gap-2 rounded-xl bg-blue-600 text-sm font-semibold text-white shadow-md shadow-blue-600/20 transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
-                            >
-                                {moveLoading ? (
-                                    <>
-                                        <i className="ri-loader-4-line animate-spin" />
-                                        Moving...
-                                    </>
-                                ) : (
-                                    <>
-                                        <i className="ri-folder-transfer-line" />
-                                        Move File
-                                    </>
-                                )}
-                            </button>
-                        </div>
-                    </ModalShell>
-                )}
-
-            {/* =====================================================
-          FOLDER PICKER POPUP
-      ===================================================== */}
-
-            {folderPickerOpen &&
-                modal === "move" && (
-                    <FolderPickerModal
-                        folders={
-                            visibleFolders
-                        }
-                        search={folderSearch}
-                        setSearch={
-                            handleFolderSearch
-                        }
-                        page={folderPage}
-                        totalPages={
-                            folderTotalPages
-                        }
-                        totalItems={
-                            filteredFolders.length
-                        }
-                        onPageChange={
-                            setFolderPage
-                        }
-                        selectedFolder={
-                            selectedDestination
-                        }
-                        currentFolderId={
-                            selectedFile?.folderId
-                        }
-                        onSelect={
-                            handleDestinationSelect
-                        }
-                        onClose={() =>
-                            setFolderPickerOpen(
-                                false
-                            )
-                        }
-                    />
-                )}
-
-            {/* =====================================================
-          TOAST
-      ===================================================== */}
-
-            {toast && (
-                <div className="fixed bottom-5 left-1/2 z-[100] w-[calc(100%-32px)] max-w-sm -translate-x-1/2">
-                    <div
-                        className={`flex items-center gap-3 rounded-xl border bg-white px-4 py-3 shadow-xl ${toast.type ===
-                            "error"
-                            ? "border-red-100"
-                            : "border-emerald-100"
-                            }`}
-                    >
-                        <div
-                            className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${toast.type ===
-                                "error"
-                                ? "bg-red-50 text-red-500"
-                                : "bg-emerald-50 text-emerald-500"
-                                }`}
-                        >
-                            <i
-                                className={
-                                    toast.type ===
-                                        "error"
-                                        ? "ri-error-warning-line"
-                                        : "ri-check-line"
-                                }
-                            />
-                        </div>
-
-                        <p className="text-sm font-medium text-slate-700">
-                            {toast.message}
+                        <p className="mt-1 text-sm text-slate-500">
+                            {searchQuery
+                                ? "No files match your current search."
+                                : "This folder does not contain any files."}
                         </p>
                     </div>
-                </div>
-            )}
-        </div>
-    );
-}
-
-/* =========================================================
-   FILE CARD
-========================================================= */
-
-function FileCard({
-    file,
-    folder,
-    menuId,
-    setMenuId,
-    onEdit,
-    onShare,
-    onMove,
-    onDelete,
-}) {
-    const style = getFileStyle(
-        file.type
-    );
-
-    const folderStyle = getFolderStyle(
-        folder?.color
-    );
-
-    return (
-        <div className="group relative rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-blue-200 hover:shadow-xl hover:shadow-blue-500/5">
-            {/* TOP */}
-
-            <div className="flex items-start justify-between">
-                <div
-                    className={`flex h-12 w-12 items-center justify-center rounded-xl ${style.bg} ${style.text} transition-transform duration-300 group-hover:scale-105`}
-                >
-                    <i
-                        className={`${style.icon} text-2xl`}
-                    />
-                </div>
-
-                {/* MENU */}
-
-                <div className="relative">
-                    <button
-                        type="button"
-                        onClick={() =>
-                            setMenuId(
-                                (prev) =>
-                                    prev === file.id
-                                        ? null
-                                        : file.id
-                            )
-                        }
-                        className={`flex h-9 w-9 items-center justify-center rounded-lg text-lg text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 ${menuId === file.id
-                            ? "bg-slate-100 text-slate-700"
-                            : ""
-                            }`}
-                    >
-                        <i className="ri-more-2-fill" />
-                    </button>
-
-                    {menuId === file.id && (
-                        <FileActionMenu
-                            onEdit={onEdit}
-                            onShare={onShare}
-                            onMove={onMove}
-                            onDelete={onDelete}
-                        />
-                    )}
-                </div>
-            </div>
-
-            {/* FILE NAME */}
-
-            <div className="mt-4">
-                <h3 className="truncate text-base font-bold text-slate-800">
-                    {file.fileName}
-                </h3>
-
-                <div className="mt-1 flex items-center gap-2">
-                    <span
-                        className={`rounded-md px-1.5 py-0.5 text-[10px] font-bold ${style.bg} ${style.text}`}
-                    >
-                        {file.extension}
-                    </span>
-
-                    <span className="text-xs text-slate-400">
-                        {file.type}
-                    </span>
-
-                    <span className="text-xs text-slate-300">
-                        •
-                    </span>
-
-                    <span className="text-xs text-slate-400">
-                        {formatFileSize(
-                            file.size
-                        )}
-                    </span>
-                </div>
-            </div>
-
-            {/* STATS */}
-
-            <div className="mt-5 grid grid-cols-2 gap-2">
-                <div className="rounded-xl bg-slate-50 p-3 transition group-hover:bg-blue-50/50">
-                    <div className="flex items-center gap-1.5 text-slate-400">
-                        <i className="ri-download-2-line text-sm" />
-
-                        <span className="text-[10px] font-semibold uppercase tracking-wide">
-                            Downloads
-                        </span>
-                    </div>
-
-                    <p className="mt-1 text-sm font-bold text-slate-700">
-                        {file.downloads}
-                    </p>
-                </div>
-
-                <div className="rounded-xl bg-slate-50 p-3 transition group-hover:bg-blue-50/50">
-                    <div className="flex items-center gap-1.5 text-slate-400">
-                        <i className="ri-share-forward-line text-sm" />
-
-                        <span className="text-[10px] font-semibold uppercase tracking-wide">
-                            Shared
-                        </span>
-                    </div>
-
-                    <p className="mt-1 text-sm font-bold text-slate-700">
-                        {file.shares}
-                    </p>
-                </div>
-            </div>
-
-            {/* DETAILS */}
-
-            <div className="mt-4 space-y-2.5">
-                <div className="flex items-center justify-between">
-                    <span className="text-xs text-slate-400">
-                        Uploaded
-                    </span>
-
-                    <span className="text-xs font-medium text-slate-600">
-                        {formatDate(
-                            file.uploadedAt
-                        )}
-                    </span>
-                </div>
-
-                <div className="flex items-center justify-between">
-                    <span className="text-xs text-slate-400">
-                        Updated
-                    </span>
-
-                    <span className="text-xs font-medium text-slate-600">
-                        {formatDate(
-                            file.updatedAt
-                        )}
-                    </span>
-                </div>
-
-                <div className="flex items-center justify-between">
-                    <span className="text-xs text-slate-400">
-                        Expiry
-                    </span>
-
-                    <span className="text-xs font-medium text-slate-600">
-                        {formatDate(
-                            file.expiryDate
-                        )}
-                    </span>
-                </div>
-            </div>
-
-            {/* FOOTER */}
-
-            <div className="mt-4 flex items-center justify-between border-t border-slate-100 pt-3">
-                <div className="flex items-center gap-2">
-                    <span
-                        className={`flex h-7 w-7 items-center justify-center rounded-lg ${file.password
-                            ? "bg-emerald-50 text-emerald-500"
-                            : "bg-slate-50 text-slate-300"
-                            }`}
-                    >
-                        <i
-                            className={
-                                file.password
-                                    ? "ri-lock-password-line text-sm"
-                                    : "ri-lock-unlock-line text-sm"
-                            }
-                        />
-                    </span>
-
-                    <span className="text-xs text-slate-400">
-                        {file.password
-                            ? "Protected"
-                            : "No password"}
-                    </span>
-                </div>
-
-                <span
-                    className={`inline-flex max-w-[130px] items-center gap-1.5 truncate rounded-full px-2.5 py-1.5 text-[10px] font-semibold ${folderStyle.bg} ${folderStyle.text}`}
-                >
-                    <span
-                        className={`h-1.5 w-1.5 shrink-0 rounded-full ${folderStyle.dot}`}
-                    />
-
-                    <span className="truncate">
-                        {folder?.name ||
-                            "Unknown Folder"}
-                    </span>
-                </span>
-            </div>
-        </div>
-    );
-}
-
-/* =========================================================
-   FILE ACTION MENU
-========================================================= */
-
-function FileActionMenu({
-    onEdit,
-    onShare,
-    onMove,
-    onDelete,
-}) {
-    return (
-        <div className="absolute right-0 top-10 z-40 w-48 overflow-hidden rounded-xl border border-slate-200 bg-white p-1.5 shadow-xl shadow-slate-900/10">
-            <button
-                type="button"
-                onClick={onEdit}
-                className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm text-slate-600 transition hover:bg-blue-50 hover:text-blue-600"
-            >
-                <i className="ri-edit-line text-base" />
-                Edit
-            </button>
-
-            <button
-                type="button"
-                onClick={onShare}
-                className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm text-slate-600 transition hover:bg-blue-50 hover:text-blue-600"
-            >
-                <i className="ri-share-forward-line text-base" />
-                Share
-            </button>
-
-            <button
-                type="button"
-                onClick={onMove}
-                className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm text-slate-600 transition hover:bg-blue-50 hover:text-blue-600"
-            >
-                <i className="ri-folder-transfer-line text-base" />
-                Move File
-            </button>
-
-            <div className="my-1 border-t border-slate-100" />
-
-            <button
-                type="button"
-                onClick={onDelete}
-                className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm text-red-500 transition hover:bg-red-50"
-            >
-                <i className="ri-delete-bin-line text-base" />
-                Delete
-            </button>
-        </div>
-    );
-}
-
-/* =========================================================
-   FILE MINI INFO
-========================================================= */
-
-function FileMiniInfo({
-    file,
-}) {
-    const style = getFileStyle(
-        file.type
-    );
-
-    return (
-        <div className="flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 p-3">
-            <div
-                className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${style.bg} ${style.text}`}
-            >
-                <i
-                    className={`${style.icon} text-xl`}
-                />
-            </div>
-
-            <div className="min-w-0">
-                <p className="truncate text-sm font-bold text-slate-700">
-                    {file.name}
-                </p>
-
-                <div className="mt-1 flex items-center gap-2 text-xs text-slate-400">
-                    <span>
-                        {file.type}
-                    </span>
-
-                    <span>•</span>
-
-                    <span>
-                        {formatFileSize(
-                            file.size
-                        )}
-                    </span>
-                </div>
-            </div>
-        </div>
-    );
-}
-
-/* =========================================================
-   MODAL SHELL
-========================================================= */
-
-function ModalShell({
-    children,
-}) {
-    return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/45 p-4 backdrop-blur-sm">
-            <div className="max-h-[90vh] w-full max-w-md animate-[modalIn_.2s_ease-out] overflow-y-auto rounded-2xl bg-white shadow-2xl">
-                {children}
-            </div>
-
-            <style>
-                {`
-          @keyframes modalIn {
-            from {
-              opacity: 0;
-              transform: translateY(10px) scale(.98);
-            }
-
-            to {
-              opacity: 1;
-              transform: translateY(0) scale(1);
-            }
-          }
-        `}
-            </style>
-        </div>
-    );
-}
-
-/* =========================================================
-   MODAL HEADER
-========================================================= */
-
-function ModalHeader({
-    icon,
-    title,
-    subtitle,
-    onClose,
-}) {
-    return (
-        <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4">
-            <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
-                    <i
-                        className={`${icon} text-lg`}
-                    />
-                </div>
-
-                <div>
-                    <h2 className="text-lg font-bold text-slate-900">
-                        {title}
-                    </h2>
-
-                    <p className="mt-0.5 text-xs text-slate-400">
-                        {subtitle}
-                    </p>
-                </div>
-            </div>
-
-            <button
-                type="button"
-                onClick={onClose}
-                className="flex h-9 w-9 items-center justify-center rounded-lg text-xl text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
-            >
-                <i className="ri-close-line" />
-            </button>
-        </div>
-    );
-}
-
-/* =========================================================
-   FOLDER PICKER MODAL
-========================================================= */
-
-function FolderPickerModal({
-    folders,
-    search,
-    setSearch,
-    page,
-    totalPages,
-    totalItems,
-    onPageChange,
-    selectedFolder,
-    currentFolderId,
-    onSelect,
-    onClose,
-}) {
-    return (
-        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-slate-950/50 p-4 sm:p-4 backdrop-blur-sm">
-
-            <div className="mx-auto flex w-full max-w-lg max-h-[calc(100vh-1rem)] sm:max-h-[90vh]">
-                <div className="flex w-full flex-col overflow-hidden rounded-xl sm:rounded-2xl bg-white shadow-2xl animate-[modalIn_.2s_ease-out]">
-
-                    {/* HEADER */}
-                    <div className="flex shrink-0 items-center justify-between border-b border-slate-100 px-3 py-3 sm:px-5 sm:py-4">
-                        <div className="min-w-0">
-                            <div className="flex items-center gap-2">
-                                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-blue-600 sm:h-9 sm:w-9">
-                                    <i className="ri-folder-open-line text-lg" />
-                                </div>
-
-                                <h2 className="truncate text-base font-bold text-slate-900 sm:text-lg">
-                                    Select Folder
-                                </h2>
-                            </div>
-
-                            <p className="mt-1 pl-10 text-[11px] text-slate-400 sm:pl-11 sm:text-xs">
-                                Choose a destination folder
-                            </p>
-                        </div>
-
-                        <button
-                            type="button"
-                            onClick={onClose}
-                            className="ml-2 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-xl text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 sm:h-9 sm:w-9"
-                        >
-                            <i className="ri-close-line" />
-                        </button>
-                    </div>
-
-                    {/* SEARCH */}
-                    <div className="shrink-0 border-b border-slate-100 p-3 sm:p-4">
-                        <div className="relative">
-                            <i className="ri-search-line pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-lg text-slate-400" />
-
-                            <input
-                                autoFocus
-                                type="text"
-                                value={search}
-                                onChange={(e) => setSearch(e.target.value)}
-                                placeholder="Search folders..."
-                                className="h-10 w-full rounded-xl border border-slate-200 bg-slate-50 pl-10 pr-4 text-sm outline-none transition focus:border-blue-400 focus:bg-white focus:ring-4 focus:ring-blue-500/10 sm:h-11"
-                            />
-                        </div>
-                    </div>
-
-                    {/* FOLDER LIST */}
-                    <div className="min-h-0 flex-1 overflow-y-auto p-2.5 sm:p-3">
-                        {folders.length === 0 ? (
-                            <div className="flex min-h-[220px] flex-col items-center justify-center px-4 text-center sm:min-h-[280px]">
-                                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100 text-slate-400 sm:h-14 sm:w-14">
-                                    <i className="ri-folder-search-line text-2xl" />
-                                </div>
-
-                                <h3 className="mt-3 text-sm font-bold text-slate-700">
-                                    No folders found
-                                </h3>
-
-                                <p className="mt-1 text-xs text-slate-400">
-                                    Try another search term.
-                                </p>
-                            </div>
-                        ) : (
-                            <div className="space-y-1.5">
-                                {folders.map((folder) => {
-                                    const style = getFolderStyle(folder.color);
-
-                                    const isCurrent =
-                                        folder.id === currentFolderId;
-
-                                    const isSelected =
-                                        selectedFolder?.id === folder.id;
-
-                                    return (
-                                        <button
-                                            key={folder.id}
-                                            type="button"
-                                            disabled={isCurrent}
-                                            onClick={() => onSelect(folder)}
-                                            className={`flex w-full min-w-0 items-center gap-2.5 rounded-xl border p-2.5 text-left transition sm:gap-3 sm:p-3 ${isCurrent
-                                                ? "cursor-not-allowed border-slate-100 bg-slate-50 opacity-50"
-                                                : isSelected
-                                                    ? "border-blue-200 bg-blue-50"
-                                                    : "border-transparent hover:border-slate-200 hover:bg-slate-50"
-                                                }`}
-                                        >
-                                            <span
-                                                className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg sm:h-10 sm:w-10 sm:rounded-xl ${style.bg} ${style.text}`}
-                                            >
-                                                <i className="ri-folder-5-fill text-lg sm:text-xl" />
-                                            </span>
-
-                                            <span className="min-w-0 flex-1">
-                                                <span className="block truncate text-xs font-semibold text-slate-700 sm:text-sm">
-                                                    {folder.name}
-                                                </span>
-
-                                                <span className="mt-0.5 block truncate text-[10px] text-slate-400 sm:text-[11px]">
-                                                    Updated{" "}
-                                                    {formatDate(folder.updatedAt)}
-                                                </span>
-                                            </span>
-
-                                            <span className="shrink-0">
-                                                {isCurrent ? (
-                                                    <span className="rounded-full bg-slate-200 px-1.5 py-1 text-[8px] font-bold text-slate-500 sm:px-2 sm:text-[9px]">
-                                                        Current
-                                                    </span>
-                                                ) : isSelected ? (
-                                                    <i className="ri-checkbox-circle-fill text-lg text-blue-600 sm:text-xl" />
-                                                ) : (
-                                                    <i className="ri-arrow-right-s-line text-base text-slate-300 sm:text-lg" />
-                                                )}
-                                            </span>
-                                        </button>
-                                    );
-                                })}
-                            </div>
-                        )}
-                    </div>
-
-                    {/* PAGINATION */}
-                    {totalPages > 1 && (
-                        <div className="flex shrink-0 flex-col gap-2 border-t border-slate-100 px-3 py-2.5 sm:flex-row sm:items-center sm:justify-between sm:px-4 sm:py-3">
-                            <p className="text-center text-[11px] text-slate-400 sm:text-left">
-                                {totalItems} folders
-                            </p>
-
-                            <div className="flex items-center justify-center gap-1">
-                                <button
-                                    type="button"
-                                    disabled={page === 1}
-                                    onClick={() =>
-                                        onPageChange((prev) =>
-                                            Math.max(1, prev - 1)
-                                        )
-                                    }
-                                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-slate-200 text-slate-500 transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-600 disabled:cursor-not-allowed disabled:opacity-40"
-                                >
-                                    <i className="ri-arrow-left-s-line" />
-                                </button>
-
-                                {/* Mobile: current page only */}
-                                <span className="flex h-8 min-w-8 items-center justify-center rounded-lg bg-blue-600 px-2 text-xs font-semibold text-white sm:hidden">
-                                    {page}
+                )}
+
+                {/* Load More */}
+                {files.length > 0 &&
+                    pageNo <= totalPages && (
+                        <div className="mt-6 flex justify-center">
+                            <button
+                                type="button"
+                                onClick={() =>
+                                    fetchFiles(false)
+                                }
+                                disabled={fetchLoading}
+                                className="inline-flex h-10 items-center gap-2 rounded-xl border border-slate-200 bg-white px-5 text-sm font-medium text-slate-700 transition hover:border-slate-300 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
+                            >
+                                {fetchLoading ? (
+                                    <i className="ri-loader-4-line animate-spin text-lg" />
+                                ) : (
+                                    <i className="ri-add-line text-lg" />
+                                )}
+
+                                <span>
+                                    {fetchLoading
+                                        ? "Loading..."
+                                        : "Load More"}
                                 </span>
+                            </button>
+                        </div>
+                    )}
 
-                                {/* Desktop: all pages */}
-                                <div className="hidden items-center gap-1 sm:flex">
-                                    {Array.from(
-                                        { length: totalPages },
-                                        (_, index) => index + 1
-                                    ).map((number) => (
-                                        <button
-                                            key={number}
-                                            type="button"
-                                            onClick={() => onPageChange(number)}
-                                            className={`flex h-8 min-w-8 items-center justify-center rounded-lg px-2 text-xs font-semibold transition ${page === number
-                                                ? "bg-blue-600 text-white"
-                                                : "border border-slate-200 text-slate-600 hover:border-blue-200 hover:bg-blue-50 hover:text-blue-600"
-                                                }`}
-                                        >
-                                            {number}
-                                        </button>
-                                    ))}
+                {/* Upload Modal */}
+                {addFileModal && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4 backdrop-blur-sm">
+                        <div className="max-h-[90vh] w-full max-w-xl overflow-y-auto rounded-2xl bg-white shadow-2xl">
+                            <div className="p-5 sm:p-6">
+                                <div className="flex items-start justify-between gap-4">
+                                    <div className="flex items-center gap-3">
+                                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100">
+                                            <i className="ri-upload-2-line text-xl text-slate-700" />
+                                        </div>
+
+                                        <div>
+                                            <p className="font-semibold text-slate-900">
+                                                Add File
+                                            </p>
+
+                                            <p className="text-xs text-slate-500">
+                                                Upload a file to your folder.
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <button
+                                        type="button"
+                                        onClick={
+                                            closeAddFileModal
+                                        }
+                                        disabled={loading}
+                                        className="flex h-9 w-9 items-center justify-center rounded-lg text-slate-500 transition hover:bg-slate-100 hover:text-slate-900 disabled:opacity-50"
+                                    >
+                                        <i className="ri-close-line text-xl" />
+                                    </button>
                                 </div>
 
-                                <button
-                                    type="button"
-                                    disabled={page === totalPages}
-                                    onClick={() =>
-                                        onPageChange((prev) =>
-                                            Math.min(totalPages, prev + 1)
-                                        )
+                                <div className="my-5 border-t border-slate-100" />
+
+                                {!selectedFile ? (
+                                    <button
+                                        type="button"
+                                        onClick={() =>
+                                            fileInputRef.current?.click()
+                                        }
+                                        className="flex w-full flex-col items-center justify-center rounded-xl border-2 border-dashed border-slate-200 px-5 py-10 transition-all duration-200 hover:border-slate-400 hover:bg-slate-50"
+                                    >
+                                        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-slate-100">
+                                            <i className="ri-upload-cloud-2-line text-2xl text-slate-600" />
+                                        </div>
+
+                                        <p className="mt-4 text-sm font-medium text-slate-900">
+                                            Click to select file
+                                        </p>
+
+                                        <p className="mt-1 text-xs text-slate-500">
+                                            Maximum file size: 10 MB
+                                        </p>
+                                    </button>
+                                ) : (
+                                    <div className="space-y-5">
+                                        {/* Selected file */}
+                                        <div className="flex items-center justify-between rounded-xl border border-slate-200 p-3">
+                                            <div className="flex min-w-0 items-center gap-3">
+                                                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-slate-100">
+                                                    <i className="ri-file-3-line text-xl text-slate-600" />
+                                                </div>
+
+                                                <div className="min-w-0">
+                                                    <p className="truncate text-sm font-medium text-slate-900">
+                                                        {
+                                                            selectedFile.name
+                                                        }
+                                                    </p>
+
+                                                    <p className="mt-1 flex items-center gap-1 text-xs text-slate-500">
+                                                        <i className="ri-hard-drive-2-line" />
+
+                                                        {formatFileSize(
+                                                            selectedFile.size
+                                                        )}
+                                                    </p>
+                                                </div>
+                                            </div>
+
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    setSelectedFile(
+                                                        null
+                                                    );
+                                                    setFileName("");
+
+                                                    if (
+                                                        fileInputRef.current
+                                                    ) {
+                                                        fileInputRef.current.value =
+                                                            "";
+                                                    }
+                                                }}
+                                                disabled={loading}
+                                                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-slate-500 transition hover:bg-red-50 hover:text-red-600 disabled:opacity-50"
+                                            >
+                                                <i className="ri-close-line text-lg" />
+                                            </button>
+                                        </div>
+
+                                        {/* File Name */}
+                                        <div>
+                                            <p className="mb-2 text-sm font-medium text-slate-800">
+                                                File Name
+                                            </p>
+
+                                            <div className="flex items-center rounded-xl border border-slate-200 transition focus-within:border-slate-400 focus-within:ring-2 focus-within:ring-slate-100">
+                                                <i className="ri-file-edit-line pl-3 text-lg text-slate-400" />
+
+                                                <input
+                                                    type="text"
+                                                    value={
+                                                        fileName
+                                                    }
+                                                    onChange={(
+                                                        e
+                                                    ) =>
+                                                        setFileName(
+                                                            e
+                                                                .target
+                                                                .value
+                                                        )
+                                                    }
+                                                    disabled={
+                                                        loading
+                                                    }
+                                                    className="h-11 min-w-0 flex-1 bg-transparent px-3 text-sm text-slate-900 outline-none disabled:opacity-60"
+                                                />
+
+                                                <span className="pr-3 text-sm text-slate-400">
+                                                    .
+                                                    {getFileExtension(
+                                                        selectedFile.name
+                                                    )}
+                                                </span>
+                                            </div>
+
+                                            <span className="mt-1.5 block text-xs text-slate-500">
+                                                You can change only the file name. Extension cannot be modified.
+                                            </span>
+                                        </div>
+
+                                        {/* Upload To */}
+                                        <div>
+                                            <p className="mb-2 text-sm font-medium text-slate-800">
+                                                Upload To
+                                            </p>
+
+                                            <div className="flex items-center justify-between rounded-xl border border-slate-200 p-3">
+                                                <div className="flex min-w-0 items-center gap-3">
+                                                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-slate-100">
+                                                        <i className="ri-folder-3-line text-xl text-slate-600" />
+                                                    </div>
+
+                                                    <div className="min-w-0">
+                                                        <p className="truncate text-sm font-medium text-slate-900">
+                                                            Current Folder
+                                                        </p>
+
+                                                        <p className="mt-1 text-xs text-slate-500">
+                                                            Selected from current route
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+
+                                <input
+                                    ref={fileInputRef}
+                                    type="file"
+                                    hidden
+                                    onChange={
+                                        handleFileSelection
                                     }
-                                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-slate-200 text-slate-500 transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-600 disabled:cursor-not-allowed disabled:opacity-40"
-                                >
-                                    <i className="ri-arrow-right-s-line" />
-                                </button>
+                                />
+
+                                <div className="my-5 border-t border-slate-100" />
+
+                                <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+                                    <button
+                                        type="button"
+                                        onClick={
+                                            closeAddFileModal
+                                        }
+                                        disabled={loading}
+                                        className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-slate-200 px-4 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:opacity-60"
+                                    >
+                                        <i className="ri-close-line text-lg" />
+                                        <span>
+                                            Cancel
+                                        </span>
+                                    </button>
+
+                                    <button
+                                        type="button"
+                                        onClick={
+                                            handleFileUpload
+                                        }
+                                        disabled={
+                                            loading ||
+                                            !selectedFile
+                                        }
+                                        className="inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-slate-900 px-5 text-sm font-medium text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
+                                    >
+                                        {loading ? (
+                                            <i className="ri-loader-4-line animate-spin text-lg" />
+                                        ) : (
+                                            <i className="ri-upload-2-line text-lg" />
+                                        )}
+
+                                        <span>
+                                            {loading
+                                                ? "Uploading..."
+                                                : "Upload"}
+                                        </span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* Edit Modal */}
+                {editFileModal &&
+                    selectedFile && (
+                        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4 backdrop-blur-sm">
+                            <div className="max-h-[90vh] w-full max-w-xl overflow-y-auto rounded-2xl bg-white shadow-2xl">
+                                <div className="p-5 sm:p-6">
+                                    <div className="flex items-start justify-between gap-4">
+                                        <div className="flex items-center gap-3">
+                                            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100">
+                                                <i className="ri-edit-line text-xl text-slate-700" />
+                                            </div>
+
+                                            <div>
+                                                <p className="font-semibold text-slate-900">
+                                                    Edit File
+                                                </p>
+
+                                                <p className="text-xs text-slate-500">
+                                                    Update file details.
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        <button
+                                            type="button"
+                                            onClick={
+                                                closeEditModal
+                                            }
+                                            disabled={
+                                                editLoading
+                                            }
+                                            className="flex h-9 w-9 items-center justify-center rounded-lg text-slate-500 transition hover:bg-slate-100 disabled:opacity-50"
+                                        >
+                                            <i className="ri-close-line text-xl" />
+                                        </button>
+                                    </div>
+
+                                    <div className="my-5 border-t border-slate-100" />
+
+                                    <div className="rounded-xl border border-slate-200 p-3">
+                                        <div className="flex items-center gap-3">
+                                            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-slate-100">
+                                                <i className="ri-file-3-line text-xl text-slate-600" />
+                                            </div>
+
+                                            <div className="min-w-0">
+                                                <p className="truncate text-sm font-medium text-slate-900">
+                                                    {
+                                                        selectedFile.fileName
+                                                    }
+                                                </p>
+
+                                                <p className="mt-1 text-xs text-slate-500">
+                                                    {formatFileSize(
+                                                        selectedFile.fileSize
+                                                    )}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="mt-5 space-y-4">
+                                        {/* Name */}
+                                        <div>
+                                            <p className="mb-2 text-sm font-medium text-slate-800">
+                                                File Name
+                                            </p>
+
+                                            <div className="flex items-center rounded-xl border border-slate-200 focus-within:border-slate-400 focus-within:ring-2 focus-within:ring-slate-100">
+                                                <i className="ri-file-edit-line pl-3 text-lg text-slate-400" />
+
+                                                <input
+                                                    type="text"
+                                                    value={
+                                                        editFileName
+                                                    }
+                                                    onChange={(
+                                                        e
+                                                    ) =>
+                                                        setEditFileName(
+                                                            e
+                                                                .target
+                                                                .value
+                                                        )
+                                                    }
+                                                    disabled={
+                                                        editLoading
+                                                    }
+                                                    className="h-11 min-w-0 flex-1 bg-transparent px-3 text-sm outline-none disabled:opacity-60"
+                                                />
+
+                                                <span className="pr-3 text-sm text-slate-400">
+                                                    .
+                                                    {getFileExtension(
+                                                        selectedFile.fileName
+                                                    )}
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        {/* Password */}
+                                        <div>
+                                            <p className="mb-2 text-sm font-medium text-slate-800">
+                                                Password
+                                            </p>
+
+                                            <div className="flex items-center rounded-xl border border-slate-200 focus-within:border-slate-400 focus-within:ring-2 focus-within:ring-slate-100">
+                                                <i className="ri-lock-password-line pl-3 text-lg text-slate-400" />
+
+                                                <input
+                                                    type="password"
+                                                    value={
+                                                        editPassword
+                                                    }
+                                                    onChange={(
+                                                        e
+                                                    ) =>
+                                                        setEditPassword(
+                                                            e
+                                                                .target
+                                                                .value
+                                                        )
+                                                    }
+                                                    disabled={
+                                                        editLoading
+                                                    }
+                                                    placeholder="Enter password"
+                                                    className="h-11 flex-1 bg-transparent px-3 text-sm outline-none disabled:opacity-60"
+                                                />
+                                            </div>
+
+                                            <span className="mt-1.5 block text-xs text-slate-500">
+                                                Leave unchanged if you do not want to update it.
+                                            </span>
+                                        </div>
+
+                                        {/* Expiry */}
+                                        <div>
+                                            <p className="mb-2 text-sm font-medium text-slate-800">
+                                                Expiry Date
+                                            </p>
+
+                                            <div className="flex items-center rounded-xl border border-slate-200 focus-within:border-slate-400 focus-within:ring-2 focus-within:ring-slate-100">
+                                                <i className="ri-calendar-line pl-3 text-lg text-slate-400" />
+
+                                                <input
+                                                    type="date"
+                                                    value={
+                                                        editExpiry
+                                                    }
+                                                    onChange={(
+                                                        e
+                                                    ) =>
+                                                        setEditExpiry(
+                                                            e
+                                                                .target
+                                                                .value
+                                                        )
+                                                    }
+                                                    disabled={
+                                                        editLoading
+                                                    }
+                                                    className="h-11 flex-1 bg-transparent px-3 text-sm outline-none disabled:opacity-60"
+                                                />
+                                            </div>
+
+                                            <span className="mt-1.5 block text-xs text-slate-500">
+                                                Leave unchanged if you do not want to update it.
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    <div className="my-5 border-t border-slate-100" />
+
+                                    <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+                                        <button
+                                            type="button"
+                                            onClick={
+                                                closeEditModal
+                                            }
+                                            disabled={
+                                                editLoading
+                                            }
+                                            className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-slate-200 px-4 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:opacity-60"
+                                        >
+                                            <i className="ri-close-line text-lg" />
+                                            <span>
+                                                Cancel
+                                            </span>
+                                        </button>
+
+                                        <button
+                                            type="button"
+                                            onClick={() =>
+                                                handleEditFile(
+                                                    selectedFile._id
+                                                )
+                                            }
+                                            disabled={
+                                                editLoading
+                                            }
+                                            className="inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-slate-900 px-5 text-sm font-medium text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
+                                        >
+                                            {editLoading ? (
+                                                <i className="ri-loader-4-line animate-spin text-lg" />
+                                            ) : (
+                                                <i className="ri-save-line text-lg" />
+                                            )}
+
+                                            <span>
+                                                {editLoading
+                                                    ? "Saving..."
+                                                    : "Save"}
+                                            </span>
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     )}
 
-                    {/* FOOTER */}
-                    <div className="shrink-0 border-t border-slate-100 bg-slate-50/70 px-3 py-2.5 sm:px-4 sm:py-3">
-                        <button
-                            type="button"
-                            onClick={onClose}
-                            className="h-9 w-full rounded-xl border border-slate-200 bg-white text-sm font-semibold text-slate-600 transition hover:bg-slate-50 sm:h-10"
-                        >
-                            Cancel
-                        </button>
+                {/* Share Modal */}
+                {shareFileModal &&
+                    selectedFile && (
+                        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4 backdrop-blur-sm">
+                            <div className="w-full max-w-xl rounded-2xl bg-white shadow-2xl">
+                                <div className="p-5 sm:p-6">
+                                    <div className="flex items-start justify-between gap-4">
+                                        <div className="flex items-center gap-3">
+                                            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100">
+                                                <i className="ri-share-line text-xl text-slate-700" />
+                                            </div>
+
+                                            <div>
+                                                <p className="font-semibold text-slate-900">
+                                                    Share File
+                                                </p>
+
+                                                <p className="text-xs text-slate-500">
+                                                    Share this file with a registered user.
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        <button
+                                            type="button"
+                                            onClick={() =>
+                                                setShareFileModal(
+                                                    false
+                                                )
+                                            }
+                                            disabled={
+                                                shareLoading
+                                            }
+                                            className="flex h-9 w-9 items-center justify-center rounded-lg text-slate-500 transition hover:bg-slate-100 disabled:opacity-50"
+                                        >
+                                            <i className="ri-close-line text-xl" />
+                                        </button>
+                                    </div>
+
+                                    <div className="my-5 border-t border-slate-100" />
+
+                                    <div className="rounded-xl border border-slate-200 p-3">
+                                        <div className="flex items-center gap-3">
+                                            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-slate-100">
+                                                <i className="ri-file-3-line text-xl text-slate-600" />
+                                            </div>
+
+                                            <div className="min-w-0">
+                                                <p className="truncate text-sm font-medium text-slate-900">
+                                                    {
+                                                        selectedFile.fileName
+                                                    }
+                                                </p>
+
+                                                <p className="mt-1 text-xs text-slate-500">
+                                                    {formatFileSize(
+                                                        selectedFile.fileSize
+                                                    )}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="mt-5">
+                                        <p className="mb-2 text-sm font-medium text-slate-800">
+                                            Recipient Email
+                                        </p>
+
+                                        <div className="flex items-center rounded-xl border border-slate-200 focus-within:border-slate-400 focus-within:ring-2 focus-within:ring-slate-100">
+                                            <i className="ri-mail-line pl-3 text-lg text-slate-400" />
+
+                                            <input
+                                                type="email"
+                                                value={
+                                                    userEmail
+                                                }
+                                                onChange={(
+                                                    e
+                                                ) =>
+                                                    setUserEmail(
+                                                        e
+                                                            .target
+                                                            .value
+                                                    )
+                                                }
+                                                disabled={
+                                                    shareLoading
+                                                }
+                                                placeholder="Enter recipient email"
+                                                className="h-11 flex-1 bg-transparent px-3 text-sm outline-none disabled:opacity-60"
+                                            />
+                                        </div>
+
+                                        <span className="mt-1.5 block text-xs text-slate-500">
+                                            Recipient must already be registered on the platform.
+                                        </span>
+                                    </div>
+
+                                    <div className="my-5 border-t border-slate-100" />
+
+                                    <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+                                        <button
+                                            type="button"
+                                            onClick={() =>
+                                                setShareFileModal(
+                                                    false
+                                                )
+                                            }
+                                            disabled={
+                                                shareLoading
+                                            }
+                                            className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-slate-200 px-4 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:opacity-60"
+                                        >
+                                            <i className="ri-close-line text-lg" />
+                                            <span>
+                                                Cancel
+                                            </span>
+                                        </button>
+
+                                        <button
+                                            type="button"
+                                            onClick={() =>
+                                                handleFileShare(
+                                                    selectedFile._id
+                                                )
+                                            }
+                                            disabled={
+                                                shareLoading
+                                            }
+                                            className="inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-slate-900 px-5 text-sm font-medium text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
+                                        >
+                                            {shareLoading ? (
+                                                <i className="ri-loader-4-line animate-spin text-lg" />
+                                            ) : (
+                                                <i className="ri-share-line text-lg" />
+                                            )}
+
+                                            <span>
+                                                {shareLoading
+                                                    ? "Sharing..."
+                                                    : "Share"}
+                                            </span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                {/* Move File Modal */}
+                {moveFileModal &&
+                    selectedFile && (
+                        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4 backdrop-blur-sm">
+                            <div className="w-full max-w-xl rounded-2xl bg-white shadow-2xl">
+                                <div className="p-5 sm:p-6">
+                                    <div className="flex items-start justify-between gap-4">
+                                        <div className="flex items-center gap-3">
+                                            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100">
+                                                <i className="ri-folder-transfer-line text-xl text-slate-700" />
+                                            </div>
+
+                                            <div>
+                                                <p className="font-semibold text-slate-900">
+                                                    Move File
+                                                </p>
+
+                                                <p className="text-xs text-slate-500">
+                                                    Choose destination folder.
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        <button
+                                            type="button"
+                                            onClick={() =>
+                                                setMoveFileModal(
+                                                    false
+                                                )
+                                            }
+                                            disabled={
+                                                moveLoading
+                                            }
+                                            className="flex h-9 w-9 items-center justify-center rounded-lg text-slate-500 transition hover:bg-slate-100 disabled:opacity-50"
+                                        >
+                                            <i className="ri-close-line text-xl" />
+                                        </button>
+                                    </div>
+
+                                    <div className="my-5 border-t border-slate-100" />
+
+                                    <div className="rounded-xl border border-slate-200 p-3">
+                                        <div className="flex items-center gap-3">
+                                            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-slate-100">
+                                                <i className="ri-file-3-line text-xl text-slate-600" />
+                                            </div>
+
+                                            <div className="min-w-0">
+                                                <p className="truncate text-sm font-medium text-slate-900">
+                                                    {
+                                                        selectedFile.fileName
+                                                    }
+                                                </p>
+
+                                                <p className="mt-1 text-xs text-slate-500">
+                                                    {formatFileSize(
+                                                        selectedFile.fileSize
+                                                    )}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="mt-5 space-y-4">
+                                        <div>
+                                            <p className="mb-2 text-sm font-medium text-slate-800">
+                                                Current Folder
+                                            </p>
+
+                                            <div className="flex items-center gap-3 rounded-xl border border-slate-200 p-3">
+                                                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-slate-100">
+                                                    <i className="ri-folder-3-line text-xl text-slate-600" />
+                                                </div>
+
+                                                <p className="text-sm text-slate-700">
+                                                    Current Folder
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        <div>
+                                            <p className="mb-2 text-sm font-medium text-slate-800">
+                                                Move To
+                                            </p>
+
+                                            <button
+                                                type="button"
+                                                onClick={
+                                                    openSelectFolderModal
+                                                }
+                                                disabled={
+                                                    moveLoading
+                                                }
+                                                className="flex w-full items-center justify-between rounded-xl border border-slate-200 p-3 text-left transition hover:border-slate-300 hover:bg-slate-50 disabled:opacity-60"
+                                            >
+                                                <div className="flex items-center gap-3">
+                                                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-slate-100">
+                                                        <i className="ri-folder-open-line text-xl text-slate-600" />
+                                                    </div>
+
+                                                    <div>
+                                                        <p className="text-sm font-medium text-slate-800">
+                                                            {moveFolderId
+                                                                ? "Folder Selected"
+                                                                : "Select Folder"}
+                                                        </p>
+
+                                                        <p className="mt-1 text-xs text-slate-500">
+                                                            Choose a destination folder
+                                                        </p>
+                                                    </div>
+                                                </div>
+
+                                                <i className="ri-arrow-right-s-line text-xl text-slate-400" />
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <div className="my-5 border-t border-slate-100" />
+
+                                    <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+                                        <button
+                                            type="button"
+                                            onClick={() =>
+                                                setMoveFileModal(
+                                                    false
+                                                )
+                                            }
+                                            disabled={
+                                                moveLoading
+                                            }
+                                            className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-slate-200 px-4 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:opacity-60"
+                                        >
+                                            <i className="ri-close-line text-lg" />
+                                            <span>
+                                                Cancel
+                                            </span>
+                                        </button>
+
+                                        <button
+                                            type="button"
+                                            onClick={() =>
+                                                handleMoveFile(
+                                                    selectedFile._id
+                                                )
+                                            }
+                                            disabled={
+                                                moveLoading ||
+                                                !moveFolderId ||
+                                                moveFolderId ===
+                                                folderId
+                                            }
+                                            className="inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-slate-900 px-5 text-sm font-medium text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
+                                        >
+                                            {moveLoading ? (
+                                                <i className="ri-loader-4-line animate-spin text-lg" />
+                                            ) : (
+                                                <i className="ri-folder-transfer-line text-lg" />
+                                            )}
+
+                                            <span>
+                                                {moveLoading
+                                                    ? "Moving..."
+                                                    : "Move"}
+                                            </span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                {/* Select Folder Modal */}
+                {selectFolderModal && (
+                    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-950/50 p-4 backdrop-blur-sm">
+                        <div className="flex max-h-[90vh] w-full max-w-xl flex-col rounded-2xl bg-white shadow-2xl">
+                            <div className="p-5 sm:p-6">
+                                <div className="flex items-start justify-between gap-4">
+                                    <div className="flex items-center gap-3">
+                                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100">
+                                            <i className="ri-folder-3-line text-xl text-slate-700" />
+                                        </div>
+
+                                        <div>
+                                            <p className="font-semibold text-slate-900">
+                                                Select Folder
+                                            </p>
+
+                                            <p className="text-xs text-slate-500">
+                                                Choose where you want to move the file.
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <button
+                                        type="button"
+                                        onClick={() =>
+                                            setSelectFolderModal(
+                                                false
+                                            )
+                                        }
+                                        className="flex h-9 w-9 items-center justify-center rounded-lg text-slate-500 transition hover:bg-slate-100"
+                                    >
+                                        <i className="ri-close-line text-xl" />
+                                    </button>
+                                </div>
+
+                                <div className="my-5 border-t border-slate-100" />
+
+                                <div className="relative">
+                                    <i className="ri-search-line pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-lg text-slate-400" />
+
+                                    <input
+                                        type="text"
+                                        value={
+                                            folderSearchQuery
+                                        }
+                                        onChange={(e) =>
+                                            setFolderSearchQuery(
+                                                e.target.value
+                                            )
+                                        }
+                                        placeholder="Search folder..."
+                                        className="h-11 w-full rounded-xl border border-slate-200 pl-10 pr-3 text-sm outline-none transition focus:border-slate-400 focus:ring-2 focus:ring-slate-100"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="min-h-0 flex-1 overflow-y-auto px-5 sm:px-6">
+                                <div className="space-y-2">
+                                    {filteredFolders.map(
+                                        (folder) => {
+                                            const isCurrent =
+                                                folder._id ===
+                                                folderId;
+
+                                            const isSelected =
+                                                moveFolderId ===
+                                                folder._id;
+
+                                            return (
+                                                <button
+                                                    type="button"
+                                                    key={
+                                                        folder._id
+                                                    }
+                                                    disabled={
+                                                        isCurrent
+                                                    }
+                                                    onClick={() =>
+                                                        setMoveFolderId(
+                                                            folder._id
+                                                        )
+                                                    }
+                                                    className={`flex w-full items-center justify-between rounded-xl border p-3 text-left transition-all duration-200 ${isCurrent
+                                                            ? "cursor-not-allowed border-slate-200 bg-slate-50 opacity-50"
+                                                            : isSelected
+                                                                ? "border-slate-900 bg-slate-50"
+                                                                : "border-slate-200 hover:border-slate-300 hover:bg-slate-50"
+                                                        }`}
+                                                >
+                                                    <div className="flex min-w-0 items-center gap-3">
+                                                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-slate-100">
+                                                            <i className="ri-folder-3-fill text-xl text-slate-500" />
+                                                        </div>
+
+                                                        <div className="min-w-0">
+                                                            <p className="truncate text-sm font-medium text-slate-800">
+                                                                {
+                                                                    folder.name
+                                                                }
+                                                            </p>
+
+                                                            <p className="mt-1 text-xs text-slate-500">
+                                                                {folder.totalFiles ??
+                                                                    0}{" "}
+                                                                files
+                                                            </p>
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="ml-2 flex shrink-0 items-center gap-2">
+                                                        {isCurrent && (
+                                                            <span className="rounded-full bg-slate-100 px-2 py-1 text-[10px] font-medium text-slate-500">
+                                                                Current
+                                                            </span>
+                                                        )}
+
+                                                        {isSelected &&
+                                                            !isCurrent && (
+                                                                <i className="ri-check-line text-lg text-slate-900" />
+                                                            )}
+                                                    </div>
+                                                </button>
+                                            );
+                                        }
+                                    )}
+
+                                    {filteredFolders.length ===
+                                        0 && (
+                                            <div className="py-10 text-center">
+                                                <i className="ri-folder-search-line text-3xl text-slate-300" />
+
+                                                <p className="mt-2 text-sm font-medium text-slate-700">
+                                                    No folders found
+                                                </p>
+                                            </div>
+                                        )}
+                                </div>
+
+                                {folderPageNo <=
+                                    folderTotalPages && (
+                                        <button
+                                            type="button"
+                                            onClick={() =>
+                                                fetchFolders(
+                                                    false
+                                                )
+                                            }
+                                            disabled={
+                                                folderLoading
+                                            }
+                                            className="mx-auto my-4 flex h-10 items-center gap-2 rounded-xl border border-slate-200 px-4 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
+                                        >
+                                            {folderLoading ? (
+                                                <i className="ri-loader-4-line animate-spin text-lg" />
+                                            ) : (
+                                                <i className="ri-add-line text-lg" />
+                                            )}
+
+                                            <span>
+                                                {folderLoading
+                                                    ? "Loading..."
+                                                    : "Load More"}
+                                            </span>
+                                        </button>
+                                    )}
+                            </div>
+
+                            <div className="p-5 sm:p-6">
+                                <div className="border-t border-slate-100 pt-4">
+                                    <button
+                                        type="button"
+                                        onClick={() =>
+                                            setSelectFolderModal(
+                                                false
+                                            )
+                                        }
+                                        className="flex h-10 w-full items-center justify-center gap-2 rounded-xl border border-slate-200 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+                                    >
+                                        <i className="ri-close-line text-lg" />
+                                        <span>
+                                            Close
+                                        </span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                </div>
+                )}
 
-                <style>
-                    {`
-                @keyframes modalIn {
-                    from {
-                        opacity: 0;
-                        transform: translateY(10px) scale(.98);
-                    }
+                {/* Delete Modal */}
+                {deleteFileModal &&
+                    selectedFile && (
+                        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4 backdrop-blur-sm">
+                            <div className="w-full max-w-md rounded-2xl bg-white p-5 shadow-2xl sm:p-6">
+                                <div className="flex items-center gap-3">
+                                    <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-red-50">
+                                        <i className="ri-delete-bin-line text-xl text-red-600" />
+                                    </div>
 
-                    to {
-                        opacity: 1;
-                        transform: translateY(0) scale(1);
-                    }
-                }
-            `}
-                </style>
-            </div>
-        </div>
-    );
-}
+                                    <p className="text-base font-semibold text-slate-900">
+                                        Delete File
+                                    </p>
+                                </div>
 
-/* =========================================================
-   FILE PAGINATION
-========================================================= */
+                                <p className="mt-4 text-sm leading-6 text-slate-500">
+                                    Are you sure you want to
+                                    delete{" "}
+                                    <span className="font-medium text-slate-800">
+                                        {
+                                            selectedFile.fileName
+                                        }
+                                    </span>
+                                    ?
+                                </p>
 
-function FilePagination({
-    page,
-    totalPages,
-    totalItems,
-    itemsPerPage,
-    onPageChange,
-}) {
-    const start =
-        (page - 1) *
-        itemsPerPage +
-        1;
+                                <div className="my-5 border-t border-slate-100" />
 
-    const end = Math.min(
-        page * itemsPerPage,
-        totalItems
-    );
+                                <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+                                    <button
+                                        type="button"
+                                        onClick={() =>
+                                            setDeleteFileModal(
+                                                false
+                                            )
+                                        }
+                                        disabled={
+                                            deleteLoading
+                                        }
+                                        className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-slate-200 px-4 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:opacity-60"
+                                    >
+                                        <i className="ri-close-line text-lg" />
+                                        <span>
+                                            Cancel
+                                        </span>
+                                    </button>
 
-    return (
-        <div className="mt-6 flex flex-col items-center justify-between gap-3 sm:flex-row">
-            <p className="text-xs text-slate-500">
-                Showing{" "}
-                <span className="font-semibold text-slate-700">
-                    {start}
-                </span>{" "}
-                to{" "}
-                <span className="font-semibold text-slate-700">
-                    {end}
-                </span>{" "}
-                of{" "}
-                <span className="font-semibold text-slate-700">
-                    {totalItems}
-                </span>
-            </p>
+                                    <button
+                                        type="button"
+                                        onClick={() =>
+                                            handleFileDelete(
+                                                selectedFile._id
+                                            )
+                                        }
+                                        disabled={
+                                            deleteLoading
+                                        }
+                                        className="inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-red-600 px-5 text-sm font-medium text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60"
+                                    >
+                                        {deleteLoading ? (
+                                            <i className="ri-loader-4-line animate-spin text-lg" />
+                                        ) : (
+                                            <i className="ri-delete-bin-line text-lg" />
+                                        )}
 
-            <div className="flex items-center gap-1.5">
-                <button
-                    type="button"
-                    disabled={page === 1}
-                    onClick={() =>
-                        onPageChange(
-                            (prev) =>
-                                Math.max(
-                                    1,
-                                    prev - 1
-                                )
-                        )
-                    }
-                    className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-600 disabled:cursor-not-allowed disabled:opacity-40"
-                >
-                    <i className="ri-arrow-left-s-line" />
-                </button>
-
-                {Array.from(
-                    {
-                        length: totalPages,
-                    },
-                    (_, index) =>
-                        index + 1
-                ).map((number) => (
-                    <button
-                        key={number}
-                        type="button"
-                        onClick={() =>
-                            onPageChange(
-                                number
-                            )
-                        }
-                        className={`flex h-9 min-w-9 items-center justify-center rounded-lg px-2 text-xs font-semibold transition ${page === number
-                            ? "bg-blue-600 text-white shadow-md shadow-blue-600/20"
-                            : "border border-slate-200 bg-white text-slate-600 hover:border-blue-200 hover:bg-blue-50 hover:text-blue-600"
-                            }`}
-                    >
-                        {number}
-                    </button>
-                ))}
-
-                <button
-                    type="button"
-                    disabled={
-                        page === totalPages
-                    }
-                    onClick={() =>
-                        onPageChange(
-                            (prev) =>
-                                Math.min(
-                                    totalPages,
-                                    prev + 1
-                                )
-                        )
-                    }
-                    className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-600 disabled:cursor-not-allowed disabled:opacity-40"
-                >
-                    <i className="ri-arrow-right-s-line" />
-                </button>
-            </div>
-        </div>
-    );
-}
-
-/* =========================================================
-   NO DATA STATE
-========================================================= */
-
-function NoDataState({
-    onAdd,
-}) {
-    return (
-        <div className="flex min-h-[400px] flex-col items-center justify-center rounded-2xl border border-slate-200 bg-white px-5 text-center">
-            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-blue-50 text-blue-500">
-                <i className="ri-folder-upload-line text-3xl" />
-            </div>
-
-            <h3 className="mt-4 text-base font-bold text-slate-800">
-                No files available
-            </h3>
-
-            <p className="mt-1 max-w-sm text-sm text-slate-400">
-                You haven't uploaded any files yet.
-                Upload your first file to get started.
-            </p>
-
-            <button
-                type="button"
-                onClick={onAdd}
-                className="mt-5 inline-flex h-10 items-center gap-2 rounded-xl bg-blue-600 px-4 text-sm font-semibold text-white shadow-md shadow-blue-600/20 transition hover:bg-blue-700"
-            >
-                <i className="ri-add-line" />
-                Add Files
-            </button>
-        </div>
-    );
-}
-
-/* =========================================================
-   NOT FOUND STATE
-========================================================= */
-
-function NotFoundState({
-    search,
-    onClear,
-}) {
-    return (
-        <div className="flex min-h-[400px] flex-col items-center justify-center rounded-2xl border border-slate-200 bg-white px-5 text-center">
-            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-100 text-slate-400">
-                <i className="ri-search-eye-line text-3xl" />
-            </div>
-
-            <h3 className="mt-4 text-base font-bold text-slate-800">
-                No files found
-            </h3>
-
-            <p className="mt-1 max-w-sm text-sm text-slate-400">
-                We couldn't find any file matching{" "}
-                <strong className="text-slate-600">
-                    "{search}"
-                </strong>
-                .
-            </p>
-
-            <button
-                type="button"
-                onClick={onClear}
-                className="mt-5 text-sm font-semibold text-blue-600 transition hover:text-blue-700"
-            >
-                Clear search
-            </button>
-        </div>
-    );
-}
-
-/* =========================================================
-   LOADING SKELETON
-========================================================= */
-
-function FilesSkeleton() {
-    return (
-        <div>
-            <div className="mb-7 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-                <div>
-                    <div className="h-8 w-32 animate-pulse rounded-lg bg-slate-200" />
-
-                    <div className="mt-3 h-5 w-20 animate-pulse rounded bg-slate-200" />
-
-                    <div className="mt-2 h-3 w-64 animate-pulse rounded bg-slate-200" />
-                </div>
-
-                <div className="h-11 w-32 animate-pulse rounded-xl bg-slate-200" />
-            </div>
-
-            <div className="mb-5 flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white p-3 sm:flex-row">
-                <div className="h-11 flex-1 animate-pulse rounded-xl bg-slate-100" />
-
-                <div className="h-11 w-full animate-pulse rounded-xl bg-slate-100 sm:w-48" />
-            </div>
-
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {Array.from({
-                    length: 6,
-                }).map((_, index) => (
-                    <div
-                        key={index}
-                        className="rounded-2xl border border-slate-200 bg-white p-4"
-                    >
-                        <div className="flex justify-between">
-                            <div className="h-12 w-12 animate-pulse rounded-xl bg-slate-100" />
-
-                            <div className="h-9 w-9 animate-pulse rounded-lg bg-slate-100" />
+                                        <span>
+                                            {deleteLoading
+                                                ? "Deleting..."
+                                                : "Confirm"}
+                                        </span>
+                                    </button>
+                                </div>
+                            </div>
                         </div>
-
-                        <div className="mt-4 h-4 w-40 animate-pulse rounded bg-slate-100" />
-
-                        <div className="mt-2 h-3 w-28 animate-pulse rounded bg-slate-100" />
-
-                        <div className="mt-5 grid grid-cols-2 gap-2">
-                            <div className="h-16 animate-pulse rounded-xl bg-slate-100" />
-                            <div className="h-16 animate-pulse rounded-xl bg-slate-100" />
-                        </div>
-
-                        <div className="mt-4 space-y-3">
-                            <div className="h-3 w-full animate-pulse rounded bg-slate-100" />
-                            <div className="h-3 w-full animate-pulse rounded bg-slate-100" />
-                            <div className="h-3 w-full animate-pulse rounded bg-slate-100" />
-                        </div>
-                    </div>
-                ))}
+                    )}
             </div>
-        </div>
+        </section>
     );
-}
+};
+
+export default Files;
