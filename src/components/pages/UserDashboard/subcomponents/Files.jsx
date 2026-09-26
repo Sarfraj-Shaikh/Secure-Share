@@ -2,8 +2,11 @@ import { message } from "antd";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 import api from "../../../../../utils/api";
+import { toNamePathStr } from "antd/es/form/hooks/useForm";
 
 const Files = () => {
+
+    
     const { id } = useParams();
     const routeFolderId = id;
 
@@ -780,7 +783,31 @@ const Files = () => {
 
     return (
         <section className="min-h-screen bg-slate-50 px-4 pt-[90px]">
+
             <div className="mx-auto max-w-7xl">
+
+                <div className="flex w-full items-center gap-1.5 overflow-hidden rounded-lg bg-gray-50 py-2 mb-3">
+                    {/* My Files */}
+                    <button
+                        type="button"
+                        onClick={() => navigate("/user/my-files")}
+                        className="group flex shrink-0 items-center gap-1.5 rounded-md px-2.5 py-1.5 text-sm font-medium text-gray-600 transition-all duration-200 hover:bg-blue-50 hover:text-blue-600 cursor-pointer"
+                    >
+                        <i className="ri-home-5-line text-base transition-transform duration-200 group-hover:scale-110"></i>
+                        <span>My Files</span>
+                    </button>
+
+                    {/* Separator */}
+                    <i className="ri-arrow-right-s-line shrink-0 text-lg text-gray-400"></i>
+
+                    {/* Current Folder */}
+                    <span
+                        className="min-w-0 truncate text-sm font-semibold text-gray-800 capitalize"
+                        title={currentFolderName}
+                    >
+                        {currentFolderName}
+                    </span>
+                </div>
 
                 {/* Header */}
                 <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
