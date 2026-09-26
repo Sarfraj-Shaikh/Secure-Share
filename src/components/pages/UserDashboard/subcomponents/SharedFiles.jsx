@@ -237,7 +237,7 @@ const SharedFiles = () => {
 
     return (
 
-        <section className="min-h-screen bg-slate-50 px-4 py-6 sm:px-6 lg:px-8">
+        <section className="min-h-screen bg-slate-50 px-4 py-6 sm:px-6 lg:px-8 pt-[90px]">
             <div className="mx-auto w-full max-w-7xl">
 
                 {/* ============================================================
@@ -636,16 +636,12 @@ const FileRow = ({ file }) => {
 const FileCard = ({ file }) => {
     const fileData = file?.fileId || {};
 
-    const fileName =
-        fileData?.fileName || "Unnamed file";
+    const fileExt = fileData?.mimetype || "return";
+    const fileName = fileData?.fileName || "Unnamed file";
 
-    const extension = getExtension(fileName);
+    const extension = getExtension(fileExt);
 
-    const receiverEmail =
-        file?.receiverEmail ||
-        file?.email ||
-        file?.receiver?.email ||
-        "Not available";
+    const receiverEmail = file?.receiverEmail || file?.email || file?.receiver?.email || "Not available";
 
     return (
         <div className="p-4 transition-colors duration-200 hover:bg-slate-50 sm:p-5">
@@ -659,7 +655,7 @@ const FileCard = ({ file }) => {
 
                 <div className="min-w-0 flex-1">
                     <p
-                        className="truncate text-sm font-semibold text-slate-800"
+                        className="truncate text-sm font-semibold text-slate-800 capitalize"
                         title={fileName}
                     >
                         {fileName}
@@ -829,7 +825,9 @@ const PasswordBadge = ({ password }) => {
 ============================================================================ */
 
 const ExpiryBadge = ({ expiresAt }) => {
+
     if (!expiresAt) {
+
         return (
             <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-500">
                 <i className="ri-infinity-line" />
@@ -838,25 +836,20 @@ const ExpiryBadge = ({ expiresAt }) => {
         );
     }
 
-    const expiryDate = new Date(
-        expiresAt
-    );
+    const expiryDate = new Date(expiresAt);
 
-    if (
-        Number.isNaN(
-            expiryDate.getTime()
-        )
-    ) {
+    if (Number.isNaN(expiryDate.getTime())) {
+
         return (
             <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-500">
                 <i className="ri-question-line" />
                 Invalid date
             </span>
         );
+
     }
 
-    const expired =
-        expiryDate.getTime() < Date.now();
+    const expired = expiryDate.getTime() < Date.now();
 
     return (
         <span
@@ -1019,19 +1012,9 @@ function getFileId(file) {
 }
 
 function getExtension(fileName = "") {
-    const cleanName =
-        fileName.split("?")[0];
 
-    const parts =
-        cleanName.split(".");
+    return fileName.split("/")[1];
 
-    if (parts.length <= 1) {
-        return "";
-    }
-
-    return parts
-        .pop()
-        .toUpperCase();
 }
 
 function formatFileSize(bytes) {
