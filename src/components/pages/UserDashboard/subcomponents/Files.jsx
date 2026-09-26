@@ -177,7 +177,7 @@ const Files = () => {
         fetchFiles(true);
     }, [folderId]);
 
-        useEffect(() => {
+    useEffect(() => {
 
         const checkAuth = async () => {
 
@@ -442,10 +442,11 @@ const Files = () => {
         }
 
         try {
+
             setShareLoading(true);
 
             const payload = {
-                userEmail: userEmail.trim(),
+                email: userEmail.trim(),
                 fileId,
             };
 
@@ -462,15 +463,15 @@ const Files = () => {
 
             setUserEmail("");
             setShareFileModal(false);
+
         } catch (err) {
-            message.error(
-                getErrorMessage(
-                    err,
-                    "Unable to share file."
-                )
-            );
+
+            message.error(getErrorMessage(err, "Unable to share file."));
+
         } finally {
+
             setShareLoading(false);
+            
         }
     };
 
@@ -807,7 +808,7 @@ const Files = () => {
      * -------------------------------------------------------
      */
 
-    
+
     if (checkingAuth) {
         return <SpinLoader />;
     }
