@@ -10,6 +10,7 @@ import { UnderMaintenance } from './components/pages/UnderMaintenance';
 import { UserDashboard } from './components/pages/UserDashboard';
 import AdminDashboard from './components/pages/AdminDashboard';
 import Blocked from './components/pages/UserDashboard/subcomponents/Blocked';
+import FileDownload from './components/pages/UserDashboard/subcomponents/FileDownload';
 
 function App() {
 
@@ -38,6 +39,8 @@ function App() {
               <Route path="/forgot-password" element={<ForgotPassword />} />
               <Route path="/user/blocked" element={<Blocked />} />
               <Route path="/admin/blocked" element={<Blocked />} />
+
+              <Route path="/file/download/:id" element={<FileDownload />} />
 
               <Route path="/user/*" element={<UserDashboard />} />
               <Route path="/admin/*" element={<AdminDashboard />} />
