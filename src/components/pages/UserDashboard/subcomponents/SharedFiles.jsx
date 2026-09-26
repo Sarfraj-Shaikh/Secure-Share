@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import api from "../../../../../utils/api";
 import { useNavigate } from "react-router-dom";
 import SpinLoader from "../../../shared/SpinLoader";
+import { verifyToken } from "../../../../../utils/isUserLogin";
 
 const SharedFiles = () => {
 
@@ -241,6 +242,27 @@ const SharedFiles = () => {
     // ------------------------------------------------------------------------
     // UI
     // ------------------------------------------------------------------------
+
+    useEffect(() => {
+
+        const checkAuth = async () => {
+
+            const result = await verifyToken(navigate, {
+                requireAuth: true,
+                requireVerified: true,
+                allowedRoles: ["user"],
+            });
+
+            if (result?.success) {
+                setAuthenticated(true);
+            }
+
+            setCheckingAuth(false);
+        };
+
+        checkAuth();
+
+    }, [navigate]);
 
     if (checkingAuth) {
         return <SpinLoader />;
