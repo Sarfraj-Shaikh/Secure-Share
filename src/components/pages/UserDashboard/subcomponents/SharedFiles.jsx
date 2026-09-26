@@ -946,11 +946,8 @@ const LoadingState = () => {
    Empty State
 ============================================================================ */
 
-const EmptyState = ({
-    title,
-    description,
-    icon,
-}) => {
+const EmptyState = ({ title, description, icon, }) => {
+
     return (
         <div className="flex min-h-[350px] flex-col items-center justify-center px-6 text-center">
             <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-100 text-slate-400">
@@ -974,10 +971,8 @@ const EmptyState = ({
    Error State
 ============================================================================ */
 
-const ErrorState = ({
-    message,
-    onRetry,
-}) => {
+const ErrorState = ({ message, onRetry, }) => {
+    
     return (
         <div className="flex min-h-[350px] flex-col items-center justify-center px-6 text-center">
             <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-red-50 text-red-500">
