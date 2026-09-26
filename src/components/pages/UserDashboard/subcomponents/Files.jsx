@@ -1181,7 +1181,7 @@ const Files = () => {
                                     fetchFiles(false)
                                 }
                                 disabled={fetchLoading}
-                                className="inline-flex h-10 items-center gap-2 rounded-xl border border-slate-200 bg-white px-5 text-sm font-medium text-slate-700 transition hover:border-slate-300 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
+                                className="inline-flex h-10 items-center gap-2 rounded-xl border border-slate-200 bg-white px-5 text-sm font-medium text-slate-700 transition hover:border-slate-300 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60 mb-5"
                             >
                                 {fetchLoading ? (
                                     <i className="ri-loader-4-line animate-spin text-lg" />
