@@ -3,6 +3,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import api from "../../../../../utils/api";
 import SpinLoader from "../../../shared/SpinLoader";
+import { verifyToken } from "../../../../../utils/isUserLogin";
 
 const Files = () => {
 
@@ -175,6 +176,27 @@ const Files = () => {
 
         fetchFiles(true);
     }, [folderId]);
+
+        useEffect(() => {
+
+        const checkAuth = async () => {
+
+            const result = await verifyToken(navigate, {
+                requireAuth: true,
+                requireVerified: true,
+                allowedRoles: ["user"],
+            });
+
+            if (result?.success) {
+                setAuthenticated(true);
+            }
+
+            setCheckingAuth(false);
+        };
+
+        checkAuth();
+
+    }, [navigate]);
 
     /*
      * -------------------------------------------------------
