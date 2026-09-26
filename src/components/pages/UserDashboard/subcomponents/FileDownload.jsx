@@ -54,15 +54,13 @@ const FileDownload = () => {
     // ------------------------------------------------------------------------
 
     useEffect(() => {
-        if (!authenticated) {
-            return;
-        }
-
         fetchFileInfo();
-    }, [authenticated, id]);
+    }, [id]);
 
     const fetchFileInfo = async () => {
+
         try {
+
             setLoading(true);
             setError("");
             setSuccess("");
@@ -141,7 +139,7 @@ const FileDownload = () => {
                 return;
             }
 
-            const response = await api.post(
+            const response = await api.get(
                 `${serverUrl}/api/download-file/${id}`,
                 {
                     password: file?.passwordRequired
