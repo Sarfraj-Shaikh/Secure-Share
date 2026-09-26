@@ -1,856 +1,1116 @@
-import { useEffect, useMemo, useState } from "react";
-import { verifyToken } from "../../../../../utils/isUserLogin";
-import SpinLoader from "../../../shared/SpinLoader";
-import { useNavigate } from "react-router-dom";
+import React, { useEffect, useRef, useState } from "react";
+import api from "../../../../../utils/api";
 
-const ITEMS_PER_PAGE = 6;
+const SharedFiles = () => {
 
-const defaultFiles = [
-    {
-        id: "1",
-        name: "Project Proposal.pdf",
-        type: "PDF",
-        size: "2.4 MB",
-        sharedAt: "14 Sep 2026, 10:42 AM",
-        receiverEmail: "john@example.com",
-        password: null,
-        expiresAt: "2026-09-20",
-    },
-    {
-        id: "2",
-        name: "Brand Guidelines.zip",
-        type: "ZIP",
-        size: "18.7 MB",
-        sharedAt: "13 Sep 2026, 04:18 PM",
-        receiverEmail: "sarah@example.com",
-        password: "protected",
-        expiresAt: "2026-09-30",
-    },
-    {
-        id: "3",
-        name: "Invoice September.xlsx",
-        type: "XLSX",
-        size: "842 KB",
-        sharedAt: "12 Sep 2026, 11:05 AM",
-        receiverEmail: "accounts@company.com",
-        password: null,
-        expiresAt: null,
-    },
-    {
-        id: "4",
-        name: "Presentation.pptx",
-        type: "PPTX",
-        size: "6.2 MB",
-        sharedAt: "10 Sep 2026, 09:30 AM",
-        receiverEmail: "client@example.com",
-        password: "protected",
-        expiresAt: "2026-09-18",
-    },
-    {
-        id: "5",
-        name: "Product Images.rar",
-        type: "RAR",
-        size: "42.1 MB",
-        sharedAt: "08 Sep 2026, 02:45 PM",
-        receiverEmail: "design@example.com",
-        password: null,
-        expiresAt: "2026-09-25",
-    },
-    {
-        id: "6",
-        name: "Requirements.docx",
-        type: "DOCX",
-        size: "1.1 MB",
-        sharedAt: "05 Sep 2026, 06:12 PM",
-        receiverEmail: "team@example.com",
-        password: "protected",
-        expiresAt: null,
-    },
-    {
-        id: "7",
-        name: "Database Backup.sql",
-        type: "SQL",
-        size: "24.8 MB",
-        sharedAt: "03 Sep 2026, 12:20 PM",
-        receiverEmail: "dev@example.com",
-        password: null,
-        expiresAt: "2026-09-17",
-    },
-];
+    // ------------------------------------------------------------------------
+    // Config
+    // ------------------------------------------------------------------------
 
-const getFileIcon = (type) => {
-    switch (type.toLowerCase()) {
-        case "pdf":
-            return "ri-file-pdf-2-line";
-        case "docx":
-            return "ri-file-word-2-line";
-        case "xlsx":
-            return "ri-file-excel-2-line";
-        case "pptx":
-            return "ri-file-ppt-2-line";
-        case "zip":
-        case "rar":
-            return "ri-file-zip-line";
-        default:
-            return "ri-file-line";
-    }
-};
+    const serverUrl = import.meta.env.VITE_SERVER_URL;
 
-const getFileIconBackground = (type) => {
-    switch (type.toLowerCase()) {
-        case "pdf":
-            return "bg-red-50 text-red-500";
-        case "docx":
-            return "bg-blue-50 text-blue-600";
-        case "xlsx":
-            return "bg-emerald-50 text-emerald-600";
-        case "pptx":
-            return "bg-orange-50 text-orange-500";
-        case "zip":
-        case "rar":
-            return "bg-purple-50 text-purple-600";
-        default:
-            return "bg-slate-100 text-slate-500";
-    }
-};
+    // Your project stores the JWT in localStorage with this key.
+    const userToken = localStorage.getItem("userToken");
 
-export default function SharedFiles({ files = defaultFiles, loading = false, error = null, onPasswordChange, }) {
+    // ------------------------------------------------------------------------
+    // States
+    // ------------------------------------------------------------------------
 
-    const [localFiles, setLocalFiles] = useState(files);
-
+    const [files, setFiles] = useState([]);
     const [search, setSearch] = useState("");
-    const [sort, setSort] = useState("latest");
-    const [sortOpen, setSortOpen] = useState(false);
 
-    const [currentPage, setCurrentPage] = useState(1);
-    const [activeMenu, setActiveMenu] = useState(null);
+    const [filter, setFilter] = useState("Latest");
+    const [pageNo, setPageNo] = useState(1);
+    const [limit, setLimit] = useState(10);
 
-    const [passwordModal, setPasswordModal] = useState(null);
-    const [password, setPassword] = useState("");
-    const [confirmPassword, setConfirmPassword] = useState("");
-    const [expiresAt, setExpiresAt] = useState("");
+    const [isLoadMore, setIsLoadMore] = useState(false);
+    const [loading, setLoading] = useState(true);
+    const [loadingMore, setLoadingMore] = useState(false);
 
-    const [passwordError, setPasswordError] = useState("");
-    const [savingPassword, setSavingPassword] = useState(false);
-    const [successMessage, setSuccessMessage] = useState("");
+    const [error, setError] = useState("");
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    const dropdownRef = useRef(null);
 
-    const navigate = useNavigate();
+    // ------------------------------------------------------------------------
+    // Fetch Shared Files
+    // ------------------------------------------------------------------------
 
-    const [checkingAuth, setCheckingAuth] = useState(true);
-    const [authenticated, setAuthenticated] = useState(false);
+    const fetchSharedFiles = async (page, append = false) => {
+
+        try {
+
+            if (!userToken) {
+                setError("Authentication token not found.");
+                setFiles([]);
+                setIsLoadMore(false);
+                return;
+            }
+
+            if (!serverUrl) {
+                setError("VITE_SERVER_URL is not configured.");
+                setFiles([]);
+                setIsLoadMore(false);
+                return;
+            }
+
+            if (append) {
+
+                setLoadingMore(true);
+
+            } else {
+
+                setLoading(true);
+                setError("");
+
+            }
+
+            const response = await api.get(
+                `${serverUrl}/api/share-file?page=${page}&limit=${limit}&filter=${filter}`,
+                {
+                    headers: {
+                        Authorization: userToken,
+                    },
+                }
+            );
+
+            const data = response?.data;
+
+            if (!data?.success) {
+                throw new Error(data?.message || "Unable to fetch shared files.");
+            }
+
+            const newFiles = Array.isArray(data?.files) ? data.files : [];
+
+            // First page => replace files.
+            if (!append) { setFiles(newFiles); }
+
+            // Next pages => preserve old files and append new files.
+            if (append) {
+
+                setFiles((previousFiles) => {
+
+                    const existingIds = new Set(
+                        previousFiles.map((item) => getFileId(item))
+                    );
+
+                    const uniqueNewFiles = newFiles.filter(
+                        (item) => !existingIds.has(getFileId(item))
+                    );
+
+                    return [...previousFiles, ...uniqueNewFiles];
+
+                });
+            }
+
+            setPageNo(data?.currentPage || page);
+            setIsLoadMore(Boolean(data?.isLoadMore));
+
+        } catch (err) {
+
+            const errorMessage = err?.response?.data?.message || err?.message || "Something went wrong.";
+
+            setError(errorMessage);
+
+            // Only clear existing files when the first request fails.
+            // If Load More fails, already loaded files remain visible.
+
+            if (!append) {
+                setFiles([]);
+                setIsLoadMore(false);
+            }
+
+        } finally {
+
+            setLoading(false);
+            setLoadingMore(false);
+
+        }
+
+    };
+
+    // ------------------------------------------------------------------------
+    // Initial Fetch + Page / Filter Change
+    // ------------------------------------------------------------------------
+
+    useEffect(() => {
+        fetchSharedFiles(pageNo, pageNo > 1);
+    }, [pageNo, filter]);
+
+    // ------------------------------------------------------------------------
+    // Load More
+    // ------------------------------------------------------------------------
+
+    const handleLoadMore = () => {
+
+        if (loadingMore || !isLoadMore) {
+            return;
+        }
+
+        // Do NOT call API here.
+        // pageNo change will trigger useEffect and API call.
+        setPageNo((previousPage) => previousPage + 1);
+
+    };
+
+    // ------------------------------------------------------------------------
+    // Filter
+    // ------------------------------------------------------------------------
+
+    const handleFilterChange = (value) => {
+
+        setIsDropdownOpen(false);
+
+        if (value === filter) {
+            return;
+        }
+
+        // New filter means new pagination.
+        setFiles([]);
+        setIsLoadMore(false);
+        setPageNo(1);
+        setFilter(value);
+
+    };
+
+    // ------------------------------------------------------------------------
+    // Search
+    // ------------------------------------------------------------------------
+
+    const filteredFiles = files.filter((file) => {
+
+        const fileData = file?.fileId || {};
+        const fileName = fileData?.fileName || "";
+
+        const receiverEmail =
+            file?.receiverEmail ||
+            file?.email ||
+            file?.receiver?.email ||
+            "";
+
+        const mimetype = fileData?.mimetype || "";
+
+        const searchableText = [
+            fileName,
+            receiverEmail,
+            mimetype,
+        ]
+            .join(" ")
+            .toLowerCase();
+
+        return searchableText.includes(
+            search.trim().toLowerCase()
+        );
+
+    });
+
+    // ------------------------------------------------------------------------
+    // Dropdown Outside Click
+    // ------------------------------------------------------------------------
 
     useEffect(() => {
 
-        const checkAuth = async () => {
-
-            const result = await verifyToken(navigate, {
-                requireAuth: true,
-                requireVerified: true,
-                allowedRoles: ["user"],
-            });
-
-            if (result?.success) {
-                setAuthenticated(true);
+        const handleOutsideClick = (event) => {
+            if (
+                dropdownRef.current &&
+                !dropdownRef.current.contains(event.target)
+            ) {
+                setIsDropdownOpen(false);
             }
-
-            setCheckingAuth(false);
         };
 
-        checkAuth();
+        document.addEventListener(
+            "mousedown",
+            handleOutsideClick
+        );
 
-    }, [navigate]);
-
-    /*
-     * Selected File
-     */
-    const selectedFile = useMemo(() => {
-        if (!passwordModal?.fileId) return null;
-        return localFiles.find((f) => f.id === passwordModal.fileId) || null;
-    }, [passwordModal, localFiles]);
-
-    /*
-     * Search + Sort
-     */
-    const filteredFiles = useMemo(() => {
-        const query = search.trim().toLowerCase();
-
-        const result = localFiles.filter((file) => {
-            if (!query) return true;
-
-            return (
-                file.name.toLowerCase().includes(query) ||
-                file.type.toLowerCase().includes(query) ||
-                file.receiverEmail.toLowerCase().includes(query)
+        return () => {
+            document.removeEventListener(
+                "mousedown",
+                handleOutsideClick
             );
-        });
+        };
+    }, []);
 
-        return [...result].sort((a, b) => {
-            const dateA = new Date(a.sharedAt).getTime();
-            const dateB = new Date(b.sharedAt).getTime();
+    // ------------------------------------------------------------------------
+    // UI
+    // ------------------------------------------------------------------------
 
-            return sort === "latest" ? dateB - dateA : dateA - dateB;
-        });
-    }, [localFiles, search, sort]);
+    return (
 
-    /*
-     * Pagination
-     */
-    const totalPages = Math.ceil(filteredFiles.length / ITEMS_PER_PAGE);
+        <section className="min-h-screen bg-slate-50 px-4 py-6 sm:px-6 lg:px-8">
+            <div className="mx-auto w-full max-w-7xl">
 
-    const paginatedFiles = filteredFiles.slice(
-        (currentPage - 1) * ITEMS_PER_PAGE,
-        currentPage * ITEMS_PER_PAGE
-    );
+                {/* ============================================================
+                    Header
+                ============================================================ */}
 
-    /*
-     * Search
-     */
-    const handleSearch = (value) => {
-        setSearch(value);
-        setCurrentPage(1);
-    };
+                <div className="mb-6">
+                    <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
+                        Shared Files
+                    </h1>
 
-    /*
-     * Sort
-     */
-    const handleSort = (value) => {
-        setSort(value);
-        setSortOpen(false);
-        setCurrentPage(1);
-    };
+                    <p className="mt-1 text-sm text-slate-500 sm:text-base">
+                        Manage and monitor files you have shared.
+                    </p>
+                </div>
 
-    /*
-     * Open Password Modal
-     */
-    const openPasswordModal = (file, mode) => {
-        setActiveMenu(null);
-        setPassword("");
-        setConfirmPassword("");
-        setExpiresAt(file.expiresAt || "");
-        setPasswordError("");
+                {/* ============================================================
+                    Search + Filter
+                ============================================================ */}
 
-        setPasswordModal({
-            fileId: file.id,
-            mode,
-        });
-    };
+                <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
 
-    /*
-     * Close Password Modal
-     */
-    const closePasswordModal = () => {
-        if (savingPassword) return;
+                    {/* Search */}
 
-        setPasswordModal(null);
-        setPassword("");
-        setConfirmPassword("");
-        setExpiresAt("");
-        setPasswordError("");
-    };
+                    <div className="relative w-full sm:max-w-md">
+                        <i className="ri-search-line pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-lg text-slate-400" />
 
-    /*
-     * Password Submit
-     */
-    const handlePasswordSubmit = async (e) => {
-        e.preventDefault();
+                        <input
+                            type="text"
+                            value={search}
+                            onChange={(event) =>
+                                setSearch(event.target.value)
+                            }
+                            placeholder="Search shared files..."
+                            className="h-11 w-full rounded-xl border border-slate-200 bg-white pl-11 pr-11 text-sm text-slate-700 outline-none transition-all duration-200 placeholder:text-slate-400 hover:border-slate-300 focus:border-slate-400 focus:ring-4 focus:ring-slate-100"
+                        />
 
-        if (password.length < 6) {
-            setPasswordError("Password must be at least 6 characters.");
-            return;
-        }
-
-        if (password !== confirmPassword) {
-            setPasswordError("Passwords do not match.");
-            return;
-        }
-
-        if (!passwordModal) return;
-
-        try {
-            setSavingPassword(true);
-            setPasswordError("");
-
-            if (onPasswordChange) {
-                await onPasswordChange(passwordModal.fileId, password, expiresAt);
-            }
-
-            setLocalFiles((currentFiles) =>
-                currentFiles.map((file) =>
-                    file.id === passwordModal.fileId
-                        ? {
-                            ...file,
-                            password: "protected",
-                            expiresAt: expiresAt || null,
-                        }
-                        : file
-                )
-            );
-
-            setSuccessMessage("File settings updated successfully.");
-
-            closePasswordModal();
-
-            setTimeout(() => {
-                setSuccessMessage("");
-            }, 3000);
-        } catch (err) {
-            setPasswordError("Unable to update settings. Please try again.");
-        } finally {
-            setSavingPassword(false);
-        }
-    };
-
-    /*
-     * Pagination Buttons
-     */
-    const renderPagination = () => {
-        if (totalPages <= 1) return null;
-
-        return (
-            <div className="flex flex-col gap-3 border-t border-slate-100 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
-                <p className="text-center text-sm text-slate-500 sm:text-left">
-                    Showing{" "}
-                    <span className="font-medium text-slate-700">
-                        {(currentPage - 1) * ITEMS_PER_PAGE + 1}
-                    </span>{" "}
-                    -{" "}
-                    <span className="font-medium text-slate-700">
-                        {Math.min(
-                            currentPage * ITEMS_PER_PAGE,
-                            filteredFiles.length
-                        )}
-                    </span>{" "}
-                    of{" "}
-                    <span className="font-medium text-slate-700">
-                        {filteredFiles.length}
-                    </span>
-                </p>
-
-                <div className="flex items-center justify-center gap-1">
-                    <button
-                        type="button"
-                        disabled={currentPage === 1}
-                        onClick={() => setCurrentPage((page) => page - 1)}
-                        className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 text-slate-500 transition-all duration-200 hover:border-blue-200 hover:bg-blue-50 hover:text-blue-600 disabled:cursor-not-allowed disabled:opacity-40"
-                    >
-                        <i className="ri-arrow-left-s-line text-lg" />
-                    </button>
-
-                    {Array.from({ length: totalPages }).map((_, index) => {
-                        const pageNumber = index + 1;
-
-                        return (
+                        {search && (
                             <button
-                                key={pageNumber}
                                 type="button"
-                                onClick={() => setCurrentPage(pageNumber)}
-                                className={`flex h-9 min-w-[36px] items-center justify-center rounded-lg px-2 text-sm font-medium transition-all duration-200 ${currentPage === pageNumber
-                                    ? "bg-blue-600 text-white shadow-sm shadow-blue-200"
-                                    : "text-slate-600 hover:bg-blue-50 hover:text-blue-600"
-                                    }`}
+                                onClick={() => setSearch("")}
+                                className="absolute right-3 top-1/2 flex h-7 w-7 -translate-y-1/2 cursor-pointer items-center justify-center rounded-lg text-slate-400 transition-all duration-200 hover:bg-slate-100 hover:text-slate-700"
+                                aria-label="Clear search"
                             >
-                                {pageNumber}
+                                <i className="ri-close-line text-lg" />
                             </button>
-                        );
-                    })}
+                        )}
+                    </div>
 
-                    <button
-                        type="button"
-                        disabled={currentPage === totalPages}
-                        onClick={() => setCurrentPage((page) => page + 1)}
-                        className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 text-slate-500 transition-all duration-200 hover:border-blue-200 hover:bg-blue-50 hover:text-blue-600 disabled:cursor-not-allowed disabled:opacity-40"
+                    {/* Custom Filter Dropdown */}
+
+                    <div
+                        ref={dropdownRef}
+                        className="relative w-full sm:w-44"
                     >
-                        <i className="ri-arrow-right-s-line text-lg" />
-                    </button>
+                        <button
+                            type="button"
+                            onClick={() =>
+                                setIsDropdownOpen(
+                                    (previous) => !previous
+                                )
+                            }
+                            className="flex h-11 w-full cursor-pointer items-center justify-between rounded-xl border border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 shadow-sm transition-all duration-200 hover:border-slate-300 hover:shadow focus:outline-none"
+                        >
+                            <span className="flex items-center gap-2">
+                                <i className="ri-filter-3-line text-base text-slate-500" />
+                                <span>{filter}</span>
+                            </span>
+
+                            <i
+                                className={`ri-arrow-down-s-line text-lg text-slate-500 transition-transform duration-200 ${isDropdownOpen
+                                    ? "rotate-180"
+                                    : ""
+                                    }`}
+                            />
+                        </button>
+
+                        <div
+                            className={`absolute right-0 z-50 mt-2 w-full origin-top rounded-xl border border-slate-200 bg-white p-1.5 shadow-xl transition-all duration-200 ${isDropdownOpen
+                                ? "visible translate-y-0 scale-100 opacity-100"
+                                : "invisible -translate-y-2 scale-95 opacity-0"
+                                }`}
+                        >
+                            {["Latest", "Oldest"].map(
+                                (option) => (
+                                    <button
+                                        key={option}
+                                        type="button"
+                                        onClick={() =>
+                                            handleFilterChange(
+                                                option
+                                            )
+                                        }
+                                        className={`flex w-full cursor-pointer items-center justify-between rounded-lg px-3 py-2.5 text-left text-sm transition-all duration-150 ${filter === option
+                                            ? "bg-slate-100 font-semibold text-slate-900"
+                                            : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+                                            }`}
+                                    >
+                                        <span className="flex items-center gap-2">
+                                            <i
+                                                className={
+                                                    option ===
+                                                        "Latest"
+                                                        ? "ri-sort-desc"
+                                                        : "ri-sort-asc"
+                                                }
+                                            />
+
+                                            {option}
+                                        </span>
+
+                                        {filter === option && (
+                                            <i className="ri-check-line text-base" />
+                                        )}
+                                    </button>
+                                )
+                            )}
+                        </div>
+                    </div>
+                </div>
+
+                {/* ============================================================
+                    Main Content
+                ============================================================ */}
+
+                <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+
+                    {/* Loading */}
+
+                    {loading ? (
+                        <LoadingState />
+                    ) : error && files.length === 0 ? (
+                        <ErrorState
+                            message={error}
+                            onRetry={() =>
+                                fetchSharedFiles(
+                                    1,
+                                    false
+                                )
+                            }
+                        />
+                    ) : files.length === 0 ? (
+                        <EmptyState
+                            title="No shared files"
+                            description="You haven't shared any files yet."
+                            icon="ri-folder-shared-line"
+                        />
+                    ) : filteredFiles.length === 0 ? (
+                        <EmptyState
+                            title="No files found"
+                            description={`No shared files match "${search}".`}
+                            icon="ri-search-line"
+                        />
+                    ) : (
+                        <>
+                            {/* =================================================
+                                Desktop Table
+                            ================================================= */}
+
+                            <div className="hidden overflow-x-auto md:block">
+                                <table className="w-full min-w-[1100px]">
+                                    <thead>
+                                        <tr className="border-b border-slate-100 bg-slate-50/80">
+                                            <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">
+                                                File
+                                            </th>
+
+                                            <th className="px-4 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">
+                                                Size
+                                            </th>
+
+                                            <th className="px-4 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">
+                                                Receiver
+                                            </th>
+
+                                            <th className="px-4 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">
+                                                Shared At
+                                            </th>
+
+                                            <th className="px-4 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">
+                                                Password
+                                            </th>
+
+                                            <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">
+                                                Expiry
+                                            </th>
+                                        </tr>
+                                    </thead>
+
+                                    <tbody className="divide-y divide-slate-100">
+                                        {filteredFiles.map(
+                                            (file) => (
+                                                <FileRow
+                                                    key={getFileId(
+                                                        file
+                                                    )}
+                                                    file={file}
+                                                />
+                                            )
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            {/* =================================================
+                                Mobile Cards
+                            ================================================= */}
+
+                            <div className="divide-y divide-slate-100 md:hidden">
+                                {filteredFiles.map(
+                                    (file) => (
+                                        <FileCard
+                                            key={getFileId(
+                                                file
+                                            )}
+                                            file={file}
+                                        />
+                                    )
+                                )}
+                            </div>
+
+                            {/* =================================================
+                                Load More
+                            ================================================= */}
+
+                            <div className="border-t border-slate-100 p-4 sm:p-5">
+
+                                {isLoadMore ? (
+                                    <button
+                                        type="button"
+                                        onClick={
+                                            handleLoadMore
+                                        }
+                                        disabled={
+                                            loadingMore
+                                        }
+                                        className="mx-auto flex h-10 cursor-pointer items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-5 text-sm font-medium text-slate-700 transition-all duration-200 hover:border-slate-300 hover:bg-slate-50 hover:shadow-sm active:scale-95 disabled:cursor-not-allowed disabled:opacity-60"
+                                    >
+                                        {loadingMore ? (
+                                            <>
+                                                <Spinner />
+                                                Loading...
+                                            </>
+                                        ) : (
+                                            <>
+                                                <i className="ri-add-line text-lg" />
+                                                Load More
+                                            </>
+                                        )}
+                                    </button>
+                                ) : (
+                                    <p className="text-center text-xs text-slate-400">
+                                        You've reached the end
+                                        of your shared files.
+                                    </p>
+                                )}
+
+                                {/* Load More Error */}
+
+                                {error && files.length > 0 && (
+                                    <div className="mt-3 flex items-center justify-center gap-2 text-xs text-red-500">
+                                        <i className="ri-error-warning-line" />
+                                        <span>
+                                            {error}
+                                        </span>
+
+                                        <button
+                                            type="button"
+                                            onClick={() =>
+                                                fetchSharedFiles(
+                                                    pageNo +
+                                                    1,
+                                                    true
+                                                )
+                                            }
+                                            className="cursor-pointer font-semibold underline"
+                                        >
+                                            Retry
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                        </>
+                    )}
                 </div>
             </div>
-        );
-    };
+        </section>
+    );
+};
 
-    if (checkingAuth) {
-        return <SpinLoader />;
+/* ============================================================================
+   File Row
+============================================================================ */
+
+const FileRow = ({ file }) => {
+    const fileData = file?.fileId || {};
+
+    const fileName =
+        fileData?.fileName || "Unnamed file";
+
+    const extension = getExtension(fileName);
+
+    const receiverEmail =
+        file?.receiverEmail ||
+        file?.email ||
+        file?.receiver?.email ||
+        "Not available";
+
+    return (
+        <tr className="group transition-colors duration-200 hover:bg-slate-50/70">
+
+            {/* File */}
+
+            <td className="px-6 py-4">
+                <div className="flex min-w-0 items-center gap-3">
+                    <FileIcon
+                        extension={extension}
+                    />
+
+                    <div className="min-w-0">
+                        <p
+                            className="max-w-[280px] truncate text-sm font-semibold text-slate-800"
+                            title={fileName}
+                        >
+                            {fileName}
+                        </p>
+
+                        <p className="mt-0.5 text-xs uppercase text-slate-400">
+                            {extension || "FILE"}
+                        </p>
+                    </div>
+                </div>
+            </td>
+
+            {/* Size */}
+
+            <td className="px-4 py-4 text-sm text-slate-600">
+                {formatFileSize(
+                    fileData?.fileSize
+                )}
+            </td>
+
+            {/* Receiver */}
+
+            <td className="px-4 py-4">
+                <div className="flex items-center gap-2">
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-500">
+                        <i className="ri-mail-line text-sm" />
+                    </div>
+
+                    <span
+                        className="max-w-[220px] truncate text-sm text-slate-600"
+                        title={receiverEmail}
+                    >
+                        {receiverEmail}
+                    </span>
+                </div>
+            </td>
+
+            {/* Shared At */}
+
+            <td className="whitespace-nowrap px-4 py-4 text-sm text-slate-600">
+                {formatDate(
+                    file?.createdAt ||
+                    file?.sharedAt
+                )}
+            </td>
+
+            {/* Password */}
+
+            <td className="px-4 py-4">
+                <PasswordBadge
+                    password={
+                        fileData?.password
+                    }
+                />
+            </td>
+
+            {/* Expiry */}
+
+            <td className="whitespace-nowrap px-6 py-4">
+                <ExpiryBadge
+                    expiresAt={
+                        fileData?.expiresAt
+                    }
+                />
+            </td>
+        </tr>
+    );
+};
+
+/* ============================================================================
+   Mobile File Card
+============================================================================ */
+
+const FileCard = ({ file }) => {
+    const fileData = file?.fileId || {};
+
+    const fileName =
+        fileData?.fileName || "Unnamed file";
+
+    const extension = getExtension(fileName);
+
+    const receiverEmail =
+        file?.receiverEmail ||
+        file?.email ||
+        file?.receiver?.email ||
+        "Not available";
+
+    return (
+        <div className="p-4 transition-colors duration-200 hover:bg-slate-50 sm:p-5">
+
+            {/* File Header */}
+
+            <div className="flex items-start gap-3">
+                <FileIcon
+                    extension={extension}
+                />
+
+                <div className="min-w-0 flex-1">
+                    <p
+                        className="truncate text-sm font-semibold text-slate-800"
+                        title={fileName}
+                    >
+                        {fileName}
+                    </p>
+
+                    <p className="mt-0.5 text-xs uppercase text-slate-400">
+                        {extension || "FILE"}
+                    </p>
+                </div>
+            </div>
+
+            {/* File Details */}
+
+            <div className="mt-5 grid grid-cols-2 gap-x-4 gap-y-5">
+
+                <InfoItem
+                    icon="ri-hard-drive-2-line"
+                    label="Size"
+                    value={formatFileSize(
+                        fileData?.fileSize
+                    )}
+                />
+
+                <InfoItem
+                    icon="ri-time-line"
+                    label="Shared At"
+                    value={formatDate(
+                        file?.createdAt ||
+                        file?.sharedAt
+                    )}
+                />
+
+                <InfoItem
+                    icon="ri-mail-line"
+                    label="Receiver"
+                    value={receiverEmail}
+                    full
+                />
+
+                <InfoItem
+                    icon="ri-lock-line"
+                    label="Password"
+                    value={fileData?.password !== null ? "Protected" : "No Password"}
+                />
+
+                <InfoItem
+                    icon="ri-calendar-close-line"
+                    label="Expiry"
+                    value={formatDate(
+                        fileData?.expiresAt
+                    )}
+                />
+            </div>
+        </div>
+    );
+};
+
+/* ============================================================================
+   File Icon
+============================================================================ */
+
+const FileIcon = ({ extension }) => {
+    const ext = extension?.toLowerCase();
+
+    let icon = "ri-file-line";
+
+    if (
+        [
+            "jpg",
+            "jpeg",
+            "png",
+            "gif",
+            "webp",
+            "svg",
+        ].includes(ext)
+    ) {
+        icon = "ri-image-line";
+    } else if (
+        [
+            "mp4",
+            "mkv",
+            "mov",
+            "avi",
+            "webm",
+        ].includes(ext)
+    ) {
+        icon = "ri-video-line";
+    } else if (
+        [
+            "mp3",
+            "wav",
+            "ogg",
+            "m4a",
+        ].includes(ext)
+    ) {
+        icon = "ri-music-2-line";
+    } else if (ext === "pdf") {
+        icon = "ri-file-pdf-2-line";
+    } else if (
+        ["doc", "docx"].includes(ext)
+    ) {
+        icon = "ri-file-word-2-line";
+    } else if (
+        ["xls", "xlsx", "csv"].includes(ext)
+    ) {
+        icon = "ri-file-excel-2-line";
+    } else if (
+        ["zip", "rar", "7z", "tar", "gz"].includes(
+            ext
+        )
+    ) {
+        icon = "ri-file-zip-line";
+    } else if (
+        ["ppt", "pptx"].includes(ext)
+    ) {
+        icon = "ri-file-ppt-2-line";
+    } else if (
+        ["txt", "md"].includes(ext)
+    ) {
+        icon = "ri-file-text-line";
     }
 
     return (
-        <section className="w-full pt-[90px] pb-5 overflow-hidden">
-            {/* ================= HEADER ================= */}
-            <div className="border-b border-slate-100 p-4 sm:p-6">
-                <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-                    <div>
-                        <h2 className="text-xl font-semibold tracking-tight text-slate-900">
-                            Shared Files
-                        </h2>
-                        <p className="mt-1 text-sm text-slate-500">
-                            Manage and monitor files you have shared.
-                        </p>
-                    </div>
+        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-600 transition-all duration-200 group-hover:bg-slate-200">
+            <i
+                className={`${icon} text-xl`}
+            />
+        </div>
+    );
+};
 
-                    {/* Search + Filter */}
-                    <div className="flex w-full flex-col gap-2 sm:flex-row lg:w-auto">
-                        {/* Search */}
-                        <div className="relative w-full sm:w-72 lg:w-80">
-                            <i className="ri-search-line absolute left-3 top-1/2 -translate-y-1/2 text-lg text-slate-400" />
-                            <input
-                                type="text"
-                                value={search}
-                                onChange={(e) => handleSearch(e.target.value)}
-                                placeholder="Search shared files..."
-                                className="h-10 w-full rounded-xl border border-slate-200 bg-slate-50 pl-10 pr-10 text-sm text-slate-700 outline-none transition-all duration-200 placeholder:text-slate-400 focus:border-blue-400 focus:bg-white focus:ring-4 focus:ring-blue-50"
-                            />
-                            {search && (
-                                <button
-                                    type="button"
-                                    onClick={() => handleSearch("")}
-                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 transition hover:text-slate-700"
-                                >
-                                    <i className="ri-close-circle-fill text-lg" />
-                                </button>
-                            )}
+/* ============================================================================
+   Password Badge
+============================================================================ */
+
+const PasswordBadge = ({ password }) => {
+
+    if (!password) {
+        return (
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-500">
+                <i className="ri-lock-unlock-line" />
+                No Password
+            </span>
+        );
+    }
+
+    if (password === null || password === "") {
+        return (
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-500">
+                <i className="ri-lock-unlock-line" />
+                No Password
+            </span>
+        );
+    }
+
+    return (
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-50 px-2.5 py-1 text-xs font-medium text-amber-700">
+            <i className="ri-lock-line" />
+            Protected
+        </span>
+    );
+
+};
+
+/* ============================================================================
+   Expiry Badge
+============================================================================ */
+
+const ExpiryBadge = ({ expiresAt }) => {
+    if (!expiresAt) {
+        return (
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-500">
+                <i className="ri-infinity-line" />
+                No expiry
+            </span>
+        );
+    }
+
+    const expiryDate = new Date(
+        expiresAt
+    );
+
+    if (
+        Number.isNaN(
+            expiryDate.getTime()
+        )
+    ) {
+        return (
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-500">
+                <i className="ri-question-line" />
+                Invalid date
+            </span>
+        );
+    }
+
+    const expired =
+        expiryDate.getTime() < Date.now();
+
+    return (
+        <span
+            className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ${expired
+                ? "bg-red-50 text-red-600"
+                : "bg-emerald-50 text-emerald-600"
+                }`}
+        >
+            <i
+                className={
+                    expired
+                        ? "ri-error-warning-line"
+                        : "ri-calendar-check-line"
+                }
+            />
+
+            {expired
+                ? "Expired"
+                : formatDate(expiresAt)}
+        </span>
+    );
+};
+
+/* ============================================================================
+   Info Item
+============================================================================ */
+
+const InfoItem = ({
+    icon,
+    label,
+    value,
+    full = false,
+}) => {
+    return (
+        <div
+            className={
+                full ? "col-span-2" : ""
+            }
+        >
+            <p className="mb-1 flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-wide text-slate-400">
+                <i className={icon} />
+                {label}
+            </p>
+
+            <p
+                className="truncate text-sm text-slate-600"
+                title={value}
+            >
+                {value}
+            </p>
+        </div>
+    );
+};
+
+/* ============================================================================
+   Loading
+============================================================================ */
+
+const LoadingState = () => {
+    return (
+        <div className="divide-y divide-slate-100">
+            {[1, 2, 3, 4].map(
+                (item) => (
+                    <div
+                        key={item}
+                        className="flex animate-pulse items-center gap-4 px-6 py-5"
+                    >
+                        <div className="h-11 w-11 shrink-0 rounded-xl bg-slate-100" />
+
+                        <div className="flex-1">
+                            <div className="h-3.5 w-48 rounded bg-slate-100" />
+
+                            <div className="mt-2 h-3 w-24 rounded bg-slate-100" />
                         </div>
 
-                        {/* Custom Dropdown */}
-                        <div className="relative">
-                            <button
-                                type="button"
-                                onClick={() => setSortOpen((open) => !open)}
-                                className="flex h-10 w-full items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white px-3 text-sm font-medium text-slate-700 transition-all duration-200 hover:border-blue-200 hover:bg-blue-50/50 sm:w-36"
-                            >
-                                <span className="flex items-center gap-2">
-                                    <i className="ri-equalizer-2-line text-base text-blue-600" />
-                                    {sort === "latest" ? "Latest" : "Oldest"}
-                                </span>
-                                <i
-                                    className={`ri-arrow-down-s-line transition-transform duration-200 ${sortOpen ? "rotate-180" : ""
-                                        }`}
-                                />
-                            </button>
+                        <div className="hidden h-3 w-20 rounded bg-slate-100 md:block" />
 
-                            {sortOpen && (
-                                <>
-                                    <button
-                                        type="button"
-                                        aria-label="Close sort menu"
-                                        className="fixed inset-0 z-10 cursor-default"
-                                        onClick={() => setSortOpen(false)}
-                                    />
-
-                                    <div className="absolute right-0 z-20 mt-2 w-full overflow-hidden rounded-xl border border-slate-200 bg-white p-1.5 shadow-xl shadow-slate-200/50 sm:w-36">
-                                        <button
-                                            type="button"
-                                            onClick={() => handleSort("latest")}
-                                            className={`flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-sm transition ${sort === "latest"
-                                                ? "bg-blue-50 font-medium text-blue-600"
-                                                : "text-slate-600 hover:bg-slate-50"
-                                                }`}
-                                        >
-                                            Latest
-                                            {sort === "latest" && (
-                                                <i className="ri-check-line" />
-                                            )}
-                                        </button>
-
-                                        <button
-                                            type="button"
-                                            onClick={() => handleSort("oldest")}
-                                            className={`flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-sm transition ${sort === "oldest"
-                                                ? "bg-blue-50 font-medium text-blue-600"
-                                                : "text-slate-600 hover:bg-slate-50"
-                                                }`}
-                                        >
-                                            Oldest
-                                            {sort === "oldest" && (
-                                                <i className="ri-check-line" />
-                                            )}
-                                        </button>
-                                    </div>
-                                </>
-                            )}
-                        </div>
+                        <div className="hidden h-3 w-40 rounded bg-slate-100 md:block" />
                     </div>
-                </div>
+                )
+            )}
+        </div>
+    );
+};
+
+/* ============================================================================
+   Empty State
+============================================================================ */
+
+const EmptyState = ({
+    title,
+    description,
+    icon,
+}) => {
+    return (
+        <div className="flex min-h-[350px] flex-col items-center justify-center px-6 text-center">
+            <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-100 text-slate-400">
+                <i
+                    className={`${icon} text-3xl`}
+                />
             </div>
 
-            {/* ================= SUCCESS MESSAGE ================= */}
-            {successMessage && (
-                <div className="mx-4 mt-4 flex items-center gap-3 rounded-xl border border-emerald-100 bg-emerald-50 px-4 py-3 text-sm text-emerald-700 sm:mx-6">
-                    <i className="ri-checkbox-circle-fill text-lg" />
-                    <span>{successMessage}</span>
-                    <button
-                        type="button"
-                        onClick={() => setSuccessMessage("")}
-                        className="ml-auto text-emerald-500 transition hover:text-emerald-700"
-                    >
-                        <i className="ri-close-line text-lg" />
-                    </button>
-                </div>
-            )}
+            <h3 className="text-base font-semibold text-slate-800">
+                {title}
+            </h3>
 
-            {/* ================= FILE LIST ================= */}
-            {!loading && !error && paginatedFiles.length > 0 && (
-                <>
-                    {/* Desktop Header */}
-                    <div className="hidden border-b border-slate-100 bg-slate-50/60 px-6 py-3 text-xs font-semibold uppercase tracking-wide text-slate-400 lg:grid lg:grid-cols-[2fr_1.3fr_1.1fr_1.5fr_1fr_40px] lg:items-center lg:gap-4">
-                        <span>File</span>
-                        <span>Receiver</span>
-                        <span>Shared At</span>
-                        <span>Password</span>
-                        <span>Expires</span>
-                        <span />
-                    </div>
+            <p className="mt-1 max-w-sm text-sm text-slate-500">
+                {description}
+            </p>
+        </div>
+    );
+};
 
-                    <div className="divide-y divide-slate-100">
-                        {paginatedFiles.map((file) => (
-                            <div
-                                key={file.id}
-                                className="group relative p-4 transition-all duration-200 hover:bg-blue-50/30 sm:p-5 lg:px-6"
-                            >
-                                <div className="grid gap-3 sm:gap-4 lg:grid-cols-[2fr_1.3fr_1.1fr_1.5fr_1fr_40px] lg:items-center lg:gap-4">
-                                    {/* File */}
-                                    <div className="flex min-w-0 items-center gap-3 pr-10 lg:pr-0">
-                                        <div
-                                            className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${getFileIconBackground(
-                                                file.type
-                                            )}`}
-                                        >
-                                            <i
-                                                className={`${getFileIcon(
-                                                    file.type
-                                                )} text-xl`}
-                                            />
-                                        </div>
+/* ============================================================================
+   Error State
+============================================================================ */
 
-                                        <div className="min-w-0">
-                                            <p
-                                                className="truncate text-sm font-semibold text-slate-800"
-                                                title={file.name}
-                                            >
-                                                {file.name}
-                                            </p>
-                                            <div className="mt-1 flex items-center gap-2 text-xs text-slate-400">
-                                                <span>{file.type}</span>
-                                                <span className="h-1 w-1 rounded-full bg-slate-300" />
-                                                <span>{file.size}</span>
-                                            </div>
-                                        </div>
-                                    </div>
+const ErrorState = ({
+    message,
+    onRetry,
+}) => {
+    return (
+        <div className="flex min-h-[350px] flex-col items-center justify-center px-6 text-center">
+            <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-red-50 text-red-500">
+                <i className="ri-error-warning-line text-3xl" />
+            </div>
 
-                                    {/* Receiver */}
-                                    <div className="min-w-0">
-                                        <p className="mb-1 text-[11px] font-medium uppercase tracking-wide text-slate-400 lg:hidden">
-                                            Receiver
-                                        </p>
-                                        <div className="flex min-w-0 items-center gap-2">
-                                            <i className="ri-mail-line shrink-0 text-slate-400" />
-                                            <span
-                                                className="truncate text-sm text-slate-600"
-                                                title={file.receiverEmail}
-                                            >
-                                                {file.receiverEmail}
-                                            </span>
-                                        </div>
-                                    </div>
+            <h3 className="text-base font-semibold text-slate-800">
+                Data unavailable
+            </h3>
 
-                                    {/* Shared At */}
-                                    <div>
-                                        <p className="mb-1 text-[11px] font-medium uppercase tracking-wide text-slate-400 lg:hidden">
-                                            Shared At
-                                        </p>
-                                        <div className="flex items-center gap-2 text-sm text-slate-600">
-                                            <i className="ri-time-line text-slate-400" />
-                                            <span>{file.sharedAt}</span>
-                                        </div>
-                                    </div>
+            <p className="mt-1 max-w-md text-sm text-slate-500">
+                {message ||
+                    "We couldn't load your shared files."}
+            </p>
 
-                                    {/* Password */}
-                                    <div>
-                                        <p className="mb-1 text-[11px] font-medium uppercase tracking-wide text-slate-400 lg:hidden">
-                                            Password
-                                        </p>
-                                        {file.password ? (
-                                            <div className="flex items-center gap-2">
-                                                <span className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-50 px-2.5 py-1.5 text-xs font-medium text-emerald-700">
-                                                    <i className="ri-lock-line" />
-                                                    Protected
-                                                </span>
-                                            </div>
-                                        ) : (
-                                            <span className="inline-flex items-center gap-1.5 rounded-lg bg-slate-100 px-2.5 py-1.5 text-xs font-medium text-slate-500">
-                                                <i className="ri-lock-unlock-line" />
-                                                No password
-                                            </span>
-                                        )}
-                                    </div>
+            <button
+                type="button"
+                onClick={onRetry}
+                className="mt-5 flex h-10 cursor-pointer items-center gap-2 rounded-lg bg-slate-900 px-4 text-sm font-medium text-white transition-all duration-200 hover:bg-slate-800 hover:shadow-md active:scale-95"
+            >
+                <i className="ri-refresh-line" />
+                Try Again
+            </button>
+        </div>
+    );
+};
 
-                                    {/* Expiry */}
-                                    <div>
-                                        <p className="mb-1 text-[11px] font-medium uppercase tracking-wide text-slate-400 lg:hidden">
-                                            Expires
-                                        </p>
-                                        {file.expiresAt ? (
-                                            <div className="flex items-center gap-2 text-sm text-slate-600">
-                                                <i className="ri-calendar-event-line text-slate-400" />
-                                                <span>{file.expiresAt}</span>
-                                            </div>
-                                        ) : (
-                                            <span className="text-sm text-slate-400">
-                                                Never
-                                            </span>
-                                        )}
-                                    </div>
+/* ============================================================================
+   Spinner
+============================================================================ */
 
-                                    {/* Three Dot Menu */}
-                                    <div className="absolute right-4 top-4 lg:static lg:flex lg:justify-end">
-                                        <div className="relative">
-                                            <button
-                                                type="button"
-                                                onClick={() =>
-                                                    setActiveMenu((current) =>
-                                                        current === file.id
-                                                            ? null
-                                                            : file.id
-                                                    )
-                                                }
-                                                className={`flex h-9 w-9 items-center justify-center rounded-lg text-slate-400 transition-all duration-200 hover:bg-slate-100 hover:text-slate-700 ${activeMenu === file.id
-                                                    ? "bg-slate-100 text-slate-700"
-                                                    : ""
-                                                    }`}
-                                            >
-                                                <i className="ri-more-2-fill text-lg" />
-                                            </button>
+const Spinner = () => {
+    return (
+        <span className="h-4 w-4 animate-spin rounded-full border-2 border-slate-300 border-t-slate-700" />
+    );
+};
 
-                                            {activeMenu === file.id && (
-                                                <>
-                                                    <button
-                                                        type="button"
-                                                        aria-label="Close menu"
-                                                        className="fixed inset-0 z-10 cursor-default"
-                                                        onClick={() =>
-                                                            setActiveMenu(null)
-                                                        }
-                                                    />
+/* ============================================================================
+   Helpers
+============================================================================ */
 
-                                                    <div className="absolute right-0 top-10 z-20 w-48 overflow-hidden rounded-xl border border-slate-200 bg-white p-1.5 shadow-xl shadow-slate-200/50">
-                                                        <button
-                                                            type="button"
-                                                            onClick={() =>
-                                                                openPasswordModal(
-                                                                    file,
-                                                                    file.password
-                                                                        ? "change"
-                                                                        : "add"
-                                                                )
-                                                            }
-                                                            className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm text-slate-700 transition hover:bg-blue-50 hover:text-blue-600"
-                                                        >
-                                                            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
-                                                                <i className="ri-settings-4-line" />
-                                                            </span>
-                                                            <span>
-                                                                Manage Access
-                                                            </span>
-                                                        </button>
-                                                    </div>
-                                                </>
-                                            )}
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-
-                    {/* Pagination */}
-                    {renderPagination()}
-                </>
-            )}
-
-            {/* ================= PASSWORD & EXPIRATION MODAL ================= */}
-            {passwordModal && selectedFile && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 p-4 backdrop-blur-[2px]">
-                    <div
-                        className="w-full max-w-md overflow-hidden rounded-2xl bg-white shadow-2xl"
-                        onClick={(e) => e.stopPropagation()}
-                    >
-                        {/* Modal Header */}
-                        <div className="flex items-start justify-between border-b border-slate-100 p-5 sm:p-6">
-                            <div className="flex items-start gap-3">
-                                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
-                                    <i className="ri-shield-keyhole-line text-xl" />
-                                </div>
-
-                                <div>
-                                    <h3 className="font-semibold text-slate-900">
-                                        Access & Expiry Settings
-                                    </h3>
-                                    <p className="mt-1 max-w-xs text-sm text-slate-500">
-                                        Update password protection and expiration date.
-                                    </p>
-                                </div>
-                            </div>
-
-                            <button
-                                type="button"
-                                onClick={closePasswordModal}
-                                disabled={savingPassword}
-                                className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 disabled:opacity-50"
-                            >
-                                <i className="ri-close-line text-xl" />
-                            </button>
-                        </div>
-
-                        {/* Modal Body */}
-                        <form
-                            onSubmit={handlePasswordSubmit}
-                            className="p-5 sm:p-6"
-                        >
-                            {/* File Info */}
-                            <div className="mb-5 flex items-center gap-3 rounded-xl bg-slate-50 p-3">
-                                <div
-                                    className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${getFileIconBackground(
-                                        selectedFile.type
-                                    )}`}
-                                >
-                                    <i
-                                        className={`${getFileIcon(
-                                            selectedFile.type
-                                        )} text-lg`}
-                                    />
-                                </div>
-
-                                <div className="min-w-0">
-                                    <p
-                                        className="truncate text-sm font-medium text-slate-800"
-                                        title={selectedFile.name}
-                                    >
-                                        {selectedFile.name}
-                                    </p>
-                                    <p className="truncate text-xs text-slate-400">
-                                        Shared with {selectedFile.receiverEmail}
-                                    </p>
-                                </div>
-                            </div>
-
-                            {/* Password */}
-                            <div>
-                                <label
-                                    htmlFor="shared-file-password"
-                                    className="mb-2 block text-sm font-medium text-slate-700"
-                                >
-                                    New Password
-                                </label>
-
-                                <div className="relative">
-                                    <i className="ri-lock-line absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                                    <input
-                                        id="shared-file-password"
-                                        type="password"
-                                        value={password}
-                                        onChange={(e) => {
-                                            setPassword(e.target.value);
-                                            setPasswordError("");
-                                        }}
-                                        placeholder="Enter password"
-                                        autoComplete="new-password"
-                                        className="h-11 w-full rounded-xl border border-slate-200 bg-white pl-10 pr-3 text-sm text-slate-700 outline-none transition focus:border-blue-400 focus:ring-4 focus:ring-blue-50"
-                                    />
-                                </div>
-                                <p className="mt-1.5 text-xs text-slate-400">
-                                    Minimum 6 characters.
-                                </p>
-                            </div>
-
-                            {/* Confirm Password */}
-                            <div className="mt-4">
-                                <label
-                                    htmlFor="shared-file-confirm-password"
-                                    className="mb-2 block text-sm font-medium text-slate-700"
-                                >
-                                    Confirm Password
-                                </label>
-
-                                <div className="relative">
-                                    <i className="ri-shield-check-line absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                                    <input
-                                        id="shared-file-confirm-password"
-                                        type="password"
-                                        value={confirmPassword}
-                                        onChange={(e) => {
-                                            setConfirmPassword(e.target.value);
-                                            setPasswordError("");
-                                        }}
-                                        placeholder="Confirm password"
-                                        autoComplete="new-password"
-                                        className="h-11 w-full rounded-xl border border-slate-200 bg-white pl-10 pr-3 text-sm text-slate-700 outline-none transition focus:border-blue-400 focus:ring-4 focus:ring-blue-50"
-                                    />
-                                </div>
-                            </div>
-
-                            {/* Expiry Date Selection */}
-                            <div className="mt-4">
-                                <label
-                                    htmlFor="shared-file-expiry"
-                                    className="mb-2 block text-sm font-medium text-slate-700"
-                                >
-                                    Expiration Date
-                                </label>
-
-                                <div className="relative">
-                                    <i className="ri-calendar-event-line absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                                    <input
-                                        id="shared-file-expiry"
-                                        type="date"
-                                        value={expiresAt}
-                                        min={new Date().toISOString().split("T")[0]}
-                                        onChange={(e) => setExpiresAt(e.target.value)}
-                                        className="h-11 w-full rounded-xl border border-slate-200 bg-white pl-10 pr-3 text-sm text-slate-700 outline-none transition focus:border-blue-400 focus:ring-4 focus:ring-blue-50"
-                                    />
-                                </div>
-                                <p className="mt-1.5 text-xs text-slate-400">
-                                    Leave blank for no expiration date.
-                                </p>
-                            </div>
-
-                            {/* Validation Error */}
-                            {passwordError && (
-                                <div className="mt-4 flex items-start gap-2 rounded-xl border border-red-100 bg-red-50 px-3 py-2.5 text-sm text-red-600">
-                                    <i className="ri-error-warning-line mt-0.5" />
-                                    <span>{passwordError}</span>
-                                </div>
-                            )}
-
-                            {/* Actions */}
-                            <div className="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-                                <button
-                                    type="button"
-                                    onClick={closePasswordModal}
-                                    disabled={savingPassword}
-                                    className="h-10 rounded-xl border border-slate-200 px-4 text-sm font-medium text-slate-600 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
-                                >
-                                    Cancel
-                                </button>
-
-                                <button
-                                    type="submit"
-                                    disabled={savingPassword}
-                                    className="flex h-10 items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 text-sm font-medium text-white shadow-sm shadow-blue-200 transition-all duration-200 hover:bg-blue-700 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-60"
-                                >
-                                    {savingPassword ? (
-                                        <>
-                                            <i className="ri-loader-4-line animate-spin" />
-                                            Saving...
-                                        </>
-                                    ) : (
-                                        <>
-                                            <i className="ri-check-line" />
-                                            Save Settings
-                                        </>
-                                    )}
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            )}
-        </section>
+function getFileId(file) {
+    return (
+        file?._id ||
+        file?.id ||
+        `${file?.fileId?._id || file?.fileId?.fileName}-${file?.createdAt || ""}`
     );
 }
+
+function getExtension(fileName = "") {
+    const cleanName =
+        fileName.split("?")[0];
+
+    const parts =
+        cleanName.split(".");
+
+    if (parts.length <= 1) {
+        return "";
+    }
+
+    return parts
+        .pop()
+        .toUpperCase();
+}
+
+function formatFileSize(bytes) {
+    if (
+        bytes === undefined ||
+        bytes === null ||
+        bytes === ""
+    ) {
+        return "N/A";
+    }
+
+    const size = Number(bytes);
+
+    if (Number.isNaN(size)) {
+        return "N/A";
+    }
+
+    if (size === 0) {
+        return "0 Bytes";
+    }
+
+    const units = [
+        "Bytes",
+        "KB",
+        "MB",
+        "GB",
+        "TB",
+    ];
+
+    const index = Math.floor(
+        Math.log(size) /
+        Math.log(1024)
+    );
+
+    return `${parseFloat(
+        (
+            size /
+            Math.pow(1024, index)
+        ).toFixed(
+            index === 0 ? 0 : 2
+        )
+    )} ${units[index] || "TB"}`;
+}
+
+function formatDate(date) {
+    if (!date) {
+        return "Not available";
+    }
+
+    const parsedDate =
+        new Date(date);
+
+    if (
+        Number.isNaN(
+            parsedDate.getTime()
+        )
+    ) {
+        return "Not available";
+    }
+
+    return parsedDate.toLocaleString(
+        "en-IN",
+        {
+            day: "2-digit",
+            month: "short",
+            year: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+        }
+    );
+}
+
+export default SharedFiles;

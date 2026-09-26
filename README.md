@@ -441,7 +441,7 @@ Across all views, modals, and file/folder listings:
 - Implemented **Pagination** In My Files Page.
 - Implemented **Searchbar and Shorting Filter** In My Files Page.
 
-----
+---
 
 ### Day 11: 24-09-2026
 
@@ -462,3 +462,17 @@ Across all views, modals, and file/folder listings:
 - Implemented **CRUD Operation** In Files Page.
 - Implemented **Pagination** In Files Page.
 - Implemented **Searchbar and Shorting Filter** In Files Page.
+
+---
+
+### Day 12: 26-09-2026
+
+#### Documentation
+
+- Updated the **README.md** page.
+
+#### Files Pages Development
+
+- Implemented Is User Authenticated or Not In Files Page.
+- Implemented File Sharing Features and Connected To API.
+- Created Breadcrumbs For Files Page
