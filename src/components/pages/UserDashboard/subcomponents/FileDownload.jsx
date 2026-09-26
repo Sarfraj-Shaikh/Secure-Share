@@ -139,7 +139,7 @@ const FileDownload = () => {
                 return;
             }
 
-            const response = await api.get(
+            const response = await api.post(
                 `${serverUrl}/api/download-file/${id}`,
                 {
                     password: file?.passwordRequired
@@ -150,9 +150,6 @@ const FileDownload = () => {
                     headers: {
                         Authorization: userToken,
                     },
-
-                    // Very important:
-                    // Express res.download() returns binary data.
                     responseType: "blob",
                 }
             );
