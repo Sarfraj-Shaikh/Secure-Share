@@ -129,18 +129,15 @@ const FileDownload = () => {
                 return;
             }
 
-            if (!userToken) {
+            const token = localStorage.getItem("userToken");
+
+            if (!token) {
                 setError("Authentication token not found.");
                 return;
             }
 
-            if (!serverUrl) {
-                setError("VITE_SERVER_URL is not configured.");
-                return;
-            }
-
             const response = await api.post(
-                `${serverUrl}/api/download-file/${id}`,
+                `/api/download-file/${id}`,
                 {
                     password: file?.passwordRequired
                         ? password
@@ -148,43 +145,28 @@ const FileDownload = () => {
                 },
                 {
                     headers: {
-                        Authorization: userToken,
+                        Authorization: token,
                     },
-                    responseType: "blob",
                 }
             );
 
-            const blob = new Blob(
-                [response.data],
-                {
-                    type:
-                        response.headers?.["content-type"] ||
-                        file?.mimeType ||
-                        "application/octet-stream",
-                }
-            );
+            const data = response.data;
 
-            const downloadUrl =
-                window.URL.createObjectURL(blob);
+            if (!data?.success) {
+                throw new Error(
+                    data?.message ||
+                    "Unable to download file."
+                );
+            }
 
-            const anchor =
-                document.createElement("a");
+            if (!data?.downloadUrl) {
+                throw new Error(
+                    "Download URL was not provided."
+                );
+            }
 
-            anchor.href = downloadUrl;
-
-            anchor.download =
-                file?.fileName ||
-                "download";
-
-            document.body.appendChild(anchor);
-
-            anchor.click();
-
-            anchor.remove();
-
-            window.URL.revokeObjectURL(
-                downloadUrl
-            );
+            // Cloudinary download
+            window.location.href = data.downloadUrl;
 
             setSuccess(
                 "File download started successfully."
@@ -192,44 +174,10 @@ const FileDownload = () => {
 
         } catch (err) {
 
-            /*
-             * Since responseType is blob, Express JSON errors
-             * can also arrive as Blob.
-             */
-
-            let errorMessage =
+            const errorMessage =
+                err?.response?.data?.message ||
+                err?.message ||
                 "Unable to download file.";
-
-            const responseData =
-                err?.response?.data;
-
-            if (
-                responseData instanceof Blob &&
-                responseData.type?.includes(
-                    "application/json"
-                )
-            ) {
-                try {
-                    const text =
-                        await responseData.text();
-
-                    const json =
-                        JSON.parse(text);
-
-                    errorMessage =
-                        json?.message ||
-                        errorMessage;
-
-                } catch {
-                    // Keep default error message.
-                }
-
-            } else {
-                errorMessage =
-                    err?.response?.data?.message ||
-                    err?.message ||
-                    errorMessage;
-            }
 
             setError(errorMessage);
 
