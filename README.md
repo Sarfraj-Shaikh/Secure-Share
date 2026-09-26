@@ -476,3 +476,10 @@ Across all views, modals, and file/folder listings:
 - Implemented Is User Authenticated or Not In Files Page.
 - Implemented File Sharing Features and Connected To API.
 - Created Breadcrumbs For Files Page
+
+#### Shared Files Pages Development
+
+- Redesigned **Files Page** For Better Experience From Scratch.
+- Implemented **CRUD Operation** In Files Page.
+- Implemented **Pagination** In Files Page.
+- Implemented **Searchbar and Shorting Filter** In Files Page.
