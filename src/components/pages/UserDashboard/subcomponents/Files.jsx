@@ -434,12 +434,11 @@ const Files = () => {
      */
 
     const handleFileShare = async (fileId) => {
+
         if (!userEmail.trim()) {
-            message.error(
-                "Please enter recipient email."
-            );
+            message.error("Please enter recipient email.");
             return;
-        }
+        };
 
         try {
 
@@ -447,14 +446,10 @@ const Files = () => {
 
             const payload = {
                 email: userEmail.trim(),
-                fileId,
+                fileId: fileId,
             };
 
-            const response = await api.post(
-                "/api/share-file",
-                payload,
-                getAuthConfig()
-            );
+            const response = await api.post("/api/share-file", payload, getAuthConfig());
 
             message.success(
                 response.data?.message ||
@@ -471,7 +466,7 @@ const Files = () => {
         } finally {
 
             setShareLoading(false);
-            
+
         }
     };
 
