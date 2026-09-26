@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import api from "../../../../../utils/api";
 import { useNavigate } from "react-router-dom";
+import SpinLoader from "../../../shared/SpinLoader";
 
 const SharedFiles = () => {
 
@@ -240,6 +241,10 @@ const SharedFiles = () => {
     // ------------------------------------------------------------------------
     // UI
     // ------------------------------------------------------------------------
+
+    if (checkingAuth) {
+        return <SpinLoader />;
+    }
 
     return (
 
