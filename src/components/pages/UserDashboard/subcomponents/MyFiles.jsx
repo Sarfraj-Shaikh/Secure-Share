@@ -627,10 +627,6 @@ const MyFiles = () => {
         return <SpinLoader />;
     }
 
-    if (!authenticated) {
-        return null;
-    }
-
     return (
         <>
             {contextHolder}

@@ -1,12 +1,16 @@
 import { message } from "antd";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import api from "../../../../../utils/api";
-import { toNamePathStr } from "antd/es/form/hooks/useForm";
+import SpinLoader from "../../../shared/SpinLoader";
 
 const Files = () => {
 
-    
+    const navigate = useNavigate();
+
+    const [checkingAuth, setCheckingAuth] = useState(true);
+    const [authenticated, setAuthenticated] = useState(false);
+
     const { id } = useParams();
     const routeFolderId = id;
 
@@ -780,6 +784,11 @@ const Files = () => {
      * Render
      * -------------------------------------------------------
      */
+
+    
+    if (checkingAuth) {
+        return <SpinLoader />;
+    }
 
     return (
         <section className="min-h-screen bg-slate-50 px-4 pt-[90px]">
