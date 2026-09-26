@@ -5,6 +5,7 @@ import SpinLoader from "../../../shared/SpinLoader";
 import { verifyToken } from "../../../../../utils/isUserLogin";
 
 const FileDownload = () => {
+
     const navigate = useNavigate();
     const { id } = useParams();
 
@@ -30,6 +31,7 @@ const FileDownload = () => {
     // ------------------------------------------------------------------------
 
     useEffect(() => {
+
         const checkAuth = async () => {
             const result = await verifyToken(navigate, {
                 requireAuth: true,
