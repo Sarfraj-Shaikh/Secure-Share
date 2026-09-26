@@ -1,7 +1,13 @@
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import api from "../../../../../utils/api";
+import { useNavigate } from "react-router-dom";
 
 const SharedFiles = () => {
+
+    const navigate = useNavigate();
+
+    const [checkingAuth, setCheckingAuth] = useState(true);
+    const [authenticated, setAuthenticated] = useState(false);
 
     // ------------------------------------------------------------------------
     // Config
